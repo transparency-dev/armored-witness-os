@@ -26,10 +26,10 @@ import (
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
+	"github.com/transparency-dev/armored-witness-boot/config"
 	abconfig "github.com/usbarmory/armory-boot/config"
-	"github.com/usbarmory/armory-witness-boot/config"
 
-	"github.com/usbarmory/armory-witness/api"
+	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 const (

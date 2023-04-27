@@ -23,7 +23,7 @@ import (
 
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
-	"github.com/usbarmory/armory-witness/api"
+	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 func configureDevice(device *usb.Device) (err error) {

@@ -31,7 +31,7 @@ import (
 
 	"github.com/usbarmory/crucible/otp"
 
-	"github.com/usbarmory/armory-witness/rpmb"
+	"github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 const (

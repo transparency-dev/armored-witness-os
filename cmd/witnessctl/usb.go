@@ -23,7 +23,7 @@ import (
 	flynn_hid "github.com/flynn/hid"
 	"github.com/flynn/u2f/u2fhid"
 
-	"github.com/usbarmory/armory-witness/api"
+	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 func detectU2F() (dev *u2fhid.Device, err error) {

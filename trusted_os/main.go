@@ -28,9 +28,9 @@ import (
 	"github.com/usbarmory/armory-boot/config"
 
 	// for now just test compilation of these
-	_ "github.com/usbarmory/armory-witness/internal/ft"
-	_ "github.com/usbarmory/armory-witness/internal/hab"
-	_ "github.com/usbarmory/armory-witness/rpmb"
+	_ "github.com/transparency-dev/armored-witness-os/internal/ft"
+	_ "github.com/transparency-dev/armored-witness-os/internal/hab"
+	_ "github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 // initialized at compile time (see Makefile)

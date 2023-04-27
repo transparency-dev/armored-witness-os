@@ -28,7 +28,7 @@ import (
 	"github.com/cheggaaa/pb/v3"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/usbarmory/armory-witness/api"
+	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 // we use 64 as a safe guess for protobuf wire overhead

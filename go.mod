@@ -1,4 +1,4 @@
-module github.com/usbarmory/armory-witness
+module github.com/transparency-dev/armored-witness-os
 
 go 1.19
 
@@ -10,7 +10,7 @@ require (
 	github.com/miekg/dns v1.1.50
 	github.com/usbarmory/GoTEE v0.0.0-20230127101228-519e560d69aa
 	github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a
-	github.com/usbarmory/armory-witness-boot v0.0.0-20230119105012-2f7fb0e160bd
+	github.com/transparency-dev/armored-witness-boot v0.0.0-20230119105012-2f7fb0e160bd
 	github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081
 	github.com/usbarmory/crucible v0.0.0-20230117112356-5e0805300e15
 	github.com/usbarmory/imx-enet v0.0.0-20230210123530-18463adc40b7

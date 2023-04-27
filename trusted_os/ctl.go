@@ -26,7 +26,7 @@ import (
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
-	"github.com/usbarmory/armory-witness/api"
+	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 const (
@@ -59,7 +59,7 @@ func getStatus() (s *api.Status) {
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 	}
 
-	if miiStatus & (1 << STATUS_LINK) > 0 {
+	if miiStatus&(1<<STATUS_LINK) > 0 {
 		s.Link = true
 	}
 
