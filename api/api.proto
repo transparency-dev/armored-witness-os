@@ -1,0 +1,130 @@
+/*
+
+Copyright (c) WithSecure Corporation
+https://foundry.withsecure.com
+
+Use of this source code is governed by the license
+that can be found in the LICENSE file.
+
+*/
+
+syntax = "proto3";
+
+option go_package = "./;api";
+
+package api;
+
+/*
+
+Trusted Applet updates are supported with a sequence that splits the applet
+payload as follows:
+
+```
+  host > armory: AppletUpdate{
+    Total:   <n>,
+    Seq:     0,
+    Payload: <applet signature>,
+  }
+
+  host > armory: AppletUpdate{
+    Total    <n>,
+    Seq:     1,
+    Payload: <first applet data chunk>,
+  }
+
+...
+
+  host > armory: AppletUpdate{
+    Total:   <n>,
+    Seq:     <n>,
+    Payload: <last applet data chunk>,
+  }
+```
+
+The host PC software is responsible for extracting the invidual protobuf
+messages already pre-assembled in the applet update file, to transmit them
+individually.
+
+The applet image includes a signature for pre-flashing verification in the
+first chunk. This signature is verified with a minisign public key stored
+within the Trusted OS.
+
+Once all applet chunks are received the Trusted OS verifies the received
+firmware signature and, if successful, it flashes it on the internal eMMC card.
+
+Such change also updates the internal eMMC RPMB protected applet version value,
+which is checked at each boot.
+
+The applet chunk message is sent with the `U2FHID_ARMORY_OTA` vendor specific
+command.
+
+*/
+
+/*
+
+AppletUpdate
+
+A `AppletUpdate` represents an OTA sequence applet slice.
+
+The `TotalChunks` value indicates the total number of chunks for the update,
+`Seq` is the transmitted `Data` chunk number (starting with 1 as the value for
+the first chunk).
+
+*/
+message AppletUpdate {
+	uint32 Total = 1;
+	uint32 Seq   = 2;
+	bytes  Data  = 3;
+}
+
+/*
+
+Status information
+
+The status information format is returned on any message sent with the
+`U2FHID_ARMORY_INF` vendor specific command.
+
+*/
+message Status {
+	string Serial      = 1;
+	bool   HAB         = 2;
+	string Revision    = 3;
+	string Build       = 4;
+	uint32 Version     = 5;
+	string Runtime     = 6;
+	bool   Link        = 7;
+}
+
+/*
+
+Trusted Applet configuration
+
+The trusted applet configuration format, any configuration exchange will cause
+an existing trusted applet instance to be termimnated for re-initialization.
+
+The configuration message is sent with the `U2FHID_ARMORY_CFG` vendor specific
+command.
+
+*/
+
+message Configuration {
+	bool   DHCP     = 1;
+	string IP       = 2;
+	string Netmask  = 3;
+	string Gateway  = 4;
+	string Resolver = 5;
+	string MAC      = 6;
+}
+
+message Response {
+	ErrorCode Error   = 1;
+	bytes     Payload = 2;
+}
+
+enum ErrorCode {
+	NONE = 0;
+
+	// GENERIC_ERROR is returned in case of a generic error, in this case
+	// Payload might contain the error string.
+	GENERIC_ERROR = 1;
+}
