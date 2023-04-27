@@ -45,14 +45,14 @@ ARCH = "arm"
 RUST_LINKER = "arm-none-eabi-ld"
 RUST_TARGET = "armv7a-none-eabi"
 
-GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${PUBLIC_KEY} && cat ${PUBLIC_KEY} | tail -n 1)'"
+GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY} | tail -n 1)'"
 RUSTFLAGS = -C linker=${RUST_LINKER} -C link-args="--Ttext=$(TEXT_START)" --target ${RUST_TARGET}
 
 .PHONY: clean qemu qemu-gdb
 
 #### primary targets ####
 
-all: trusted_applet witnessctl
+all: witnessctl
 
 elf: $(APP).elf
 
@@ -62,25 +62,12 @@ trusted_os: TEXT_START=0x80010000
 trusted_os: check_os_env elf imx
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
+		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
+		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	else \
-		${SIGN} -S -s ${PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		${SIGN} -S -s ${PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
+		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
+		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
-
-trusted_applet: APP=trusted_applet
-trusted_applet: DIR=$(CURDIR)/trusted_applet
-trusted_applet: TEXT_START=0x90010000
-trusted_applet: check_applet_env elf
-	mkdir -p $(CURDIR)/trusted_os/assets
-	echo "signing Trusted Applet"
-	@if [ "${SIGN_PWD}" != "" ]; then \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${PRIVATE_KEY} -m ${CURDIR}/bin/trusted_applet.elf -x ${CURDIR}/trusted_os/assets/trusted_applet.sig; \
-	else \
-		${SIGN} -S -s ${PRIVATE_KEY} -m ${CURDIR}/bin/trusted_applet.elf -x ${CURDIR}/trusted_os/assets/trusted_applet.sig; \
-	fi
-	cp $(CURDIR)/bin/trusted_applet.elf $(CURDIR)/trusted_os/assets
 
 witnessctl: check_tamago proto
 	@echo "building armory-witness control tool"
@@ -120,23 +107,17 @@ $(APP).dcd: dcd
 
 #### utilities ####
 
-check_applet_env:
-	@if [ "${PRIVATE_KEY}" == "" ] || [ ! -f "${PRIVATE_KEY}" ]; then \
-		echo 'You need to set the PRIVATE_KEY variable to a valid signing key path'; \
-		exit 1; \
-	fi
-
 check_os_env:
-	@if [ "${PRIVATE_KEY1}" == "" ] || [ ! -f "${PRIVATE_KEY1}" ]; then \
-		echo 'You need to set the PRIVATE_KEY1 variable to a valid signing key path'; \
+	@if [ "${OS_PRIVATE_KEY1}" == "" ] || [ ! -f "${OS_PRIVATE_KEY1}" ]; then \
+		echo 'You need to set the OS_PRIVATE_KEY1 variable to a valid signing key path'; \
 		exit 1; \
 	fi
-	@if [ "${PRIVATE_KEY2}" == "" ] || [ ! -f "${PRIVATE_KEY2}" ]; then \
-		echo 'You need to set the PRIVATE_KEY2 variable to a valid signing key path'; \
+	@if [ "${OS_PRIVATE_KEY2}" == "" ] || [ ! -f "${OS_PRIVATE_KEY2}" ]; then \
+		echo 'You need to set the OS_PRIVATE_KEY2 variable to a valid signing key path'; \
 		exit 1; \
 	fi
-	@if [ "${PUBLIC_KEY}" == "" ] || [ ! -f "${PUBLIC_KEY}" ]; then \
-		echo 'You need to set the PUBLIC_KEY variable to a valid authentication key path'; \
+	@if [ "${APPLET_PUBLIC_KEY}" == "" ] || [ ! -f "${APPLET_PUBLIC_KEY}" ]; then \
+		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid authentication key path'; \
 		exit 1; \
 	fi
 
