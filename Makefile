@@ -52,7 +52,6 @@ RUSTFLAGS = -C linker=${RUST_LINKER} -C link-args="--Ttext=$(TEXT_START)" --targ
 
 #### primary targets ####
 
-all: witnessctl
 
 elf: $(APP).elf
 
@@ -69,11 +68,6 @@ trusted_os: check_os_env elf imx
 		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
 
-witnessctl: check_tamago proto
-	@echo "building armory-witness control tool"
-	@cd $(CURDIR)/cmd/witnessctl && GOPATH="${BUILD_GOPATH}" ${TAMAGO} build -v \
-		-ldflags "-s -w -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}'" \
-		-o $(CURDIR)/bin/witnessctl
 
 #### ARM targets ####
 
