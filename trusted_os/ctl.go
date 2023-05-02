@@ -31,9 +31,10 @@ const (
 type controlInterface struct {
 	sync.Mutex
 
-	RPC *RPC
+	Device *usb.Device
+	RPC    *RPC
 
-	ota *otaBuffer
+	ota    *otaBuffer
 }
 
 func getStatus() (s *api.Status) {
@@ -100,16 +101,18 @@ func (ctl *controlInterface) Start() {
 		log.Fatal(err)
 	}
 
+	Control.Device = device
+
+	if !imx6ul.Native {
+		return
+	}
+
 	imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
 
 	Control.Init()
 	Control.DeviceMode()
-	Control.Reset()
 
-	Control.EnableInterrupt(usb.IRQ_UI)
-
-	// never returns
-	Control.Start(device)
-
-	log.Fatal("internal error")
+	Control.EnableInterrupt(usb.IRQ_URI) // reset
+	Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
+	Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
 }

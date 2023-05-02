@@ -10,6 +10,8 @@
 package main
 
 import (
+	"io"
+	"log"
 	_ "unsafe"
 
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -31,9 +33,11 @@ import (
 func init() {
 	// disable console
 	imx6ul.UART2.Disable()
+	// silence logging
+	log.SetOutput(io.Discard)
 }
 
-//go:linkname printk runtime.printk 
+//go:linkname printk runtime.printk
 func printk(c byte) {
 	// ensure that any serial output is supressed before UART2 disabling
 }

@@ -27,6 +27,7 @@ import (
 const (
 	otaLimit   = 31457280
 	confSector = 2097152
+	batchSize  = 2048
 	taSector   = confSector + config.MaxLength/512
 )
 
@@ -65,8 +66,13 @@ func read(card *usdhc.USDHC) (taELF []byte, taSig []byte, err error) {
 // flash writes a buffer to internal storage
 func flash(card *usdhc.USDHC, buf []byte, lba int) (err error) {
 	blockSize := card.Info().BlockSize
+
+	if blockSize == 0 {
+		return errors.New("invalid block size")
+	}
+
 	blocks := len(buf) / blockSize
-	batch := 64
+	batch := batchSize
 
 	// write in batch to limit DMA requirements
 	for i := 0; i < blocks; i += batch {
@@ -76,6 +82,10 @@ func flash(card *usdhc.USDHC, buf []byte, lba int) (err error) {
 
 		start := i * blockSize
 		end := start + blockSize*batch
+
+		if i%batch == 0 {
+			log.Printf("flashed %d/%d applet blocks", i, blocks)
+		}
 
 		if err = card.WriteBlocks(lba+i, buf[start:end]); err != nil {
 			return
@@ -108,13 +118,13 @@ func updateApplet(taELF []byte, taSig []byte) (err error) {
 			usbarmory.LED("white", on)
 
 			runtime.Gosched()
-			time.Sleep(1 * time.Second)
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
 	log.Printf("SM applet verification")
 	if err = abconfig.Verify(taELF, taSig, PublicKey); err != nil {
-		return fmt.Errorf("applet verification error, %v", err)
+		return fmt.Errorf("applet verification error: %v", err)
 	}
 
 	// Convert the signature to an armory-witness-boot format to serialize
@@ -132,21 +142,17 @@ func updateApplet(taELF []byte, taSig []byte) (err error) {
 	log.Printf("SM flashing applet signature")
 
 	if err = flash(Storage, taSig, confSector); err != nil {
-		return fmt.Errorf("applet signature flashing error, %v", err)
+		return fmt.Errorf("applet signature flashing error: %v", err)
 	}
 
 	log.Printf("SM flashing applet")
 
 	if err = flash(Storage, taELF, taSector); err != nil {
-		return fmt.Errorf("applet flashing error, %v", err)
+		return fmt.Errorf("applet flashing error: %v", err)
 	}
 
 	log.Printf("SM applet update complete")
 	usbarmory.LED("white", false)
-
-	log.Printf("SM rebooting")
-	time.Sleep(1 * time.Second)
-	usbarmory.Reset()
 
 	return
 }
@@ -182,6 +188,7 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 		}
 
 		log.Printf("starting applet update (%d chunks)", ctl.ota.total)
+		return
 	} else if ctl.ota == nil ||
 		update.Seq != ctl.ota.seq+1 ||
 		update.Total != ctl.ota.total {
@@ -205,11 +212,18 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 	if ctl.ota.seq == ctl.ota.total {
 		log.Printf("received all %d firmware update chunks", ctl.ota.total)
 
-		go func(buf []byte) {
-			if err = updateApplet(ctl.ota.buf, ctl.ota.sig); err != nil {
+		go func(buf []byte, sig []byte) {
+			if err = updateApplet(buf, sig); err != nil {
 				log.Printf("firmware update error, %v", err)
 			}
-		}(ctl.ota.buf)
+
+			log.Printf("SM received applet update, restarting applet")
+			ctl.RPC.Ctx.Stop()
+
+			if _, err = loadApplet(taELF, ctl); err != nil {
+				log.Printf("SM applet execution error, %v", err)
+			}
+		}(ctl.ota.buf, ctl.ota.sig)
 
 		ctl.ota = nil
 	}

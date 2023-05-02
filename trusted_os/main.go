@@ -10,7 +10,9 @@ import (
 	_ "embed"
 	"log"
 	"os"
+	"math"
 	"runtime"
+	"time"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -86,6 +88,14 @@ func main() {
 		Storage: Storage,
 	}
 
+	rpc := &RPC{
+		RPMB: rpmb,
+	}
+
+	ctl := &controlInterface{
+		RPC: rpc,
+	}
+
 	// TODO: disable for now
 	if false && imx6ul.SNVS.Available() {
 		log.Printf("SM version verification (%s)", Version)
@@ -105,28 +115,26 @@ func main() {
 		}
 	}
 
-	ctl := &controlInterface{
-		RPC: &RPC{
-			RPMB: rpmb,
-		},
-	}
-
 	if len(taELF) != 0 && len(taSig) != 0 {
 		log.Printf("SM applet verification")
 
 		if err := config.Verify(taELF, taSig, PublicKey); err != nil {
-			log.Fatalf("SM applet verification error, %v", err)
+			log.Printf("SM applet verification error, %v", err)
 		}
 
 		log.Printf("SM applet verified")
-
 		usbarmory.LED("white", true)
 
+		// Start the control interface just before applet is loaded as
+		// USB IRQs are served only while it is running.
+		ctl.Start()
+
 		if _, err = loadApplet(taELF, ctl); err != nil {
-			log.Fatalf("SM applet execution error, %v", err)
+			log.Printf("SM applet execution error, %v", err)
 		}
+	} else {
+		ctl.Start()
 	}
 
-	// never returns
-	ctl.Start()
+	time.Sleep(math.MaxInt64)
 }

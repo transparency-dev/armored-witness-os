@@ -18,6 +18,10 @@ PROTOC ?= /usr/bin/protoc
 
 SHELL = /bin/bash
 
+ifeq ("${DEBUG}","1")
+	BUILD_TAGS := ${BUILD_TAGS},debug
+endif
+
 SIGN = $(shell type -p signify || type -p signify-openbsd || type -p minisign)
 SIGN_PWD ?= "armory-witness"
 
@@ -35,7 +39,7 @@ ARCH = "arm"
 RUST_LINKER = "arm-none-eabi-ld"
 RUST_TARGET = "armv7a-none-eabi"
 
-GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${PUBLIC_KEY} && cat ${PUBLIC_KEY} | tail -n 1)'"
+GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${PUBLIC_KEY} && cat ${PUBLIC_KEY} | tail -n 1)'"
 RUSTFLAGS = -C linker=${RUST_LINKER} -C link-args="--Ttext=$(TEXT_START)" --target ${RUST_TARGET}
 
 .PHONY: clean qemu qemu-gdb
@@ -49,7 +53,6 @@ elf: $(APP).elf
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
 trusted_os: TEXT_START=0x80010000
-trusted_os: BUILD_TAGS := $(or $(shell ( [ ! -z "${DEBUG}" ] ) && echo "$(BUILD_TAGS),debug"),$(BUILD_TAGS))
 trusted_os: check_os_env elf imx
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \

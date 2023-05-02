@@ -13,7 +13,6 @@ import (
 	"github.com/usbarmory/tamago/bits"
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
-	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/usbarmory/GoTEE/monitor"
 	"github.com/usbarmory/GoTEE/syscall"
@@ -51,7 +50,7 @@ func fiqHandler(ctx *monitor.ExecCtx) (err error) {
 
 	switch irq {
 	case Control.IRQ:
-		Control.ClearInterrupt(usb.IRQ_UI)
+		Control.ServiceInterrupts()
 	case imx6ul.WDOG1.IRQ:
 		imx6ul.WDOG1.Service(watchdogTimeout)
 	case Network.IRQ:

@@ -36,7 +36,7 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 	}
 
 	if ta, err = monitor.Load(image.Entry(), image.Region, true); err != nil {
-		return nil, fmt.Errorf("SM could not load applet, %v", err)
+		return nil, fmt.Errorf("SM could not load applet: %v", err)
 	}
 
 	log.Printf("SM loaded applet addr:%#x entry:%#x size:%d", ta.Memory.Start(), ta.R15, len(elf))

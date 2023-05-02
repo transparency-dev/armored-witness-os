@@ -108,7 +108,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 	chunkSize := maxChunkSize
 	totalSize := len(taELF)
 
-	total := 1 + (totalSize / chunkSize)
+	total := totalSize / chunkSize
 	seq := 0
 
 	if total == 0 {

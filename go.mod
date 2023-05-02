@@ -14,7 +14,7 @@ require (
 	github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081
 	github.com/usbarmory/crucible v0.0.0-20230117112356-5e0805300e15
 	github.com/usbarmory/imx-enet v0.0.0-20230210123530-18463adc40b7
-	github.com/usbarmory/tamago v0.0.0-20230418073826-2881056a3278
+	github.com/usbarmory/tamago v0.0.0-20230428114202-5d3b5697bb08
 	golang.org/x/crypto v0.5.0
 	golang.org/x/mod v0.9.0
 	golang.org/x/term v0.6.0
@@ -37,6 +37,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/transparency-dev/merkle v0.0.1 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
+	github.com/usbarmory/imx-usbserial v0.0.0-20230502120132-d12d9c498d30 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
