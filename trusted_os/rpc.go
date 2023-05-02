@@ -28,8 +28,8 @@ import (
 	"github.com/usbarmory/GoTEE/monitor"
 
 	"github.com/transparency-dev/armored-witness-os/api"
+	"github.com/transparency-dev/armored-witness-os/api/rpc"
 	"github.com/transparency-dev/armored-witness-os/internal/hab"
-	"github.com/transparency-dev/armored-witness-os/internal/rpc"
 )
 
 // RPC represents an example receiver for user/system mode RPC over system
