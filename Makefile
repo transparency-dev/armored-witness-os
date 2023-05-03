@@ -29,7 +29,7 @@ ifeq ("${DEBUG}","1")
 endif
 
 SIGN = $(shell type -p signify || type -p signify-openbsd || type -p minisign)
-SIGN_PWD ?= "armory-witness"
+SIGN_PWD ?= "armored-witness"
 
 APP := ""
 TEXT_START := 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000

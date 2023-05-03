@@ -83,13 +83,13 @@ must be set to the path of either
 Example key generation (signify):
 
 ```
-signify -G -p armory-witness.pub -s armory-witness.sec
+signify -G -p armored-witness.pub -s armored-witness.sec
 ```
 
 Example key generation (minisign):
 
 ```
-minisign -G -p armory-witness.pub -s armory-witness.sec
+minisign -G -p armored-witness.pub -s armored-witness.sec
 ```
 
 Building the compiler
@@ -115,7 +115,7 @@ make trusted_applet && make trusted_os
 ```
 
 Final executables are created in the `bin` subdirectory, `trusted_os.elf`
-should be used for loading through `armory-witness-boot`.
+should be used for loading through `armored-witness-boot`.
 
 The following targets are available:
 

@@ -25,11 +25,11 @@ const DisableAuth = false
 
 // FRPublicKey represents the applet releases manifest authentication key.
 //
-//go:embed armory-witness.pub
+//go:embed armored-witness.pub
 var FRPublicKey []byte
 
 // LogPublicKey represents the applet releases transparency log.
 // authentication key.
 //
-//go:embed armory-witness-log.pub
+//go:embed armored-witness-log.pub
 var LogPublicKey []byte

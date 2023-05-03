@@ -129,7 +129,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 		return errors.New("signature size exceeds maximum update chunk size")
 	}
 
-	log.Printf("sending trusted applet signature to armory witness %s", s.Serial)
+	log.Printf("sending trusted applet signature to armored witness %s", s.Serial)
 	if err = sendUpdateChunk(taSig, seq, total); err != nil {
 		return
 	}
@@ -145,7 +145,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 	}(start)
 	defer bar.Finish()
 
-	log.Printf("sending trusted applet payload to armory witness %x", s.Serial)
+	log.Printf("sending trusted applet payload to armored witness %x", s.Serial)
 
 	for i := 0; i < totalSize; i += chunkSize {
 		seq += 1
@@ -202,7 +202,7 @@ func cfg(ip string, mask string, gw string, dns string) error {
 		return err
 	}
 
-	log.Printf("sending configuration update to armory witness %s", s.Serial)
+	log.Printf("sending configuration update to armored witness %s", s.Serial)
 
 	buf, err := conf.dev.Command(api.U2FHID_ARMORY_CFG, []byte(c.Bytes()))
 
