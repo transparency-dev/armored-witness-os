@@ -157,4 +157,3 @@ are used, in sequence, as follows:
 | 0. initialization               | off  | off   |
 | 1. trusted applet verified      | off  | on    |
 | 2. trusted applet execution     | on   | on    |
-
