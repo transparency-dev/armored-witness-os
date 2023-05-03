@@ -57,16 +57,18 @@ To maintain the chain of trust the Trusted OS must be signed, to this end the
 of either [signify](https://man.openbsd.org/signify) or
 [minisign](https://jedisct1.github.io/minisign/) siging keys, while compiling.
 
-Example key generation (signify):
+Example key generation (signify, called signify-openbsd on some OS):
 
 ```
 signify -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
+signify -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
 ```
 
 Example key generation (minisign):
 
 ```
 minisign -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
+minisign -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
 ```
 
 Trusted Applet authentication
