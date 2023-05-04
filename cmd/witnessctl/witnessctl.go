@@ -56,7 +56,7 @@ func init() {
 	flag.StringVar(&conf.ip, "a", "10.0.0.1", "set IP address")
 	flag.StringVar(&conf.mask, "m", "255.255.255.0", "set Netmask")
 	flag.StringVar(&conf.gw, "g", "10.0.0.2", "set Gateway")
-	flag.StringVar(&conf.dns, "r", "8.8.8.8", "set DNS resolver")
+	flag.StringVar(&conf.dns, "r", "8.8.8.8:53", "set DNS resolver")
 }
 
 func detect() (err error) {
