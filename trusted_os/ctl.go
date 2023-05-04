@@ -94,10 +94,11 @@ func (ctl *controlInterface) Config(req []byte) (res []byte) {
 	return api.EmptyResponse()
 }
 
-func (ctl *controlInterface) Start() {
+func (ctl *controlInterface) Start(irq bool) {
 	device := &usb.Device{}
+	serial := fmt.Sprintf("%X", imx6ul.UniqueID())
 
-	if err := configureDevice(device); err != nil {
+	if err := configureDevice(device, serial); err != nil {
 		log.Fatal(err)
 	}
 
@@ -115,12 +116,18 @@ func (ctl *controlInterface) Start() {
 		return
 	}
 
-	imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
-
 	Control.Init()
 	Control.DeviceMode()
 
-	Control.EnableInterrupt(usb.IRQ_URI) // reset
-	Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
-	Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
+	if irq {
+		imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
+
+		Control.EnableInterrupt(usb.IRQ_URI) // reset
+		Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
+		Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
+	} else {
+		Control.Reset()
+		// never returns
+		Control.Start(device)
+	}
 }
