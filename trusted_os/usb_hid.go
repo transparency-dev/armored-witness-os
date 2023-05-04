@@ -26,7 +26,7 @@ import (
 	"github.com/transparency-dev/armored-witness-os/api"
 )
 
-func configureDevice(device *usb.Device) (err error) {
+func configureDevice(device *usb.Device, serial string) (err error) {
 	// Supported Language Code Zero: English
 	device.SetLanguageCodes([]uint16{0x0409})
 
@@ -51,7 +51,7 @@ func configureDevice(device *usb.Device) (err error) {
 	iProduct, _ := device.AddString(`Armory Witness`)
 	device.Descriptor.Product = iProduct
 
-	iSerial, _ := device.AddString(`1.0`)
+	iSerial, _ := device.AddString(serial)
 	device.Descriptor.SerialNumber = iSerial
 
 	conf := &usb.ConfigurationDescriptor{}

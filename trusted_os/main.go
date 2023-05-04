@@ -135,13 +135,13 @@ func main() {
 
 		// Start the control interface just before applet is loaded as
 		// USB IRQs are served only while it is running.
-		ctl.Start()
+		ctl.Start(true)
 
 		if _, err = loadApplet(taELF, ctl); err != nil {
 			log.Printf("SM applet execution error, %v", err)
 		}
 	} else {
-		ctl.Start()
+		ctl.Start(false)
 	}
 
 	time.Sleep(math.MaxInt64)

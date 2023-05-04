@@ -94,10 +94,11 @@ func (ctl *controlInterface) Config(req []byte) (res []byte) {
 	return api.EmptyResponse()
 }
 
-func (ctl *controlInterface) Start() {
+func (ctl *controlInterface) Start(irq bool) {
 	device := &usb.Device{}
+	serial := fmt.Sprintf("%X", imx6ul.UniqueID())
 
-	if err := configureDevice(device); err != nil {
+	if err := configureDevice(device, serial); err != nil {
 		log.Fatal(err)
 	}
 
@@ -113,6 +114,14 @@ func (ctl *controlInterface) Start() {
 
 	if !imx6ul.Native {
 		return
+	}
+
+	if !irq {
+		Control.Init()
+		Control.DeviceMode()
+		Control.Reset()
+
+		Control.Start(device)
 	}
 
 	imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
