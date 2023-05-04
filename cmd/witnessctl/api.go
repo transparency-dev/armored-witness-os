@@ -182,7 +182,7 @@ func cfg(ip string, mask string, gw string, dns string) error {
 	}
 
 	if _, _, err := net.SplitHostPort(dns); err != nil {
-		return errors.New("DNS address is invalid")
+		return fmt.Errorf("DNS address is invalid: %v", err)
 	}
 
 	c := &api.Configuration{
