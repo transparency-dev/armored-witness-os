@@ -181,7 +181,7 @@ func cfg(ip string, mask string, gw string, dns string) error {
 		return errors.New("Gateway address is invalid")
 	}
 
-	if addr := net.ParseIP(dns); addr == nil {
+	if _, _, err := net.SplitHostPort(dns); err != nil {
 		return errors.New("DNS address is invalid")
 	}
 
