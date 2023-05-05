@@ -143,6 +143,37 @@ The Serial over USB console can be accessed from a Linux host as follows:
 picocom -b 115200 -eb /dev/ttyACM0 --imap lfcrlf
 ```
 
+### QEMU
+
+The Trusted OS image can be executed under emulation as follows:
+
+```
+make qemu
+```
+
+The emulation run network connectivity should be configured as follows (Linux
+example with tap0):
+
+```
+ip addr add 10.0.0.2/24 dev tap0
+ip link set tap0 up
+ip tuntap add dev tap0 mode tap group <your user group>
+```
+
+The emulated target can be debugged with GDB using `make qemu-gdb`, this will
+make qemu waiting for a GDB connection that can be launched as follows:
+
+```
+arm-none-eabi-gdb -ex "target remote 127.0.0.1:1234" example
+```
+
+Breakpoints can be set in the usual way:
+
+```
+b ecdsa.GenerateKey
+continue
+```
+
 Trusted Applet installation
 ===========================
 
