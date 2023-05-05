@@ -37,7 +37,7 @@ import (
 type RPC struct {
 	RPMB        *RPMB
 	Ctx         *monitor.ExecCtx
-	Cfg         *api.Configuration
+	Cfg         []byte
 	Diversifier [32]byte
 }
 
@@ -59,17 +59,17 @@ func (r *RPC) Version(version string, _ *bool) error {
 // Config receives network configuration from the Trusted Applet. It also
 // returns the previous configuration to allow the Trusted Applet to evaluate
 // whether any updates from the control interface must be applied.
-func (r *RPC) Config(current api.Configuration, previous *api.Configuration) error {
-	if r.Cfg == nil {
+func (r *RPC) Config(current []byte, previous []byte) error {
+	if len(r.Cfg) == 0 {
 		defer func() {
-			log.Printf("SM starting network MAC:%s", r.Cfg.MAC)
-			startNetworking(r.Cfg.MAC)
+			log.Println("SM starting network")
+			startNetworking()
 		}()
 	} else if previous != nil {
-		*previous = *r.Cfg
+		previous = r.Cfg
 	}
 
-	r.Cfg = &current
+	r.Cfg = current
 
 	return nil
 }

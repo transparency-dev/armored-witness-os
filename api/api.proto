@@ -119,7 +119,6 @@ message Configuration {
 	string Netmask  = 3;
 	string Gateway  = 4;
 	string Resolver = 5;
-	string MAC      = 6;
 }
 
 message Response {
