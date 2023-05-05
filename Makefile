@@ -42,11 +42,8 @@ QEMU ?= qemu-system-arm -machine mcimx6ul-evk -cpu cortex-a7 -m 512M \
         -semihosting
 
 ARCH = "arm"
-RUST_LINKER = "arm-none-eabi-ld"
-RUST_TARGET = "armv7a-none-eabi"
 
 GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY} | tail -n 1)'"
-RUSTFLAGS = -C linker=${RUST_LINKER} -C link-args="--Ttext=$(TEXT_START)" --target ${RUST_TARGET}
 
 .PHONY: clean qemu qemu-gdb
 
@@ -58,7 +55,7 @@ elf: $(APP).elf
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
 trusted_os: TEXT_START=0x80010000
-trusted_os: check_os_env elf imx
+trusted_os: check_os_env copy_applet elf imx
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
@@ -67,7 +64,6 @@ trusted_os: check_os_env elf imx
 		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
 		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
-
 
 #### ARM targets ####
 
@@ -114,6 +110,15 @@ check_os_env:
 		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid authentication key path'; \
 		exit 1; \
 	fi
+	@if [ "${APPLET_PATH}" == "" ]; then \
+		echo 'You need to set the APPLET_PATH variable to a valid path for the applet elf and signature files'; \
+		exit 1; \
+	fi
+
+copy_applet:
+	mkdir -p ${CURDIR}/trusted_os/assets
+	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
+	cp ${APPLET_PATH}/trusted_applet.sig ${CURDIR}/trusted_os/assets/
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
