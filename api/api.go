@@ -76,6 +76,12 @@ func (p *Response) Bytes() (buf []byte) {
 }
 
 // Bytes serializes an API message.
+func (p *Configuration) Bytes() (buf []byte) {
+	buf, _ = proto.Marshal(p)
+	return
+}
+
+// Bytes serializes an API message.
 func (p *AppletUpdate) Bytes() (buf []byte) {
 	buf, _ = proto.Marshal(p)
 	return

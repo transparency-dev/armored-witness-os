@@ -164,7 +164,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 	return
 }
 
-func cfg(ip string, mask string, gw string, dns string) error {
+func cfg(dhcp bool, ip string, mask string, gw string, dns string) error {
 	if len(ip) == 0 || len(gw) == 0 || len(dns) == 0 {
 		return errors.New("trusted applet IP, gatewy and DNS addresses must all be specified for configuration change (flags: -a -g -r)")
 	}
@@ -186,6 +186,7 @@ func cfg(ip string, mask string, gw string, dns string) error {
 	}
 
 	c := &api.Configuration{
+		DHCP:     dhcp,
 		IP:       ip,
 		Netmask:  mask,
 		Gateway:  gw,
