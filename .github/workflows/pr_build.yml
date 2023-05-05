@@ -1,0 +1,41 @@
+name: PR CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    env:
+      TAMAGO_VERSION: 1.20.7
+      TAMAGO: /usr/local/tamago-go/bin/go
+      APPLET_PRIVATE_KEY: /tmp/applet.sec
+      APPLET_PUBLIC_KEY: /tmp/applet.pub
+      OS_PRIVATE_KEY1: /tmp/os1.sec
+      OS_PUBLIC_KEY1: /tmp/os1.pub
+      OS_PRIVATE_KEY2: /tmp/os2.sec
+      OS_PUBLIC_KEY2: /tmp/os2.pub
+      APPLET_PATH: /tmp/assets
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+    - name: Install tools
+      run: |
+        wget -q https://github.com/usbarmory/tamago-go/releases/download/tamago-go${TAMAGO_VERSION}/tamago-go${TAMAGO_VERSION}.linux-amd64.tar.gz
+        sudo tar -xf tamago-go${TAMAGO_VERSION}.linux-amd64.tar.gz -C /
+        sudo apt install binutils-arm-none-eabi protobuf-compiler signify-openbsd u-boot-tools
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30
+        echo "${HOME}/go/bin" >> $GITHUB_PATH
+    - name: Create throwaway keys & fake embed
+      run: |
+        signify-openbsd -G -n -p ${APPLET_PUBLIC_KEY} -s ${APPLET_PRIVATE_KEY}
+        signify-openbsd -G -n -p ${OS_PUBLIC_KEY1} -s ${OS_PRIVATE_KEY1}
+        signify-openbsd -G -n -p ${OS_PUBLIC_KEY2} -s ${OS_PRIVATE_KEY2}
+        # Now create a fake applet to embed, and sign it
+        mkdir -p ${APPLET_PATH}
+        echo "When I grow up, I want to be an applet" > ${APPLET_PATH}/trusted_applet.elf
+        signify-openbsd -S -s ${APPLET_PRIVATE_KEY} -m ${APPLET_PATH}/trusted_applet.elf -x ${APPLET_PATH}/trusted_applet.sig
+    - name: Make
+      run: |
+        DEBUG=1 make trusted_os
