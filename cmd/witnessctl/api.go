@@ -205,7 +205,7 @@ func cfg(dhcp bool, ip string, mask string, gw string, dns string) error {
 
 	log.Printf("sending configuration update to armored witness %s", s.Serial)
 
-	buf, err := conf.dev.Command(api.U2FHID_ARMORY_CFG, []byte(c.Bytes()))
+	buf, err := conf.dev.Command(api.U2FHID_ARMORY_CFG, c.Bytes())
 
 	if err != nil {
 		return err
