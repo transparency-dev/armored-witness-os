@@ -118,7 +118,7 @@ check_os_env:
 		exit 1; \
 	fi
 	@if [ "${APPLET_PATH}" == "" ]; then \
-		echo 'You need to set the APPLET_PATH variable to a valid path for the applet elf and signature files'; \
+		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and signature files (e.g. path to armored-witness-applet/bin)'; \
 		exit 1; \
 	fi
 
