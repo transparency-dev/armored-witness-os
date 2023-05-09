@@ -49,6 +49,7 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 #### primary targets ####
 
+all: trusted_os witnessctl
 
 elf: $(APP).elf
 
@@ -64,6 +65,12 @@ trusted_os: check_os_env copy_applet elf imx
 		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
 		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
+
+witnessctl: check_tamago
+	@echo "building armored-witness control tool"
+	@cd $(CURDIR)/cmd/witnessctl && GOPATH="${BUILD_GOPATH}" ${TAMAGO} build -v \
+		-ldflags "-s -w -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}'" \
+		-o $(CURDIR)/bin/witnessctl
 
 #### ARM targets ####
 

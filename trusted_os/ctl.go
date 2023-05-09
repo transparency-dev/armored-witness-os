@@ -15,6 +15,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"runtime"
@@ -76,9 +77,11 @@ func (ctl *controlInterface) Status(_ []byte) (res []byte) {
 }
 
 func (ctl *controlInterface) Config(req []byte) (res []byte) {
-	if err := proto.Unmarshal(req, ctl.RPC.Cfg); err != nil {
-		return api.ErrorResponse(err)
+	if len(req) == 0 {
+		return api.ErrorResponse(errors.New("empty configuration"))
 	}
+
+	ctl.RPC.Cfg = req
 
 	if ctl.RPC.Ctx != nil {
 		var err error

@@ -36,6 +36,7 @@ type Config struct {
 	otaELF string
 	otaSig string
 
+	dhcp bool
 	ip   string
 	gw   string
 	mask string
@@ -53,6 +54,7 @@ func init() {
 	flag.BoolVar(&conf.status, "s", false, "get witness status")
 	flag.StringVar(&conf.otaELF, "o", "", "trusted applet payload")
 	flag.StringVar(&conf.otaSig, "O", "", "trusted applet signature")
+	flag.BoolVar(&conf.dhcp, "A", true, "enable DHCP")
 	flag.StringVar(&conf.ip, "a", "10.0.0.1", "set IP address")
 	flag.StringVar(&conf.mask, "m", "255.255.255.0", "set Netmask")
 	flag.StringVar(&conf.gw, "g", "10.0.0.2", "set Gateway")
@@ -103,7 +105,7 @@ func main() {
 		}
 	case len(conf.otaELF) > 0 || len(conf.otaSig) > 0:
 		err = ota(conf.otaELF, conf.otaSig)
-	case len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0:
-		err = cfg(conf.ip, conf.mask, conf.gw, conf.dns)
+	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0:
+		err = cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns)
 	}
 }

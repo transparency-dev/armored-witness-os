@@ -16,8 +16,6 @@ package main
 
 import (
 	"errors"
-	"log"
-	"net"
 
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -80,16 +78,9 @@ func txFromApplet(ctx *monitor.ExecCtx) (err error) {
 	return
 }
 
-func startNetworking(mac string) {
-	hostAddress, err := net.ParseMAC(mac)
-
-	if err != nil {
-		log.Fatalf("invalid MAC, %v", err)
-	}
-
+func startNetworking() {
 	imx6ul.GIC.EnableInterrupt(Network.IRQ, true)
 
-	Network.SetMAC(hostAddress)
 	Network.EnableInterrupt(enet.IRQ_RXF)
 	Network.Start(false)
 }
