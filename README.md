@@ -32,7 +32,7 @@ support (requires a `tap0` device routing the Trusted Applet IP address).
 > support by QEMU.
 
 ```
-make trusted_applet && make DEBUG=1 trusted_os && make qemu
+make DEBUG=1 trusted_os && make qemu
 ...
 00:00:00 tamago/arm • TEE security monitor (Secure World system/monitor)
 00:00:00 SM applet verification
@@ -111,7 +111,7 @@ Building and executing on ARM targets
 Build the example trusted applet and kernel executables as follows:
 
 ```
-make trusted_applet && make trusted_os
+make trusted_os
 ```
 
 Final executables are created in the `bin` subdirectory, `trusted_os.elf`
@@ -134,7 +134,7 @@ Trusted Applet logs, it can be enabled when compiling with the `DEBUG`
 environment variable set:
 
 ```
-make trusted_applet && make DEBUG=1 trusted_os
+make DEBUG=1 trusted_os
 ```
 
 The Serial over USB console can be accessed from a Linux host as follows:
