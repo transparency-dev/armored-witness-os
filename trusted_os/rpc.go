@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"strings"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
@@ -59,18 +60,23 @@ func (r *RPC) Version(version string, _ *bool) error {
 // Config receives network configuration from the Trusted Applet. It also
 // returns the previous configuration to allow the Trusted Applet to evaluate
 // whether any updates from the control interface must be applied.
-func (r *RPC) Config(current []byte, previous []byte) error {
+func (r *RPC) Config(current []byte, previous *[]byte) error {
 	if len(r.Cfg) == 0 {
 		defer func() {
 			log.Println("SM starting network")
 			startNetworking()
 		}()
 	} else if previous != nil {
-		previous = r.Cfg
+		*previous = r.Cfg
 	}
 
 	r.Cfg = current
 
+	return nil
+}
+
+func (r *RPC) Address(mac net.HardwareAddr, _ *bool) error {
+	Network.SetMAC(mac)
 	return nil
 }
 
