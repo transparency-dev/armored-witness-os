@@ -74,7 +74,7 @@ minisign -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
 Trusted Applet authentication
 =============================
 
-To maintain the chain of trust the OS performes trusted applet authentication
+To maintain the chain of trust the OS performs trusted applet authentication
 before loading it, to this end the `APPLET_PUBLIC_KEY` environment variable
 must be set to the path of either
 [signify](https://man.openbsd.org/signify) or
