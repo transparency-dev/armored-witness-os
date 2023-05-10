@@ -12,8 +12,8 @@ require (
 	github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a
 	github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081
 	github.com/usbarmory/crucible v0.0.0-20230117112356-5e0805300e15
-	github.com/usbarmory/imx-usbserial v0.0.0-20230502120132-d12d9c498d30
-	github.com/usbarmory/tamago v0.0.0-20230428114202-5d3b5697bb08
+	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
+	github.com/usbarmory/tamago v0.0.0-20230505081442-46dcfa7361d3
 	golang.org/x/crypto v0.8.0
 	golang.org/x/mod v0.10.0
 	google.golang.org/protobuf v1.30.0
