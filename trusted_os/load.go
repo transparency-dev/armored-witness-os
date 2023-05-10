@@ -77,6 +77,9 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 }
 
 func run(ctx *monitor.ExecCtx) (err error) {
+	// route IRQs as FIQs to serve them through applet handler
+	imx6ul.GIC.FIQEn(true)
+
 	mode := arm.ModeName(int(ctx.SPSR) & 0x1f)
 	ns := ctx.NonSecure()
 
@@ -87,6 +90,11 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	imx6ul.WDOG1.EnableTimeout(watchdogTimeout)
 
 	err = ctx.Run()
+
+	// TODO: investigate why this is necessary
+	imx6ul.ARM.EnableInterrupts(false)
+	// restore routing to IRQ handler
+	imx6ul.GIC.FIQEn(false)
 
 	log.Printf("SM stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns)
 

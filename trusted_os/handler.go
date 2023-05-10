@@ -34,7 +34,30 @@ var (
 )
 
 // defined in handler.s
-func wakeAppletHandler(g uint32, p uint32)
+func wakeHandler(g uint32, p uint32)
+
+func irqHandler() {
+	arm.RegisterInterruptHandler()
+
+	for {
+		arm.WaitInterrupt()
+
+		irq, end := imx6ul.GIC.GetInterrupt(true)
+
+		if end != nil {
+			end <- true
+		}
+
+		switch irq {
+		case Control.IRQ:
+			Control.ServiceInterrupts()
+		case imx6ul.WDOG1.IRQ:
+			imx6ul.WDOG1.Service(watchdogTimeout)
+		default:
+			log.Printf("SM received unexpected IRQ %d", irq)
+		}
+	}
+}
 
 func fiqHandler(ctx *monitor.ExecCtx) (err error) {
 	// We want to handle FIQs only when raised from User mode (e.g.
@@ -67,14 +90,13 @@ func fiqHandler(ctx *monitor.ExecCtx) (err error) {
 			Network.ClearInterrupt(enet.IRQ_RXF)
 		}
 	default:
-		log.Printf("SM received unexpected IRQ %d", irq)
-		return
+		log.Printf("SM received unexpected FIQ %d", irq)
 	}
 
 	// mask FIQs, applet handler will request unmasking when done
 	bits.Set(&ctx.SPSR, CPSR_FIQ)
 
-	wakeAppletHandler(appletHandlerG, appletHandlerP)
+	wakeHandler(appletHandlerG, appletHandlerP)
 
 	return
 }
