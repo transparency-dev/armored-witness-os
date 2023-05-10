@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"strings"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
@@ -71,6 +72,11 @@ func (r *RPC) Config(current []byte, previous *[]byte) error {
 
 	r.Cfg = current
 
+	return nil
+}
+
+func (r *RPC) Address(mac net.HardwareAddr, _ *bool) error {
+	Network.SetMAC(mac)
 	return nil
 }
 
