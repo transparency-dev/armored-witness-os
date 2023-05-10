@@ -95,8 +95,8 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	// restore routing to IRQ handler
 	imx6ul.GIC.FIQEn(false)
 
-	// Re-enable interrupts as the monitor exception handlers disables them
-	// when switching back to System Mode).
+	// Re-enable interrupts as the monitor exception handler disables them
+	// when switching back to System Mode.
 	imx6ul.ARM.EnableInterrupts(false)
 
 	log.Printf("SM stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns)
