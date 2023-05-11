@@ -15,9 +15,9 @@
 #include "go_asm.h"
 #include "textflag.h"
 
-TEXT ·wakeAppletHandler(SB),$0-8
-	MOVW	appletHandlerG+0(FP), R0
-	MOVW	appletHandlerP+4(FP), R1
+TEXT ·wakeHandler(SB),$0-8
+	MOVW	handlerG+0(FP), R0
+	MOVW	handlerP+4(FP), R1
 
 	CMP	$0, R0
 	B.EQ	done

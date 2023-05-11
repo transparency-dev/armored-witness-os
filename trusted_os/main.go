@@ -17,10 +17,8 @@ package main
 import (
 	_ "embed"
 	"log"
-	"math"
 	"os"
 	"runtime"
-	"time"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -69,7 +67,7 @@ func init() {
 		imx6ul.DCP.Init()
 	}
 
-	imx6ul.GIC.Init(false, true)
+	imx6ul.GIC.Init(true, false)
 
 	log.Printf("%s/%s (%s) • TEE security monitor (Secure World system/monitor) • %s %s",
 		runtime.GOOS, runtime.GOARCH, runtime.Version(),
@@ -133,16 +131,14 @@ func main() {
 		log.Printf("SM applet verified")
 		usbarmory.LED("white", true)
 
-		// Start the control interface just before applet is loaded as
-		// USB IRQs are served only while it is running.
-		ctl.Start(true)
-
 		if _, err = loadApplet(taELF, ctl); err != nil {
 			log.Printf("SM applet execution error, %v", err)
 		}
-	} else {
-		ctl.Start(false)
 	}
 
-	time.Sleep(math.MaxInt64)
+	// start USB control interface
+	ctl.Start(true)
+
+	// never returns
+	irqHandler()
 }

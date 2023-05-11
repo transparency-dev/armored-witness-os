@@ -15,6 +15,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/usbarmory/tamago/arm"
@@ -34,22 +35,9 @@ var (
 )
 
 // defined in handler.s
-func wakeAppletHandler(g uint32, p uint32)
+func wakeHandler(g uint32, p uint32)
 
-func fiqHandler(ctx *monitor.ExecCtx) (err error) {
-	// We want to handle FIQs only when raised from User mode (e.g.
-	// Trusted Applet running) as we need to wake up the applet
-	// handler with FIQs masked.
-	//
-	// If we get here from System mode (e.g. Trusted OS running)
-	// resume execution with FIQ masked (FIQs are masked soon as
-	// possible when switching back to the Trusted OS but we can be
-	// raced between exception vector and disabling instruction).
-	if _, saved := ctx.Mode(); saved != arm.USR_MODE {
-		bits.Set(&ctx.SPSR, CPSR_FIQ)
-		return
-	}
-
+func isr() (err error) {
 	irq, end := imx6ul.GIC.GetInterrupt(true)
 
 	if end != nil {
@@ -67,14 +55,46 @@ func fiqHandler(ctx *monitor.ExecCtx) (err error) {
 			Network.ClearInterrupt(enet.IRQ_RXF)
 		}
 	default:
-		log.Printf("SM received unexpected IRQ %d", irq)
+		return fmt.Errorf("unexpected id %d", irq)
+	}
+
+	return
+}
+
+func irqHandler() {
+	arm.RegisterInterruptHandler()
+
+	for {
+		arm.WaitInterrupt()
+
+		if err := isr(); err != nil {
+			log.Printf("SM IRQ handling error: %v", err)
+		}
+	}
+}
+
+func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
+	// We want to handle FIQs only when raised from User mode (e.g.
+	// Trusted Applet running) as we need to wake up the applet
+	// handler with FIQs masked.
+	//
+	// If we get here from System mode (e.g. Trusted OS running)
+	// resume execution with FIQ masked (FIQs are masked soon as
+	// possible when switching back to the Trusted OS but we can be
+	// raced between exception vector and disabling instruction).
+	if _, saved := ctx.Mode(); saved != arm.USR_MODE {
+		bits.Set(&ctx.SPSR, CPSR_FIQ)
 		return
+	}
+
+	if err := isr(); err != nil {
+		log.Printf("SM FIQ handling error: %v", err)
 	}
 
 	// mask FIQs, applet handler will request unmasking when done
 	bits.Set(&ctx.SPSR, CPSR_FIQ)
 
-	wakeAppletHandler(appletHandlerG, appletHandlerP)
+	wakeHandler(appletHandlerG, appletHandlerP)
 
 	return
 }
