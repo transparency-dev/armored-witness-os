@@ -82,7 +82,7 @@ func run(ctx *monitor.ExecCtx) (err error) {
 
 	log.Printf("SM starting mode:%s sp:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R15, ns)
 
-	// activate watchdog to prevent resource starvationa
+	// activate watchdog to prevent resource starvation
 	imx6ul.GIC.EnableInterrupt(imx6ul.WDOG1.IRQ, true)
 	imx6ul.WDOG1.EnableInterrupt()
 	imx6ul.WDOG1.EnableTimeout(watchdogTimeout)
