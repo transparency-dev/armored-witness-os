@@ -21,6 +21,9 @@ import (
 	_ "unsafe"
 )
 
+// The following memory regions are within an alias of external DDR, required
+// when memory encryption is enforced by the i.MX6UL Bus Encryption Engine
+// (BEE).
 const (
 	// Secure Monitor
 	secureStart = 0x10000000 // bee.AliasRegion0
