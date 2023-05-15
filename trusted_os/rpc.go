@@ -130,6 +130,21 @@ func (r *RPC) Read(xfer rpc.Read, out *[]byte) (err error) {
 	return
 }
 
+// WriteRPMB performs an authenticated data transfer to the card RPMB partition
+// sector allocated to the Trusted Applet. The input buffer can contain up to
+// 256 bytes of data, n can be passed to retrieve the partition write counter.
+func (r *RPC) WriteRPMB(buf []byte, n *uint32) (err error) {
+	return r.RPMB.transfer(taUserSector, buf, n, true)
+}
+
+// ReadRPMB performs an authenticated data transfer from the card RPMB
+// partition sector allocated to the Trusted Applet. The input buffer can
+// contain up to 256 bytes of data, n can be set to retrieve the partition
+// write counter.
+func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
+	return r.RPMB.transfer(taUserSector, buf, n, false)
+}
+
 // DeriveKey derives a hardware unique key in a manner equivalent to PKCS#11
 // C_DeriveKey with CKM_AES_CBC_ENCRYPT_DATA.
 //

@@ -43,6 +43,8 @@ const (
 	osVersionSector = 1
 	// RPMB sector for TA rollback protection
 	taVersionSector = 2
+	// RPMB sector for TA use
+	taUserSector = 3
 	// RPMB OTP flag bank
 	rpmbFuseBank = 4
 	// RPMB OTP flag word
@@ -53,8 +55,8 @@ const (
 )
 
 type RPMB struct {
-	Storage *usdhc.USDHC
-	RPMB    *rpmb.RPMB
+	Storage   *usdhc.USDHC
+	partition *rpmb.RPMB
 }
 
 func (r *RPMB) init() (err error) {
@@ -68,14 +70,14 @@ func (r *RPMB) init() (err error) {
 	uid := imx6ul.UniqueID()
 
 	// setup RPMB partition
-	r.RPMB, err = rpmb.Init(
+	r.partition, err = rpmb.Init(
 		r.Storage,
 		pbkdf2.Key(dk, uid[:], iter, sha256.Size, sha256.New),
 		dummySector,
 	)
 
 	var e *rpmb.OperationError
-	_, err = r.RPMB.Counter(false)
+	_, err = r.partition.Counter(false)
 
 	if !(errors.As(err, &e) && e.Result == rpmb.AuthenticationKeyNotYetProgrammed) {
 		return
@@ -95,7 +97,7 @@ func (r *RPMB) init() (err error) {
 
 	log.Print("RPMB authentication key not yet programmed, programming")
 
-	if err = r.RPMB.ProgramKey(); err != nil {
+	if err = r.partition.ProgramKey(); err != nil {
 		return fmt.Errorf("could not program RPMB key")
 	}
 
@@ -115,13 +117,13 @@ func parseVersion(s string) (version uint32, err error) {
 // expectedVersion returns the version epoch stored in an RPMB area of the
 // internal eMMC.
 func (r *RPMB) expectedVersion(offset uint16) (version uint32, err error) {
-	if r.RPMB == nil {
+	if r.partition == nil {
 		return 0, errors.New("RPMB has not been initialized")
 	}
 
 	buf := make([]byte, versionLength)
 
-	if err = r.RPMB.Read(offset, buf); err != nil {
+	if err = r.partition.Read(offset, buf); err != nil {
 		return
 	}
 
@@ -131,14 +133,14 @@ func (r *RPMB) expectedVersion(offset uint16) (version uint32, err error) {
 // updateVersion writes a new version epoch in an RPMB area of the internal
 // eMMC.
 func (r *RPMB) updateVersion(offset uint16, version uint32) (err error) {
-	if r.RPMB == nil {
+	if r.partition == nil {
 		return errors.New("RPMB has not been initialized")
 	}
 
 	buf := make([]byte, versionLength)
 	binary.BigEndian.PutUint32(buf, version)
 
-	return r.RPMB.Write(offset, buf)
+	return r.partition.Write(offset, buf)
 }
 
 // checkVersion verifies version information against RPMB stored data.
@@ -168,6 +170,23 @@ func (r *RPMB) checkVersion(offset uint16, s string) (err error) {
 		return
 	case expectedVersion < version:
 		return r.updateVersion(offset, version)
+	}
+
+	return
+}
+
+// transfer performs an authenticated data transfer to the card RPMB partition,
+// the input buffer can contain up to 256 bytes of data, n can be passed to
+// retrieve the partition write counter.
+func (r *RPMB) transfer(offset uint16, buf []byte, n *uint32, write bool) (err error) {
+	if write {
+		err = r.partition.Write(offset, buf)
+	} else {
+		err = r.partition.Read(offset, buf)
+	}
+
+	if err != nil && n != nil {
+		*n, err = r.partition.Counter(true)
 	}
 
 	return
