@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !bee
-// +build !bee
+//go:build bee
+// +build bee
 
 package main
 
@@ -23,15 +23,15 @@ import (
 
 const (
 	// Secure Monitor
-	secureStart = 0x80000000 // imx6ul.MMDC_BASE
+	secureStart = 0x10000000 // bee.AliasRegion0
 	secureSize  = 0x0e000000 // 224MB
 
 	// Secure Monitor DMA
-	secureDMAStart = 0x8e000000
+	secureDMAStart = 0x1e000000
 	secureDMASize  = 0x02000000 // 32MB
 
 	// Secure Monitor Applet
-	appletStart = 0x90000000
+	appletStart = 0x20000000
 	appletSize  = 0x10000000 // 256MB
 )
 

@@ -32,7 +32,12 @@ SIGN = $(shell type -p signify || type -p signify-openbsd || type -p minisign)
 SIGN_PWD ?= "armored-witness"
 
 APP := ""
-TEXT_START := 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000
+TEXT_START = 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000
+
+ifeq ("${BEE}","1")
+	TEXT_START := 0x10010000
+	BUILD_TAGS := ${BUILD_TAGS},bee
+endif
 
 GOENV := GO_EXTLINK_ENABLED=0 CGO_ENABLED=0 GOOS=tamago GOARM=7 GOARCH=arm
 ENTRY_POINT := _rt0_arm_tamago
@@ -55,7 +60,6 @@ elf: $(APP).elf
 
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: TEXT_START=0x80010000
 trusted_os: check_os_env copy_applet elf imx
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
