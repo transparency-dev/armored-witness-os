@@ -15,7 +15,6 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"log"
 
@@ -47,15 +46,7 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 		return nil, fmt.Errorf("SM could not load applet: %v", err)
 	}
 
-	log.Printf("SM loaded applet addr:%#x entry:%#x size:%d", ta.Memory.Start(), ta.R15, len(elf))
-
-	if imx6ul.Native {
-		if ctl.RPC.Diversifier, err = imx6ul.DCP.Sum256(elf); err != nil {
-			return
-		}
-	} else {
-		ctl.RPC.Diversifier = sha256.Sum256(elf)
-	}
+	log.Printf("SM applet loaded addr:%#x entry:%#x size:%d", ta.Memory.Start(), ta.R15, len(elf))
 
 	// register RPC receiver
 	ta.Server.Register(ctl.RPC)
@@ -80,7 +71,7 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	mode := arm.ModeName(int(ctx.SPSR) & 0x1f)
 	ns := ctx.NonSecure()
 
-	log.Printf("SM starting mode:%s sp:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R15, ns)
+	log.Printf("SM applet started mode:%s sp:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R15, ns)
 
 	// activate watchdog to prevent resource starvationa
 	imx6ul.GIC.EnableInterrupt(imx6ul.WDOG1.IRQ, true)
@@ -99,7 +90,7 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	// when switching back to System Mode.
 	imx6ul.ARM.EnableInterrupts(false)
 
-	log.Printf("SM stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns)
+	log.Printf("SM applet stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns)
 
 	return
 }
