@@ -15,6 +15,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	_ "embed"
 	"log"
 	"os"
@@ -95,7 +96,8 @@ func main() {
 	}
 
 	rpc := &RPC{
-		RPMB: rpmb,
+		RPMB:        rpmb,
+		Diversifier: sha256.Sum256([]byte(PublicKey)),
 	}
 
 	ctl := &controlInterface{
@@ -122,13 +124,12 @@ func main() {
 	}
 
 	if len(taELF) != 0 && len(taSig) != 0 {
-		log.Printf("SM applet verification")
+		log.Printf("SM applet verification pub:%s", PublicKey)
 
 		if err := config.Verify(taELF, taSig, PublicKey); err != nil {
 			log.Printf("SM applet verification error, %v", err)
 		}
 
-		log.Printf("SM applet verified")
 		usbarmory.LED("white", true)
 
 		if _, err = loadApplet(taELF, ctl); err != nil {
