@@ -15,6 +15,7 @@
 package ft
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 
@@ -66,7 +67,16 @@ func verifyProof(elf []byte, proof []byte, oldProof *api.ProofBundle) (pb *api.P
 		}
 	}
 
-	sum, err := imx6ul.DCP.Sum256(elf)
+	var sum [32]byte
+
+	switch {
+	case imx6ul.DCP != nil:
+		sum, err = imx6ul.DCP.Sum256(elf)
+	case imx6ul.CAAM != nil:
+		sum, err = imx6ul.CAAM.Sum256(elf)
+	default:
+		sum = sha256.Sum256(elf)
+	}
 
 	if err != nil {
 		return
