@@ -60,8 +60,17 @@ type RPMB struct {
 }
 
 func (r *RPMB) init() (err error) {
-	// derive key for RPBM MAC generation
-	dk, err := imx6ul.DCP.DeriveKey([]byte(diversifierMAC), make([]byte, aes.BlockSize), -1)
+	// derived key for RPBM MAC generation
+	var dk []byte
+
+	switch {
+	case imx6ul.CAAM != nil:
+		err = imx6ul.CAAM.DeriveKey([]byte(diversifierMAC), dk)
+	case imx6ul.DCP != nil:
+		dk, err = imx6ul.DCP.DeriveKey([]byte(diversifierMAC), make([]byte, aes.BlockSize), -1)
+	default:
+		err = errors.New("unsupported hardware")
+	}
 
 	if err != nil {
 		return fmt.Errorf("could not derive RPMB key (%v)", err)

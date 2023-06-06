@@ -16,6 +16,7 @@ package main
 
 import (
 	"crypto/aes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"log"
@@ -158,7 +159,15 @@ func (r *RPC) DeriveKey(diversifier []byte, key *[]byte) (err error) {
 		return fmt.Errorf("diversifier must be exactly %d long", aes.BlockSize)
 	}
 
-	*key, err = imx6ul.DCP.DeriveKey(r.Diversifier[:], diversifier, -1)
+	switch {
+	case imx6ul.CAAM != nil:
+		div := sha256.Sum256(append(r.Diversifier[:], diversifier...))
+		err = imx6ul.CAAM.DeriveKey(div[:], *key)
+	case imx6ul.DCP != nil:
+		*key, err = imx6ul.DCP.DeriveKey(r.Diversifier[:], diversifier, -1)
+	default:
+		err = errors.New("unsupported hardware")
+	}
 
 	return
 }

@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/usbarmory/tamago/dma"
+	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 )
 
 var appletRegion *dma.Region
@@ -25,4 +26,8 @@ func init() {
 	appletRegion.Reserve(appletSize, 0)
 
 	dma.Init(secureDMAStart, secureDMASize)
+
+	if imx6ul.CAAM != nil {
+		imx6ul.CAAM.DeriveKeyMemory, _ = dma.NewRegion(imx6ul.OCRAM_START, imx6ul.OCRAM_SIZE, false)
+	}
 }

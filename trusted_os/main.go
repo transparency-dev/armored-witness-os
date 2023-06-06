@@ -65,7 +65,10 @@ func init() {
 
 	if imx6ul.Native {
 		imx6ul.SetARMFreq(imx6ul.Freq792)
-		imx6ul.DCP.Init()
+
+		if imx6ul.DCP != nil {
+			imx6ul.DCP.Init()
+		}
 	}
 
 	imx6ul.GIC.Init(true, false)
