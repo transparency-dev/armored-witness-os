@@ -104,6 +104,9 @@ func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
 //   - serve RX/TX syscalls for Ethernet packets I/O
 //   - service Ethernet IRQs for incoming packets
 func handler(ctx *monitor.ExecCtx) (err error) {
+	// Ensure the watchdog doesn't get starved by servicing it here each time.
+	imx6ul.WDOG1.Service(watchdogTimeout)
+
 	switch ctx.ExceptionVector {
 	case arm.FIQ:
 		return fiqHandler(ctx)
