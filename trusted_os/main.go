@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"time"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -139,6 +140,15 @@ func main() {
 			log.Printf("SM applet execution error, %v", err)
 		}
 	}
+
+	go func() {
+		l := true
+		for {
+			usbarmory.LED("white", l)
+			l = !l
+			time.Sleep(500 * time.Millisecond)
+		}
+	}()
 
 	// start USB control interface
 	ctl.Start(true)
