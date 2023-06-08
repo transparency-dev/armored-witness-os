@@ -114,11 +114,12 @@ command.
 */
 
 message Configuration {
-	bool   DHCP     = 1;
-	string IP       = 2;
-	string Netmask  = 3;
-	string Gateway  = 4;
-	string Resolver = 5;
+	bool   DHCP      = 1;
+	string IP        = 2;
+	string Netmask   = 3;
+	string Gateway   = 4;
+	string Resolver  = 5;
+	string NTPServer = 6;
 }
 
 message Response {
