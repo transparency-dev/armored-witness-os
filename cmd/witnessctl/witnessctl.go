@@ -41,6 +41,7 @@ type Config struct {
 	gw   string
 	mask string
 	dns  string
+	ntp  string
 }
 
 var conf *Config
@@ -59,6 +60,7 @@ func init() {
 	flag.StringVar(&conf.mask, "m", "255.255.255.0", "set Netmask")
 	flag.StringVar(&conf.gw, "g", "10.0.0.2", "set Gateway")
 	flag.StringVar(&conf.dns, "r", "8.8.8.8:53", "set DNS resolver")
+	flag.StringVar(&conf.ntp, "n", "time.google.com", "set NTP server")
 }
 
 func detect() (err error) {
@@ -105,7 +107,7 @@ func main() {
 		}
 	case len(conf.otaELF) > 0 || len(conf.otaSig) > 0:
 		err = ota(conf.otaELF, conf.otaSig)
-	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0:
-		err = cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns)
+	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0 || len(conf.ntp) > 0:
+		err = cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp)
 	}
 }
