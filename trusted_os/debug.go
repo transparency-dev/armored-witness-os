@@ -26,6 +26,8 @@ import (
 	"github.com/usbarmory/imx-usbserial"
 )
 
+const debug = true
+
 var serial usbserial.UART
 
 //go:linkname printk runtime.printk
