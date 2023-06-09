@@ -17,6 +17,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"runtime/pprof"
 
 	"github.com/usbarmory/tamago/arm"
 	"github.com/usbarmory/tamago/bits"
@@ -109,6 +111,9 @@ func handler(ctx *monitor.ExecCtx) (err error) {
 		return fiqHandler(ctx)
 	case arm.SUPERVISOR:
 		switch ctx.A0() {
+		case syscall.SYS_EXIT:
+			pprof.Lookup("goroutine").WriteTo(os.Stdout, 2)
+			return monitor.SecureHandler(ctx)
 		case syscall.SYS_WRITE:
 			return bufferedStdoutLog(byte(ctx.A1()))
 		case RX:
