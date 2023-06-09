@@ -151,8 +151,21 @@ func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 //
 // The diversifier is AES-CBC encrypted using the internal OTPMK key.
 func (r *RPC) DeriveKey(diversifier []byte, key *[]byte) (err error) {
-	if !imx6ul.SNVS.Available() {
-		return errors.New("SNVS not available")
+	// XXX: TEMPORARILY! defeat this check until we're at the point where we're
+	// in secure boot mode.
+	// If SNVS is not availble, all devices will use the same test key instead of
+	// their internal secret keys, and all witnesses will be identical.
+	/*
+		if !imx6ul.SNVS.Available() {
+			return errors.New("SNVS not available")
+		}
+	*/
+
+	log.Println("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING")
+	log.Println("DeriveKey SNVS assertion is disabled - this should not happen outside development")
+	log.Println("WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING")
+	if !debug {
+		log.Fatal("Not in DEBUG mode, so not continuing.")
 	}
 
 	if len(diversifier) != aes.BlockSize {
