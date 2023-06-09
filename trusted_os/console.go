@@ -38,6 +38,8 @@ import (
 // operations (i.e. stdout/stderr), is overridden with a NOP. Secondarily UART2
 // is disabled at the first opportunity (init()).
 
+const debug = false
+
 func init() {
 	// disable console
 	imx6ul.UART2.Disable()
