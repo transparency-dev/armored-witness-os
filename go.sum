@@ -71,6 +71,8 @@ github.com/u-root/u-root v7.0.0+incompatible h1:u+KSS04pSxJGI5E7WE4Bs9+Zd75QjFv+
 github.com/u-root/u-root v7.0.0+incompatible/go.mod h1:RYkpo8pTHrNjW08opNd/U6p/RJE7K0D8fXO0d47+3YY=
 github.com/usbarmory/GoTEE v0.0.0-20230127101228-519e560d69aa h1:iWvxAk3sE4mvCYVkMET6nhu2RbJcPToCjXlqHn8T+f8=
 github.com/usbarmory/GoTEE v0.0.0-20230127101228-519e560d69aa/go.mod h1:164CE5Gb+PiM6cxhYpyPg9FlpqttRFwUZ+KiTonK4Ak=
+github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048 h1:ZnvuaDhtetODMg91q+A0q/xI2Ay7tH9JYdZoF6UaZpw=
+github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048/go.mod h1:164CE5Gb+PiM6cxhYpyPg9FlpqttRFwUZ+KiTonK4Ak=
 github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a h1:Xrt6+HldFSO69apVdVR1hH7OZXn6GrKQte+jet3771Q=
 github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a/go.mod h1:cbJrWcoa2YHwd1ojpZoSp8pbe9WOK3qiynJChpFNRCM=
 github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081 h1:jNYBY/QlWc6OY306INg9OYoUSRJnsaPW9mxbYIwG4ck=
