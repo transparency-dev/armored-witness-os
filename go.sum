@@ -69,8 +69,8 @@ github.com/transparency-dev/merkle v0.0.1 h1:T9/9gYB8uZl7VOJIhdwjALeRWlxUxSfDEys
 github.com/transparency-dev/merkle v0.0.1/go.mod h1:B8FIw5LTq6DaULoHsVFRzYIUDkl8yuSwCdZnOZGKL/A=
 github.com/u-root/u-root v7.0.0+incompatible h1:u+KSS04pSxJGI5E7WE4Bs9+Zd75QjFv+REkjy/aoAc8=
 github.com/u-root/u-root v7.0.0+incompatible/go.mod h1:RYkpo8pTHrNjW08opNd/U6p/RJE7K0D8fXO0d47+3YY=
-github.com/usbarmory/GoTEE v0.0.0-20230127101228-519e560d69aa h1:iWvxAk3sE4mvCYVkMET6nhu2RbJcPToCjXlqHn8T+f8=
-github.com/usbarmory/GoTEE v0.0.0-20230127101228-519e560d69aa/go.mod h1:164CE5Gb+PiM6cxhYpyPg9FlpqttRFwUZ+KiTonK4Ak=
+github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048 h1:ZnvuaDhtetODMg91q+A0q/xI2Ay7tH9JYdZoF6UaZpw=
+github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048/go.mod h1:164CE5Gb+PiM6cxhYpyPg9FlpqttRFwUZ+KiTonK4Ak=
 github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a h1:Xrt6+HldFSO69apVdVR1hH7OZXn6GrKQte+jet3771Q=
 github.com/usbarmory/armory-boot v0.0.0-20230127111211-c78215862f3a/go.mod h1:cbJrWcoa2YHwd1ojpZoSp8pbe9WOK3qiynJChpFNRCM=
 github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081 h1:jNYBY/QlWc6OY306INg9OYoUSRJnsaPW9mxbYIwG4ck=
@@ -80,12 +80,6 @@ github.com/usbarmory/crucible v0.0.0-20230117112356-5e0805300e15/go.mod h1:8Ctxs
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8 h1:VPruqXJEJxTweSRyx3NIkiIqQl9ppZHp4wZnL8+Y0aI=
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8/go.mod h1:XfTrYj8Ik3ljit1cSHTcsXs7lyJ/QMsplPDX8+g5s7c=
 github.com/usbarmory/tamago v0.0.0-20220823080407-04f05cf2a5a3/go.mod h1:Lok79mjbJnhoBGqhX5cCUsZtSemsQF5FNZW+2R1dRr8=
-github.com/usbarmory/tamago v0.0.0-20230510125548-6d56f1857c0d h1:TXJsLyixwoayocgGqBnOy9DgaekwggJli4pDcct3R4Q=
-github.com/usbarmory/tamago v0.0.0-20230510125548-6d56f1857c0d/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
-github.com/usbarmory/tamago v0.0.0-20230511143907-aa24431c1ef0 h1:TVSossQboxxqIWtnEFBNxaccZtRJv5blDIhYhwe2h/0=
-github.com/usbarmory/tamago v0.0.0-20230511143907-aa24431c1ef0/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
-github.com/usbarmory/tamago v0.0.0-20230525125057-80afd60ce0d5 h1:LoU3YSJytzecJB4o5j/6F31mI/YenlPnf5DrVs92N90=
-github.com/usbarmory/tamago v0.0.0-20230525125057-80afd60ce0d5/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
 github.com/usbarmory/tamago v0.0.0-20230529110145-b8025086bb9f h1:2nCLV3Jp6rFZC6fk34ClkqBTF1IpWBm5dI+bPHxBQkE=
 github.com/usbarmory/tamago v0.0.0-20230529110145-b8025086bb9f/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
