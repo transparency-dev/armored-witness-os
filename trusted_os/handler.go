@@ -103,6 +103,9 @@ func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
 //   - override GoTEE default handling for SYS_WRITE to avoid interleaved logs
 //   - serve RX/TX syscalls for Ethernet packets I/O
 //   - service Ethernet IRQs for incoming packets
+//
+// As a precaution against an unexpectedly long syscall handler, we also service
+// the watchdog whenever we transmit a packet.
 func handler(ctx *monitor.ExecCtx) (err error) {
 	switch ctx.ExceptionVector {
 	case arm.FIQ:
@@ -114,6 +117,11 @@ func handler(ctx *monitor.ExecCtx) (err error) {
 		case RX:
 			return rxFromApplet(ctx)
 		case TX:
+			// Ensure the watchdog doesn't get starved by servicing it here as a precaution.
+			// The logic is that if we're either sending data out or ACKing received
+			// packets then we're almost certainly not wedged, so servicing the dog
+			// is reasonable.
+			imx6ul.WDOG1.Service(watchdogTimeout)
 			return txFromApplet(ctx)
 		case FIQ:
 			bits.Clear(&ctx.SPSR, CPSR_FIQ)
