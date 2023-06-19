@@ -29,7 +29,7 @@ import (
 
 // Watchdog interval (in ms) to force context switching (User -> System mode)
 // to prevent Trusted Applet starvation of Trusted OS resources.
-const watchdogTimeout = 5000
+const watchdogTimeout = 60 * 1000
 
 // loadApplet loads a TamaGo unikernel as trusted applet.
 func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err error) {
