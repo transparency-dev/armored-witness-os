@@ -27,9 +27,15 @@ import (
 	"github.com/usbarmory/GoTEE/monitor"
 )
 
-// Watchdog interval (in ms) to force context switching (User -> System mode)
-// to prevent Trusted Applet starvation of Trusted OS resources.
-const watchdogTimeout = 60 * 1000
+const (
+	// Watchdog interval (in ms) to force context switching (User -> System mode)
+	// to prevent Trusted Applet starvation of Trusted OS resources.
+	watchdogTimeout = 60 * 1000
+
+	// watchdogWarningInterval (in ms) controls how long before the watchdog triggers
+	// the service request interrupt will be raised.
+	watchdogWarningInterval = 5 * 1000
+)
 
 // loadApplet loads a TamaGo unikernel as trusted applet.
 func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err error) {
@@ -75,7 +81,7 @@ func run(ctx *monitor.ExecCtx) (err error) {
 
 	// activate watchdog to prevent resource starvation
 	imx6ul.GIC.EnableInterrupt(imx6ul.WDOG1.IRQ, true)
-	imx6ul.WDOG1.EnableInterrupt()
+	imx6ul.WDOG1.EnableInterrupt(watchdogWarningInterval)
 	imx6ul.WDOG1.EnableTimeout(watchdogTimeout)
 
 	// route IRQs as FIQs to serve them through applet handler
