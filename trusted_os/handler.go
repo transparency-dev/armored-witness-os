@@ -47,7 +47,7 @@ func isr() (err error) {
 	switch irq {
 	case Control.IRQ:
 		Control.ServiceInterrupts()
-	case imx6ul.WDOG1.IRQ:
+	case imx6ul.WDOG2.IRQ:
 		imx6ul.WDOG2.Service(watchdogTimeout)
 	case Network.IRQ:
 		for buf := Network.Rx(); buf != nil; buf = Network.Rx() {
