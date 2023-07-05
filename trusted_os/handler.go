@@ -47,8 +47,8 @@ func isr() (err error) {
 	switch irq {
 	case Control.IRQ:
 		Control.ServiceInterrupts()
-	case imx6ul.WDOG1.IRQ:
-		imx6ul.WDOG1.Service(watchdogTimeout)
+	case imx6ul.WDOG2.IRQ:
+		imx6ul.WDOG2.Service(watchdogTimeout)
 	case Network.IRQ:
 		for buf := Network.Rx(); buf != nil; buf = Network.Rx() {
 			rxFromEth(buf)
@@ -121,7 +121,7 @@ func handler(ctx *monitor.ExecCtx) (err error) {
 			// The logic is that if we're either sending data out or ACKing received
 			// packets then we're almost certainly not wedged, so servicing the dog
 			// is reasonable.
-			imx6ul.WDOG1.Service(watchdogTimeout)
+			imx6ul.WDOG2.Service(watchdogTimeout)
 			return txFromApplet(ctx)
 		case FIQ:
 			bits.Clear(&ctx.SPSR, CPSR_FIQ)
