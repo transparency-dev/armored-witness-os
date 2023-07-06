@@ -128,22 +128,28 @@ func main() {
 	}
 
 	if len(taELF) != 0 && len(taSig) != 0 {
-		if s, err := watchdogForensics(taELF); err != nil {
+		s, err := watchdogForensics(taELF)
+		if err == nil {
+			usbarmory.LED("white", true)
+			// We have some forensics, keep dumping them out so we can see them.
 			go func() {
-				for i := 10; i > 0; i-- {
-					log.Printf("Forensics in %d", i)
-					time.Sleep(time.Second)
+				for {
+					time.Sleep(5 * time.Second)
+					log.Printf("watchdogForensics:\n%s", s)
 				}
-				log.Printf("watchdogForensics failed: %v", err)
 			}()
-		} else {
 			go func() {
-				for i := 10; i > 0; i-- {
-					log.Printf("Forensics in %d", i)
-					time.Sleep(time.Second)
+				for l := true; ; l = !l {
+					usbarmory.LED("white", l)
+					usbarmory.LED("blue", !l)
+					time.Sleep(100 * time.Millisecond)
 				}
-				log.Printf("watchdogForensics:\n%s", s)
 			}()
+			// but don't start the applet, so we'll block in this func
+			// start USB control interface
+			ctl.Start(true)
+			usbarmory.LED("blue", true)
+			irqHandler()
 		}
 
 		log.Printf("SM applet verification pub:%s", PublicKey)
