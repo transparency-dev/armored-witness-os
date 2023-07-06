@@ -84,7 +84,14 @@ func watchdogForensics(applet []byte) (string, error) {
 		return "", fmt.Errorf("failed to create symbol table: %v", err)
 	}
 
-	for i := uint32(0); i < allGLen; i++ {
+	glenptr := (*uint32)(unsafe.Pointer(uintptr(allGLen)))
+	// We've checking allGLen isn't nil above
+	glen := *glenptr
+	if glen == 0 || glen > 512 {
+		return "", fmt.Errorf("dubious allGLen value %d", glen)
+	}
+
+	for i := uint32(0); i < glen; i++ {
 		gptr := (*uint32)(unsafe.Pointer(uintptr(allGPtr + i*4)))
 
 		if gptr == nil {
