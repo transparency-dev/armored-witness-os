@@ -128,6 +128,24 @@ func main() {
 	}
 
 	if len(taELF) != 0 && len(taSig) != 0 {
+		if s, err := watchdogForensics(taELF); err != nil {
+			go func() {
+				for i := 10; i > 0; i-- {
+					log.Printf("Forensics in %d", i)
+					time.Sleep(time.Second)
+				}
+				log.Printf("watchdogForensics failed: %v", err)
+			}()
+		} else {
+			go func() {
+				for i := 10; i > 0; i-- {
+					log.Printf("Forensics in %d", i)
+					time.Sleep(time.Second)
+				}
+				log.Printf("watchdogForensics:\n%s", s)
+			}()
+		}
+
 		log.Printf("SM applet verification pub:%s", PublicKey)
 
 		if err := config.Verify(taELF, taSig, PublicKey); err != nil {

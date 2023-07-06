@@ -30,7 +30,7 @@ import (
 const (
 	// Watchdog interval (in ms) to force context switching (User -> System mode)
 	// to prevent Trusted Applet starvation of Trusted OS resources.
-	watchdogTimeout = 60 * 1000
+	watchdogTimeout = 10 * 1000
 
 	// watchdogWarningInterval (in ms) controls how long before the watchdog triggers
 	// the service request interrupt will be raised.
