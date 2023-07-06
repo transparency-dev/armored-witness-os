@@ -79,6 +79,11 @@ func watchdogForensics(applet []byte) (string, error) {
 		return "", fmt.Errorf("didn't find all syms, not doing forensics: %s", r)
 	}
 
+	st, err := symTable(f)
+	if err != nil {
+		return "", fmt.Errorf("failed to create symbol table: %v", err)
+	}
+
 	for i := uint32(0); i < allGLen; i++ {
 		gptr := (*uint32)(unsafe.Pointer(uintptr(allGPtr + i*4)))
 
@@ -103,7 +108,7 @@ func watchdogForensics(applet []byte) (string, error) {
 				try := binary.LittleEndian.Uint32(stack[i : i+4])
 
 				if try >= uint32(textStart) && try <= uint32(textEnd) {
-					if l, err := PCToLine(applet, try); err == nil {
+					if l, err := PCToLine(st, try); err == nil {
 						r += fmt.Sprintf("\tpotential LR: %s\n", l)
 					}
 				}
@@ -142,16 +147,10 @@ type g struct {
 	syscallpc   uint32
 }
 
-func symTable(buf []byte) (symTable *gosym.Table, err error) {
-	exe, err := elf.NewFile(bytes.NewReader(buf))
+func symTable(f *elf.File) (symTable *gosym.Table, err error) {
+	addr := f.Section(".text").Addr
 
-	if err != nil {
-		return
-	}
-
-	addr := exe.Section(".text").Addr
-
-	lineTableData, err := exe.Section(".gopclntab").Data()
+	lineTableData, err := f.Section(".gopclntab").Data()
 
 	if err != nil {
 		return
@@ -163,7 +162,7 @@ func symTable(buf []byte) (symTable *gosym.Table, err error) {
 		return
 	}
 
-	symTableData, err := exe.Section(".gosymtab").Data()
+	symTableData, err := f.Section(".gosymtab").Data()
 
 	if err != nil {
 		return
@@ -172,14 +171,8 @@ func symTable(buf []byte) (symTable *gosym.Table, err error) {
 	return gosym.NewTable(symTableData, lineTable)
 }
 
-func PCToLine(buf []byte, pc uint32) (s string, err error) {
-	symTable, err := symTable(buf)
-
-	if err != nil {
-		return
-	}
-
-	file, line, _ := symTable.PCToLine(uint64(pc))
+func PCToLine(st *gosym.Table, pc uint32) (s string, err error) {
+	file, line, _ := st.PCToLine(uint64(pc))
 
 	return fmt.Sprintf("%s:%d", file, line), nil
 }
