@@ -18,9 +18,17 @@
 package main
 
 import (
-	_ "unsafe"
+	"bytes"
+	"debug/elf"
+	"debug/gosym"
+	"encoding/binary"
+	"fmt"
+	"unsafe"
 
+	"github.com/usbarmory/tamago/arm"
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
+	"github.com/usbarmory/tamago/dma"
+	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/usbarmory/imx-usbserial"
@@ -39,4 +47,174 @@ func printk(c byte) {
 func configureUART(device *usb.Device) (err error) {
 	serial.Device = device
 	return serial.Init()
+}
+
+func watchdogForensics(applet []byte) (string, error) {
+	f, err := elf.NewFile(bytes.NewReader(applet))
+	if err != nil {
+		return "", fmt.Errorf("failed to open ELF: %v", err)
+	}
+
+	syms, err := f.Symbols()
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch symbols: %v", err)
+	}
+
+	var (
+		allGPtr, allGLenPtr *uint32
+		textStart, textEnd  uint64
+	)
+	for _, s := range syms {
+		switch t, n := elf.ST_TYPE(s.Info), s.Name; {
+		case t == elf.STT_OBJECT && n == "runtime.allgptr":
+			allGPtr = (*uint32)(unsafe.Pointer(uintptr(s.Value)))
+		case t == elf.STT_OBJECT && n == "runtime.allglen":
+			allGLenPtr = (*uint32)(unsafe.Pointer(uintptr(s.Value)))
+		case t == elf.STT_FUNC && n == "runtime.text":
+			textStart = s.Value
+		case t == elf.STT_FUNC && n == "runtime.etext":
+			textEnd = s.Value
+		}
+	}
+
+	r := fmt.Sprintf("watchdogForensics: allGPtr 0x%x allGLenPtr 0x%x textStart 0x%x textEnd 0x%x\n", allGPtr, allGLenPtr, textStart, textEnd)
+	if allGPtr == nil || allGLenPtr == nil || textStart == 0 || textEnd == 0 {
+		return "", fmt.Errorf("didn't find all syms, not doing forensics: %s", r)
+	}
+
+	if !withinAppletMemory(*allGPtr) {
+		return "", fmt.Errorf("invalid allGPtr (%x)", *allGPtr)
+	}
+
+	st, err := symTable(f)
+	if err != nil {
+		return "", fmt.Errorf("failed to create symbol table: %v", err)
+	}
+
+	// We've checking allGLen isn't nil above
+	for i := uint32(0); i < *allGLenPtr; i++ {
+		gptr := (*uint32)(unsafe.Pointer(uintptr(*allGPtr + i*4)))
+		if !withinAppletMemory(*gptr) {
+			r += fmt.Sprintf("invalid gptr (%x)\n", *gptr)
+			continue
+		}
+
+		g := (*g)(unsafe.Pointer(uintptr(*gptr)))
+
+		r += fmt.Sprintf("g[%d]: %x\n", i, g)
+
+		if g.m == nil {
+			if l, err := PCToLine(st, uint64(g.sched.pc)); err == nil {
+				r += fmt.Sprintf("\tg[%d].sched.pc (%x): %s\n", i, g.sched.pc, l)
+			} else {
+				r += fmt.Sprintf("\tg[%d].sched: %x\n", i, g.sched)
+			}
+		} else {
+			stack := mem(uint(g.stacklo), int(g.stackhi-g.stacklo), nil)
+
+			for i := 0; i < len(stack); i += 4 {
+				try := uint64(binary.LittleEndian.Uint32(stack[i : i+4]))
+
+				if try >= textStart && try <= textEnd {
+					if l, err := PCToLine(st, try); err == nil {
+						r += fmt.Sprintf("\tpotential LR (%x): %s\n", try, l)
+					}
+				}
+			}
+		}
+	}
+
+	return r, nil
+}
+
+func withinAppletMemory(ptr uint32) bool {
+	return (ptr >= appletStart && ptr <= (appletStart+appletSize))
+}
+
+type m struct {
+	g0      *g
+	morebuf gobuf
+}
+
+type gobuf struct {
+	sp   uint32
+	pc   uint32
+	g    uint32
+	ctxt uint32
+	ret  uint32
+	lr   uint32
+	bp   uint32
+}
+
+type g struct {
+	stacklo     uint32
+	stackhi     uint32
+	stackguard0 uint32
+	stackguard1 uint32
+	_panic      uint32
+	_defer      uint32
+	m           *m
+	sched       gobuf
+	syscallsp   uint32
+	syscallpc   uint32
+}
+
+func symTable(f *elf.File) (symTable *gosym.Table, err error) {
+	addr := f.Section(".text").Addr
+
+	lineTableData, err := f.Section(".gopclntab").Data()
+
+	if err != nil {
+		return
+	}
+
+	lineTable := gosym.NewLineTable(lineTableData, addr)
+
+	if err != nil {
+		return
+	}
+
+	symTableData, err := f.Section(".gosymtab").Data()
+
+	if err != nil {
+		return
+	}
+
+	return gosym.NewTable(symTableData, lineTable)
+}
+
+func PCToLine(st *gosym.Table, pc uint64) (s string, err error) {
+	file, line, _ := st.PCToLine(pc)
+
+	return fmt.Sprintf("%s:%d", file, line), nil
+}
+
+func mem(start uint, size int, w []byte) (b []byte) {
+	// temporarily map page zero if required
+	if z := uint32(1 << 20); uint32(start) < z {
+		imx6ul.ARM.ConfigureMMU(0, z, (arm.TTE_AP_001<<10)|arm.TTE_SECTION)
+		defer imx6ul.ARM.ConfigureMMU(0, z, 0)
+	}
+
+	return memCopy(start, size, w)
+}
+
+func memCopy(start uint, size int, w []byte) (b []byte) {
+	mem, err := dma.NewRegion(start, size, true)
+
+	if err != nil {
+		panic("could not allocate memory copy DMA")
+	}
+
+	start, buf := mem.Reserve(size, 0)
+	defer mem.Release(start)
+
+	if len(w) > 0 {
+		copy(buf, w)
+	} else {
+		b = make([]byte, size)
+		copy(b, buf)
+	}
+
+	return
 }

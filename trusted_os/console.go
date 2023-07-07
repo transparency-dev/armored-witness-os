@@ -55,3 +55,5 @@ func printk(c byte) {
 func configureUART(device *usb.Device) error {
 	return nil
 }
+
+func watchdogForensics(_ []byte) {}
