@@ -60,23 +60,30 @@ func watchdogForensics(applet []byte) (string, error) {
 		return "", fmt.Errorf("failed to fetch symbols: %v", err)
 	}
 
-	var allGPtr, allGLen, textStart, textEnd uint32
+	var (
+		allGPtr, allGLenPtr *uint32
+		textStart, textEnd  uint64
+	)
 	for _, s := range syms {
 		switch t, n := elf.ST_TYPE(s.Info), s.Name; {
 		case t == elf.STT_OBJECT && n == "runtime.allgptr":
-			allGPtr = uint32(s.Value)
+			allGPtr = (*uint32)(unsafe.Pointer(uintptr(s.Value)))
 		case t == elf.STT_OBJECT && n == "runtime.allglen":
-			allGLen = uint32(s.Value)
+			allGLenPtr = (*uint32)(unsafe.Pointer(uintptr(s.Value)))
 		case t == elf.STT_FUNC && n == "runtime.text":
-			textStart = uint32(s.Value)
+			textStart = s.Value
 		case t == elf.STT_FUNC && n == "runtime.etext":
-			textEnd = uint32(s.Value)
+			textEnd = s.Value
 		}
 	}
 
-	r := fmt.Sprintf("watchdogForensics: allGPtr 0x%x allGLen 0x%x textStart 0x%x textEnd 0x%x\n", allGPtr, allGLen, textStart, textEnd)
-	if allGPtr == 0 || allGLen == 0 || textStart == 0 || textEnd == 0 {
+	r := fmt.Sprintf("watchdogForensics: allGPtr 0x%x allGLenPtr 0x%x textStart 0x%x textEnd 0x%x\n", allGPtr, allGLenPtr, textStart, textEnd)
+	if allGPtr == nil || allGLenPtr == nil || textStart == 0 || textEnd == 0 {
 		return "", fmt.Errorf("didn't find all syms, not doing forensics: %s", r)
+	}
+
+	if !withinAppletMemory(*allGPtr) {
+		return "", fmt.Errorf("invalid allGPtr (%x)", *allGPtr)
 	}
 
 	st, err := symTable(f)
@@ -84,39 +91,33 @@ func watchdogForensics(applet []byte) (string, error) {
 		return "", fmt.Errorf("failed to create symbol table: %v", err)
 	}
 
-	glenptr := (*uint32)(unsafe.Pointer(uintptr(allGLen)))
 	// We've checking allGLen isn't nil above
-	glen := *glenptr
-	if glen == 0 || glen > 512 {
-		return "", fmt.Errorf("dubious allGLen value %d", glen)
-	}
-
-	for i := uint32(0); i < glen; i++ {
-		gptr := (*uint32)(unsafe.Pointer(uintptr(allGPtr + i*4)))
-
-		if gptr == nil {
-			break
+	for i := uint32(0); i < *allGLenPtr; i++ {
+		gptr := (*uint32)(unsafe.Pointer(uintptr(*allGPtr + i*4)))
+		if !withinAppletMemory(*gptr) {
+			r += fmt.Sprintf("invalid gptr (%x)\n", *gptr)
+			continue
 		}
 
 		g := (*g)(unsafe.Pointer(uintptr(*gptr)))
 
-		if g == nil {
-			break
-		}
-
 		r += fmt.Sprintf("g[%d]: %x\n", i, g)
 
 		if g.m == nil {
-			fmt.Printf("\tsched: %x\n", g.sched)
+			if l, err := PCToLine(st, uint64(g.sched.pc)); err == nil {
+				r += fmt.Sprintf("\tg[%d].sched.pc (%x): %s\n", i, g.sched.pc, l)
+			} else {
+				r += fmt.Sprintf("\tg[%d].sched: %x\n", i, g.sched)
+			}
 		} else {
 			stack := mem(uint(g.stacklo), int(g.stackhi-g.stacklo), nil)
 
 			for i := 0; i < len(stack); i += 4 {
-				try := binary.LittleEndian.Uint32(stack[i : i+4])
+				try := uint64(binary.LittleEndian.Uint32(stack[i : i+4]))
 
-				if try >= uint32(textStart) && try <= uint32(textEnd) {
+				if try >= textStart && try <= textEnd {
 					if l, err := PCToLine(st, try); err == nil {
-						r += fmt.Sprintf("\tpotential LR: %s\n", l)
+						r += fmt.Sprintf("\tpotential LR (%x): %s\n", try, l)
 					}
 				}
 			}
@@ -124,6 +125,10 @@ func watchdogForensics(applet []byte) (string, error) {
 	}
 
 	return r, nil
+}
+
+func withinAppletMemory(ptr uint32) bool {
+	return (ptr >= appletStart && ptr <= (appletStart+appletSize))
 }
 
 type m struct {
@@ -178,8 +183,8 @@ func symTable(f *elf.File) (symTable *gosym.Table, err error) {
 	return gosym.NewTable(symTableData, lineTable)
 }
 
-func PCToLine(st *gosym.Table, pc uint32) (s string, err error) {
-	file, line, _ := st.PCToLine(uint64(pc))
+func PCToLine(st *gosym.Table, pc uint64) (s string, err error) {
+	file, line, _ := st.PCToLine(pc)
 
 	return fmt.Sprintf("%s:%d", file, line), nil
 }
