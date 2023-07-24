@@ -27,7 +27,12 @@ func init() {
 
 	dma.Init(secureDMAStart, secureDMASize)
 
-	if imx6ul.CAAM != nil {
-		imx6ul.CAAM.DeriveKeyMemory, _ = dma.NewRegion(imx6ul.OCRAM_START, imx6ul.OCRAM_SIZE, false)
+	deriveKeyMemory, _ := dma.NewRegion(imx6ul.OCRAM_START, imx6ul.OCRAM_SIZE, false)
+
+	switch {
+	case imx6ul.CAAM != nil:
+		imx6ul.CAAM.DeriveKeyMemory = deriveKeyMemory
+	case imx6ul.DCP != nil:
+		imx6ul.DCP.DeriveKeyMemory = deriveKeyMemory
 	}
 }
