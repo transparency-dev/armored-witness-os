@@ -69,8 +69,6 @@ github.com/transparency-dev/merkle v0.0.1 h1:T9/9gYB8uZl7VOJIhdwjALeRWlxUxSfDEys
 github.com/transparency-dev/merkle v0.0.1/go.mod h1:B8FIw5LTq6DaULoHsVFRzYIUDkl8yuSwCdZnOZGKL/A=
 github.com/u-root/u-root v7.0.0+incompatible h1:u+KSS04pSxJGI5E7WE4Bs9+Zd75QjFv+REkjy/aoAc8=
 github.com/u-root/u-root v7.0.0+incompatible/go.mod h1:RYkpo8pTHrNjW08opNd/U6p/RJE7K0D8fXO0d47+3YY=
-github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048 h1:ZnvuaDhtetODMg91q+A0q/xI2Ay7tH9JYdZoF6UaZpw=
-github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048/go.mod h1:164CE5Gb+PiM6cxhYpyPg9FlpqttRFwUZ+KiTonK4Ak=
 github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d h1:oIdJllwCnP/ZPfdrB5fB+zH3+NM+EFW8lCNiRhVKw1s=
 github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d/go.mod h1:2+FV8fn4y14BkPvrUdZ35mxQuMb1JcDxOZy6lFvHzj8=
 github.com/usbarmory/GoTEE v0.0.0-20230717085113-1beadf7e5429 h1:GNph1FFN4d/LwR2naucFsnT3Ti3kuTaZNWNXpp6uAvQ=
