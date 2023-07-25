@@ -8,12 +8,12 @@ require (
 	github.com/flynn/u2f v0.0.0-20180613185708-15554eb68e5d
 	github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3
 	github.com/transparency-dev/armored-witness-boot v0.0.0-20230503134353-2eb910e5f86f
-	github.com/usbarmory/GoTEE v0.0.0-20230609135724-89fd855bd048
+	github.com/usbarmory/GoTEE v0.0.0-20230717085113-1beadf7e5429
 	github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d
 	github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081
 	github.com/usbarmory/crucible v0.0.0-20230412092556-269c90b0067e
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20230717094045-30b5bacaaaf0
+	github.com/usbarmory/tamago v0.0.0-20230724190245-6f2dec2f8412
 	golang.org/x/crypto v0.8.0
 	golang.org/x/mod v0.10.0
 	google.golang.org/protobuf v1.30.0
