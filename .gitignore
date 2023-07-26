@@ -1,0 +1,8 @@
+armored-witness-os-1.pub
+armored-witness-os-1.sec
+armored-witness-os-2.pub
+armored-witness-os-2.sec
+
+bin/
+trusted_os/assets/
+
