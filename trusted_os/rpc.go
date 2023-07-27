@@ -150,7 +150,7 @@ func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 // C_DeriveKey with CKM_AES_CBC_ENCRYPT_DATA.
 //
 // The diversifier is AES-CBC encrypted using the internal OTPMK key.
-func (r *RPC) DeriveKey(diversifier []byte, key *[]byte) (err error) {
+func (r *RPC) DeriveKey(diversifier []byte, key *[sha256.Size]byte) (err error) {
 	// XXX: TEMPORARILY! defeat this check until we're at the point where we're
 	// in secure boot mode.
 	// If SNVS is not availble, all devices will use the same test key instead of
@@ -175,9 +175,11 @@ func (r *RPC) DeriveKey(diversifier []byte, key *[]byte) (err error) {
 	switch {
 	case imx6ul.CAAM != nil:
 		div := sha256.Sum256(append(r.Diversifier[:], diversifier...))
-		err = imx6ul.CAAM.DeriveKey(div[:], *key)
+		err = imx6ul.CAAM.DeriveKey(div[:], key[:])
 	case imx6ul.DCP != nil:
-		*key, err = imx6ul.DCP.DeriveKey(r.Diversifier[:], diversifier, -1)
+		var k []byte
+		k, err = imx6ul.DCP.DeriveKey(r.Diversifier[:], diversifier, -1)
+		copy(key[:], k)
 	default:
 		err = errors.New("unsupported hardware")
 	}
