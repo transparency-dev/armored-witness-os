@@ -95,10 +95,8 @@ func ota(taELFPath string, taSigPath string) (err error) {
 		return errors.New("trusted applet signature path must be specified (-O)")
 	}
 
-	s, err := status()
-
-	if err != nil {
-		return
+	if err := detect(); err != nil {
+		return err
 	}
 
 	taELF, err := os.ReadFile(taELFPath)
@@ -129,7 +127,8 @@ func ota(taELFPath string, taSigPath string) (err error) {
 		return errors.New("signature size exceeds maximum update chunk size")
 	}
 
-	log.Printf("sending trusted applet signature to armored witness %s", s.Serial)
+	log.Printf("sending trusted applet signature to armored witness")
+
 	if err = sendUpdateChunk(taSig, seq, total); err != nil {
 		return
 	}
@@ -145,7 +144,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 	}(start)
 	defer bar.Finish()
 
-	log.Printf("sending trusted applet payload to armored witness %x", s.Serial)
+	log.Printf("sending trusted applet payload to armored witness")
 
 	for i := 0; i < totalSize; i += chunkSize {
 		seq += 1
@@ -198,13 +197,7 @@ func cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) e
 		return err
 	}
 
-	s, err := status()
-
-	if err != nil {
-		return err
-	}
-
-	log.Printf("sending configuration update to armored witness %s", s.Serial)
+	log.Printf("sending configuration update to armored witness")
 
 	buf, err := conf.dev.Command(api.U2FHID_ARMORY_CFG, c.Bytes())
 
