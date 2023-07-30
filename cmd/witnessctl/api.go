@@ -95,6 +95,8 @@ func ota(taELFPath string, taSigPath string) (err error) {
 		return errors.New("trusted applet signature path must be specified (-O)")
 	}
 
+	// TODO: replace with status() after fixing
+	// https://github.com/gsora/fidati/issues/5
 	if err := detect(); err != nil {
 		return err
 	}
@@ -193,6 +195,8 @@ func cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) e
 		NTPServer: ntp,
 	}
 
+	// TODO: replace with status() after fixing
+	// https://github.com/gsora/fidati/issues/5
 	if err := detect(); err != nil {
 		return err
 	}
