@@ -40,7 +40,7 @@ func bufferedStdoutLog(c byte) (err error) {
 	return
 }
 
-func fileLine(buf[]byte, pc uint32) (s string) {
+func fileLine(buf []byte, pc uint32) (s string) {
 	exe, err := elf.NewFile(bytes.NewReader(buf))
 
 	if err != nil {

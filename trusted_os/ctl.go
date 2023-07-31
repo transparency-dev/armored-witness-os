@@ -49,8 +49,6 @@ type controlInterface struct {
 func getStatus() (s *api.Status) {
 	version, _ := parseVersion(Version)
 
-	miiStatus := Network.ReadPHYRegister(usbarmory.PHY_ADDR, MII_STATUS)
-
 	s = &api.Status{
 		Serial:   fmt.Sprintf("%X", imx6ul.UniqueID()),
 		HAB:      imx6ul.SNVS.Available(),
@@ -60,8 +58,13 @@ func getStatus() (s *api.Status) {
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 	}
 
-	if miiStatus&(1<<STATUS_LINK) > 0 {
-		s.Link = true
+	switch {
+	case LAN != nil:
+		miiStatus := LAN.ReadPHYRegister(usbarmory.PHY_ADDR, MII_STATUS)
+		s.Link = miiStatus&(1<<STATUS_LINK) > 0
+	case USB != nil:
+		mode, err := usbarmory.FrontPortMode()
+		s.Link = err != nil && mode == usbarmory.STATE_ATTACHED_SRC
 	}
 
 	return
@@ -92,12 +95,14 @@ func (ctl *controlInterface) Config(req []byte) (res []byte) {
 		if _, err = loadApplet(taELF, ctl); err != nil {
 			return api.ErrorResponse(err)
 		}
+	} else {
+		log.Printf("SM received configuration update w/o applet running")
 	}
 
 	return api.EmptyResponse()
 }
 
-func (ctl *controlInterface) Start(irq bool) {
+func (ctl *controlInterface) Start() {
 	device := &usb.Device{}
 	serial := fmt.Sprintf("%X", imx6ul.UniqueID())
 
@@ -113,24 +118,20 @@ func (ctl *controlInterface) Start(irq bool) {
 		log.Fatal(err)
 	}
 
-	Control.Device = device
-
-	if !imx6ul.Native {
+	if Control == nil {
 		return
 	}
 
-	Control.Init()
+	Control.Device = device
 	Control.DeviceMode()
 
-	if irq {
-		imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
+	Control.EnableInterrupt(usb.IRQ_URI) // reset
+	Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
+	Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
 
-		Control.EnableInterrupt(usb.IRQ_URI) // reset
-		Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
-		Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
-	} else {
-		Control.Reset()
-		// never returns
-		Control.Start(device)
+	irqHandler[Control.IRQ] = func() {
+		Control.ServiceInterrupts()
 	}
+
+	imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
 }

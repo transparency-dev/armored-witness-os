@@ -79,6 +79,10 @@ func run(ctx *monitor.ExecCtx) (err error) {
 
 	log.Printf("SM applet started mode:%s sp:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R15, ns)
 
+	irqHandler[imx6ul.WDOG2.IRQ] = func() {
+		imx6ul.WDOG2.Service(watchdogTimeout)
+	}
+
 	// activate watchdog to prevent resource starvation
 	imx6ul.GIC.EnableInterrupt(imx6ul.WDOG2.IRQ, true)
 	imx6ul.WDOG2.EnableInterrupt(watchdogWarningInterval)

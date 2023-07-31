@@ -28,15 +28,25 @@ import (
 
 const debug = true
 
-var serial usbserial.UART
+var serial *usbserial.UART
 
 //go:linkname printk runtime.printk
 func printk(c byte) {
 	usbarmory.UART2.Tx(c)
-	serial.WriteByte(c)
+
+	if serial != nil {
+		serial.WriteByte(c)
+	}
 }
 
 func configureUART(device *usb.Device) (err error) {
-	serial.Device = device
+	if LAN == nil {
+		return
+	}
+
+	serial = &usbserial.UART{
+		Device: device,
+	}
+
 	return serial.Init()
 }
