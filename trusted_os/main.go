@@ -48,7 +48,7 @@ var (
 	Control *usb.USB
 	Storage *usdhc.USDHC
 
-	// USB armory Mk II (rev. γ) - UA-MKII-γ
+	// USB armory Mk II (rev. β) - UA-MKII-β
 	// USB armory Mk II (rev. γ) - UA-MKII-γ
 	USB *usb.USB
 
