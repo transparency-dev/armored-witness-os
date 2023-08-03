@@ -100,11 +100,10 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	// when switching back to System Mode.
 	imx6ul.ARM.EnableInterrupts(false)
 
-	log.Printf("SM applet stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns)
+	log.Printf("SM applet stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v err:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns, err)
 
 	if err != nil && debug {
-		log.Printf("\t%s", fileLine(taELF, ctx.R15))
-		log.Printf("\t%s", fileLine(taELF, ctx.R14))
+		err = inspect(taELF, ctx)
 	}
 
 	return
