@@ -96,6 +96,7 @@ func init() {
 			}
 		case usbarmory.LAN:
 			LAN = usbarmory.ENET2
+			LAN.RingSize = 512
 			LAN.Init()
 
 			Control = usbarmory.USB1
@@ -105,6 +106,7 @@ func init() {
 		Storage = usbarmory.MMC
 	} else {
 		LAN = imx6ul.ENET1
+		LAN.RingSize = 512
 		LAN.Init()
 	}
 
