@@ -28,7 +28,6 @@ github.com/google/btree v1.0.1/go.mod h1:xXMiIv4Fb/0kKde4SpL7qlzvu5cMJDRkFDxJfI9
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
-github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3 h1:klG3scbSLaGIvJO1p9wdTaHonsCSAcvNrX8vfa8LRd4=
 github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3/go.mod h1:pqELFmXT+lU57T8pIGwPSOODIvRv/r/lwxlJX0UupvY=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
@@ -84,10 +83,8 @@ github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e/go.mod h1:eT+
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8 h1:VPruqXJEJxTweSRyx3NIkiIqQl9ppZHp4wZnL8+Y0aI=
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8/go.mod h1:XfTrYj8Ik3ljit1cSHTcsXs7lyJ/QMsplPDX8+g5s7c=
 github.com/usbarmory/tamago v0.0.0-20220823080407-04f05cf2a5a3/go.mod h1:Lok79mjbJnhoBGqhX5cCUsZtSemsQF5FNZW+2R1dRr8=
-github.com/usbarmory/tamago v0.0.0-20230724190245-6f2dec2f8412 h1:nlsiJoU3RcHkAjEwIquGcqq+MCe96h8u83MPHTjKiwY=
-github.com/usbarmory/tamago v0.0.0-20230724190245-6f2dec2f8412/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
-github.com/usbarmory/tamago v0.0.0-20230731184825-706c70134afa h1:50Cen+KgI7mwSXM/qE2xcdc23+N0Lnhid97iQDRmdLY=
-github.com/usbarmory/tamago v0.0.0-20230731184825-706c70134afa/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
+github.com/usbarmory/tamago v0.0.0-20230804144655-4d2d9a7a0e03 h1:Sm6ApuOX0IROgN34ZlVFXwCsNBA+MH8xSaagwEQ5mT8=
+github.com/usbarmory/tamago v0.0.0-20230804144655-4d2d9a7a0e03/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.8.0 h1:pd9TJtTueMTVQXzk8E2XESSMQDj/U7OUu0PqJqPXQjQ=
 golang.org/x/crypto v0.8.0/go.mod h1:mRqEX+O9/h5TFCrQhkgjo2yKi0yYA+9ecGkdQoHrywE=
