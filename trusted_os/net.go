@@ -167,9 +167,9 @@ func netStartLAN() {
 	irqHandler[LAN.IRQ] = func() {
 		for buf := LAN.Rx(); buf != nil; buf = LAN.Rx() {
 			asyncRx(buf)
+			LAN.ClearInterrupt(enet.IRQ_RXF)
 		}
 
-		LAN.ClearInterrupt(enet.IRQ_RXF)
 	}
 
 	LAN.EnableInterrupt(enet.IRQ_RXF)
