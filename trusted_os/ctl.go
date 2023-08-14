@@ -125,13 +125,13 @@ func (ctl *controlInterface) Start() {
 	Control.Device = device
 	Control.DeviceMode()
 
-	Control.EnableInterrupt(usb.IRQ_URI) // reset
-	Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
-	Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
-
 	irqHandler[Control.IRQ] = func() {
 		Control.ServiceInterrupts()
 	}
+
+	Control.EnableInterrupt(usb.IRQ_URI) // reset
+	Control.EnableInterrupt(usb.IRQ_PCI) // port change detect
+	Control.EnableInterrupt(usb.IRQ_UI)  // transfer completion
 
 	imx6ul.GIC.EnableInterrupt(Control.IRQ, true)
 }
