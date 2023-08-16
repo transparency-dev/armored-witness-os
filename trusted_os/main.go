@@ -23,7 +23,10 @@ import (
 	"time"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
+	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
+	"github.com/usbarmory/tamago/soc/nxp/usb"
+	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
 	"github.com/usbarmory/armory-boot/config"
 
@@ -42,9 +45,15 @@ var (
 )
 
 var (
-	Network = usbarmory.ENET2
-	Storage = usbarmory.MMC
-	Control = usbarmory.USB1
+	Control *usb.USB
+	Storage *usdhc.USDHC
+
+	// USB armory Mk II (rev. β) - UA-MKII-β
+	// USB armory Mk II (rev. γ) - UA-MKII-γ
+	USB *usb.USB
+
+	// USB armory Mk II LAN - UA-MKII-LAN
+	LAN *enet.ENET
 )
 
 // A Trusted Applet can be embedded for testing purposes with QEMU.
@@ -70,6 +79,35 @@ func init() {
 		if imx6ul.DCP != nil {
 			imx6ul.DCP.Init()
 		}
+
+		model, _ := usbarmory.Model()
+
+		switch model {
+		case usbarmory.BETA, usbarmory.GAMMA:
+			USB = usbarmory.USB1
+			USB.Init()
+
+			Control = usbarmory.USB2
+			Control.Init()
+
+			if debug {
+				debugConsole, _ := usbarmory.DetectDebugAccessory(250 * time.Millisecond)
+				<-debugConsole
+			}
+		case usbarmory.LAN:
+			LAN = usbarmory.ENET2
+			LAN.RingSize = 512
+			LAN.Init()
+
+			Control = usbarmory.USB1
+			Control.Init()
+		}
+
+		Storage = usbarmory.MMC
+	} else {
+		LAN = imx6ul.ENET1
+		LAN.RingSize = 512
+		LAN.Init()
 	}
 
 	imx6ul.GIC.Init(true, false)
@@ -85,15 +123,11 @@ func main() {
 	usbarmory.LED("blue", false)
 	usbarmory.LED("white", false)
 
-	if imx6ul.Native {
+	if Storage != nil {
 		if err = Storage.Detect(); err != nil {
 			log.Fatalf("SM failed to detect storage, %v", err)
 		}
-	} else {
-		Network = imx6ul.ENET1
 	}
-
-	Network.Init()
 
 	rpmb := &RPMB{
 		Storage: Storage,
@@ -151,8 +185,8 @@ func main() {
 	}()
 
 	// start USB control interface
-	ctl.Start(true)
+	ctl.Start()
 
 	// never returns
-	irqHandler()
+	handleInterrupts()
 }

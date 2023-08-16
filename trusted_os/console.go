@@ -23,7 +23,6 @@ import (
 	_ "unsafe"
 
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
-	"github.com/usbarmory/tamago/soc/nxp/usb"
 )
 
 // The Trusted OS does not log any sensitive information to the serial console,
@@ -52,6 +51,10 @@ func printk(c byte) {
 	// ensure that any serial output is supressed before UART2 disabling
 }
 
-func configureUART(device *usb.Device) error {
+func inspect(buf []byte, _ any) error {
+	return nil
+}
+
+func configureUART(_ any) error {
 	return nil
 }

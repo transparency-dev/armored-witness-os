@@ -47,6 +47,10 @@ type RPMB struct {
 // dummyBlock argument is an unused sector, required for CVE-2020-13799
 // mitigation to invalidate uncommitted writes.
 func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16) (p *RPMB, err error) {
+	if card == nil {
+		return nil, fmt.Errorf("no MMC card set")
+	}
+
 	if !card.Info().MMC {
 		return nil, fmt.Errorf("no MMC card detected")
 	}

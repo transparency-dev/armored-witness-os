@@ -20,7 +20,6 @@ import (
 
 	"github.com/usbarmory/tamago/arm"
 	"github.com/usbarmory/tamago/bits"
-	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 
 	"github.com/usbarmory/GoTEE/monitor"
@@ -34,6 +33,8 @@ var (
 	appletHandlerP uint32
 )
 
+var irqHandler = make(map[int]func())
+
 // defined in handler.s
 func wakeHandler(g uint32, p uint32)
 
@@ -44,24 +45,15 @@ func isr() (err error) {
 		end <- true
 	}
 
-	switch irq {
-	case Control.IRQ:
-		Control.ServiceInterrupts()
-	case imx6ul.WDOG2.IRQ:
-		imx6ul.WDOG2.Service(watchdogTimeout)
-	case Network.IRQ:
-		for buf := Network.Rx(); buf != nil; buf = Network.Rx() {
-			rxFromEth(buf)
-			Network.ClearInterrupt(enet.IRQ_RXF)
-		}
-	default:
-		return fmt.Errorf("unexpected id %d", irq)
+	if handle, ok := irqHandler[irq]; ok {
+		handle()
+		return nil
 	}
 
-	return
+	return fmt.Errorf("unexpected IRQ %d", irq)
 }
 
-func irqHandler() {
+func handleInterrupts() {
 	arm.RegisterInterruptHandler()
 
 	for {

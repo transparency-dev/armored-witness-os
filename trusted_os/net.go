@@ -16,14 +16,24 @@ package main
 
 import (
 	"errors"
+	"net"
 
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
+	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/usbarmory/GoTEE/monitor"
+
+	"github.com/usbarmory/imx-usbnet"
+
+	"gvisor.dev/gvisor/pkg/tcpip"
+	"gvisor.dev/gvisor/pkg/tcpip/link/channel"
 )
 
-const RXQueueSize = 1000
+const (
+	RXQueueSize = 1000
+	TXQueueSize = 1000
+)
 
 // Trusted OS syscalls
 const (
@@ -33,13 +43,31 @@ const (
 	FREQ = 0x10000003
 )
 
-var rxQueue = make(chan []byte, RXQueueSize)
+// default Trusted OS USB network settings
+const (
+	deviceMAC = "1a:55:89:a2:69:41"
+	hostMAC   = "1a:55:89:a2:69:42"
+)
 
-func rxFromEth(buf []byte) {
+var (
+	rxQueue chan []byte
+	txQueue chan []byte
+)
+
+func asyncRx(buf []byte) {
 	select {
 	case rxQueue <- buf:
 	default:
 	}
+}
+
+func asyncTx() (buf []byte) {
+	select {
+	case buf = <-txQueue:
+	default:
+	}
+
+	return
 }
 
 func rxFromApplet(ctx *monitor.ExecCtx) (err error) {
@@ -73,14 +101,88 @@ func txFromApplet(ctx *monitor.ExecCtx) (err error) {
 	}
 
 	ctx.Memory.Read(ctx.Memory.Start(), int(off), buf)
-	Network.Tx(buf)
+
+	switch {
+	case LAN != nil:
+		LAN.Tx(buf)
+	case USB != nil:
+		txQueue <- buf
+	}
 
 	return
 }
 
-func startNetworking() {
-	imx6ul.GIC.EnableInterrupt(Network.IRQ, true)
+func netStartUSB() {
+	hostHardwareAddr, _ := net.ParseMAC(hostMAC)
+	deviceHardwareAddr, _ := net.ParseMAC(deviceMAC)
 
-	Network.EnableInterrupt(enet.IRQ_RXF)
-	Network.Start(false)
+	device := &usb.Device{}
+	usbnet.ConfigureDevice(device, deviceMAC)
+
+	linkAddr, _ := tcpip.ParseMACAddress(deviceMAC)
+
+	nic := &usbnet.NIC{
+		HostMAC:   hostHardwareAddr,
+		DeviceMAC: deviceHardwareAddr,
+		Link:      channel.New(256, usbnet.MTU, linkAddr),
+		Device:    device,
+	}
+
+	rxQueue = make(chan []byte, RXQueueSize)
+	txQueue = make(chan []byte, TXQueueSize)
+
+	nic.Rx = func(buf []byte, lastErr error) (_ []byte, err error) {
+		asyncRx(buf)
+		return
+	}
+
+	nic.Tx = func(_ []byte, lastErr error) (in []byte, err error) {
+		in = asyncTx()
+		return
+	}
+
+	if err := nic.Init(); err != nil {
+		panic(err)
+	}
+
+	USB.Device = device
+
+	USB.Init()
+	USB.DeviceMode()
+
+	USB.EnableInterrupt(usb.IRQ_URI) // reset
+	USB.EnableInterrupt(usb.IRQ_PCI) // port change detect
+	USB.EnableInterrupt(usb.IRQ_UI)  // transfer completion
+
+	irqHandler[USB.IRQ] = func() {
+		USB.ServiceInterrupts()
+	}
+
+	imx6ul.GIC.EnableInterrupt(USB.IRQ, true)
+}
+
+func netStartLAN() {
+	rxQueue = make(chan []byte, RXQueueSize)
+
+	irqHandler[LAN.IRQ] = func() {
+		for buf := LAN.Rx(); buf != nil; buf = LAN.Rx() {
+			asyncRx(buf)
+			LAN.ClearInterrupt(enet.IRQ_RXF)
+		}
+
+	}
+
+	LAN.EnableInterrupt(enet.IRQ_RXF)
+	LAN.Start(false)
+
+	imx6ul.GIC.EnableInterrupt(LAN.IRQ, true)
+}
+
+func netStart() {
+	switch {
+	case LAN != nil:
+		netStartLAN()
+	case USB != nil:
+		netStartUSB()
+	}
 }

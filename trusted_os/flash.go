@@ -147,6 +147,10 @@ func updateApplet(taELF []byte, taSig []byte) (err error) {
 		return
 	}
 
+	if Storage == nil {
+		return fmt.Errorf("applet flashing error: missing Storage")
+	}
+
 	log.Printf("SM flashing applet signature")
 
 	if err = flash(Storage, taSig, confSector); err != nil {
@@ -221,12 +225,20 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 		log.Printf("received all %d firmware update chunks", ctl.ota.total)
 
 		go func(buf []byte, sig []byte) {
+			// avoid USB control interface timeout
+			time.Sleep(500 * time.Millisecond)
+
 			if err = updateApplet(buf, sig); err != nil {
 				log.Printf("firmware update error, %v", err)
 			}
 
-			log.Printf("SM received applet update, restarting applet")
-			ctl.RPC.Ctx.Stop()
+			if ctl.RPC.Ctx != nil {
+				log.Printf("SM received applet update, restarting applet")
+				ctl.RPC.Ctx.Stop()
+			}
+
+			// FIXME: restarting the applet results in networking
+			// issues, investigate (or just reboot?).
 
 			if _, err = loadApplet(taELF, ctl); err != nil {
 				log.Printf("SM applet execution error, %v", err)

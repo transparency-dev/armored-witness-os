@@ -16,9 +16,6 @@ package main
 
 import (
 	"bytes"
-	"debug/elf"
-	"debug/gosym"
-	"fmt"
 	"os"
 )
 
@@ -38,42 +35,4 @@ func bufferedStdoutLog(c byte) (err error) {
 	}
 
 	return
-}
-
-func fileLine(buf[]byte, pc uint32) (s string) {
-	exe, err := elf.NewFile(bytes.NewReader(buf))
-
-	if err != nil {
-		return
-	}
-
-	addr := exe.Section(".text").Addr
-
-	lineTableData, err := exe.Section(".gopclntab").Data()
-
-	if err != nil {
-		return
-	}
-
-	lineTable := gosym.NewLineTable(lineTableData, addr)
-
-	if err != nil {
-		return
-	}
-
-	symTableData, err := exe.Section(".gosymtab").Data()
-
-	if err != nil {
-		return
-	}
-
-	symTable, err := gosym.NewTable(symTableData, lineTable)
-
-	if err != nil {
-		return
-	}
-
-	file, line, _ := symTable.PCToLine(uint64(pc))
-
-	return fmt.Sprintf("%s:%d", file, line)
 }

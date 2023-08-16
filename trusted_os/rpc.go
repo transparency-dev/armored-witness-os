@@ -64,7 +64,7 @@ func (r *RPC) Config(current []byte, previous *[]byte) error {
 	if len(r.Cfg) == 0 {
 		defer func() {
 			log.Println("SM starting network")
-			startNetworking()
+			netStart()
 		}()
 	} else if previous != nil {
 		*previous = r.Cfg
@@ -75,11 +75,16 @@ func (r *RPC) Config(current []byte, previous *[]byte) error {
 	return nil
 }
 
+// Address sets the Ethernet MAC address on LAN models.
 func (r *RPC) Address(mac net.HardwareAddr, _ *bool) error {
-	Network.SetMAC(mac)
+	if LAN != nil {
+		LAN.SetMAC(mac)
+	}
+
 	return nil
 }
 
+// Register registers the Trusted Applet event handler.
 func (r *RPC) Register(handler rpc.Handler, _ *bool) error {
 	if handler.G == 0 || handler.P == 0 {
 		return errors.New("invalid argument")
@@ -115,18 +120,32 @@ func (r *RPC) LED(led rpc.LEDStatus, _ *bool) error {
 
 // CardInfo returns the storage media information.
 func (r *RPC) CardInfo(_ any, info *usdhc.CardInfo) error {
+	if r.RPMB.Storage == nil {
+		return errors.New("missing Storage")
+	}
+
 	*info = r.RPMB.Storage.Info()
+
 	return nil
 }
 
 // WriteBlocks transfers full blocks of data to the storage media.
 func (r *RPC) WriteBlocks(xfer rpc.WriteBlocks, _ *bool) error {
+	if r.RPMB.Storage == nil {
+		return errors.New("missing Storage")
+	}
+
 	return r.RPMB.Storage.WriteBlocks(xfer.LBA, xfer.Data)
 }
 
 // Read transfers data from the storage media.
 func (r *RPC) Read(xfer rpc.Read, out *[]byte) (err error) {
+	if r.RPMB.Storage == nil {
+		return errors.New("missing Storage")
+	}
+
 	*out, err = r.RPMB.Storage.Read(xfer.Offset, xfer.Size)
+
 	return
 }
 

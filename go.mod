@@ -12,11 +12,13 @@ require (
 	github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d
 	github.com/usbarmory/armory-witness-log v0.0.0-20230119085953-e0606f8bd081
 	github.com/usbarmory/crucible v0.0.0-20230412092556-269c90b0067e
+	github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20230724190245-6f2dec2f8412
+	github.com/usbarmory/tamago v0.0.0-20230814171810-6cd63c1accf5
 	golang.org/x/crypto v0.8.0
 	golang.org/x/mod v0.10.0
 	google.golang.org/protobuf v1.30.0
+	gvisor.dev/gvisor v0.0.0-20230614190805-57027c7d31f8
 )
 
 require (
@@ -26,7 +28,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/btree v1.0.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
@@ -38,6 +40,7 @@ require (
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
