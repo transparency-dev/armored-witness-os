@@ -194,6 +194,7 @@ func (r *RPC) DeriveKey(diversifier [aes.BlockSize]byte, key *[sha256.Size]byte)
 		var k []byte
 		k, err = imx6ul.DCP.DeriveKey(r.Diversifier[:], diversifier[:], -1)
 		copy(key[:], k)
+	case debug && !imx6ul.Native:
 	default:
 		err = errors.New("unsupported hardware")
 	}
