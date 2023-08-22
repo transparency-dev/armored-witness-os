@@ -46,9 +46,22 @@ type otaBuffer struct {
 	buf   []byte
 }
 
+// Card mostly mirrors the public API of the usdhc.Card struct, allowing
+// substitutions for testing.
+type Card interface {
+	// Read reads size bytes at offset from the underlying storage.
+	Read(offset int64, size int64) ([]byte, error)
+	//WriteBlocks writes data at sector lba onwards on the underlying storage.
+	WriteBlocks(lba int, data []byte) error
+	// Info returns information about the underlying storage.
+	Info() usdhc.CardInfo
+	// Detect causes the underlying storage to probe itself.
+	Detect() error
+}
+
 // read reads the trusted applet and its signature from internal storage, the
 // applet and signatures are *not* verified by this function.
-func read(card *usdhc.USDHC) (taELF []byte, taSig []byte, err error) {
+func read(card Card) (taELF []byte, taSig []byte, err error) {
 	buf, err := card.Read(confSector, config.MaxLength)
 
 	if err != nil {
@@ -72,7 +85,7 @@ func read(card *usdhc.USDHC) (taELF []byte, taSig []byte, err error) {
 }
 
 // flash writes a buffer to internal storage
-func flash(card *usdhc.USDHC, buf []byte, lba int) (err error) {
+func flash(card Card, buf []byte, lba int) (err error) {
 	blockSize := card.Info().BlockSize
 
 	if blockSize == 0 {

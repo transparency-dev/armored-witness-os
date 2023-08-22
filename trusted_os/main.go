@@ -26,7 +26,6 @@ import (
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
-	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
 	"github.com/usbarmory/armory-boot/config"
 
@@ -46,7 +45,7 @@ var (
 
 var (
 	Control *usb.USB
-	Storage *usdhc.USDHC
+	Storage Card
 
 	// USB armory Mk II (rev. β) - UA-MKII-β
 	// USB armory Mk II (rev. γ) - UA-MKII-γ
@@ -102,8 +101,6 @@ func init() {
 			Control = usbarmory.USB1
 			Control.Init()
 		}
-
-		Storage = usbarmory.MMC
 	} else {
 		LAN = imx6ul.ENET1
 		LAN.RingSize = 512
@@ -123,18 +120,16 @@ func main() {
 	usbarmory.LED("blue", false)
 	usbarmory.LED("white", false)
 
+	Storage, rpmb := storage()
 	if Storage != nil {
 		if err = Storage.Detect(); err != nil {
 			log.Fatalf("SM failed to detect storage, %v", err)
 		}
 	}
 
-	rpmb := &RPMB{
-		Storage: Storage,
-	}
-
 	rpc := &RPC{
 		RPMB:        rpmb,
+		Storage:     Storage,
 		Diversifier: sha256.Sum256([]byte(PublicKey)),
 	}
 

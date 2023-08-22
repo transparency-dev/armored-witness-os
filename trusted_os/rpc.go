@@ -37,6 +37,7 @@ import (
 // calls.
 type RPC struct {
 	RPMB        *RPMB
+	Storage     Card
 	Ctx         *monitor.ExecCtx
 	Cfg         []byte
 	Diversifier [32]byte
@@ -120,31 +121,31 @@ func (r *RPC) LED(led rpc.LEDStatus, _ *bool) error {
 
 // CardInfo returns the storage media information.
 func (r *RPC) CardInfo(_ any, info *usdhc.CardInfo) error {
-	if r.RPMB.Storage == nil {
+	if r.Storage == nil {
 		return errors.New("missing Storage")
 	}
 
-	*info = r.RPMB.Storage.Info()
+	*info = r.Storage.Info()
 
 	return nil
 }
 
 // WriteBlocks transfers full blocks of data to the storage media.
 func (r *RPC) WriteBlocks(xfer rpc.WriteBlocks, _ *bool) error {
-	if r.RPMB.Storage == nil {
+	if r.Storage == nil {
 		return errors.New("missing Storage")
 	}
 
-	return r.RPMB.Storage.WriteBlocks(xfer.LBA, xfer.Data)
+	return r.Storage.WriteBlocks(xfer.LBA, xfer.Data)
 }
 
 // Read transfers data from the storage media.
 func (r *RPC) Read(xfer rpc.Read, out *[]byte) (err error) {
-	if r.RPMB.Storage == nil {
+	if r.Storage == nil {
 		return errors.New("missing Storage")
 	}
 
-	*out, err = r.RPMB.Storage.Read(xfer.Offset, xfer.Size)
+	*out, err = r.Storage.Read(xfer.Offset, xfer.Size)
 
 	return
 }
