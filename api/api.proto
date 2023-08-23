@@ -92,13 +92,30 @@ The status information format is returned on any message sent with the
 
 */
 message Status {
-	string Serial      = 1;
-	bool   HAB         = 2;
-	string Revision    = 3;
-	string Build       = 4;
-	uint32 Version     = 5;
-	string Runtime     = 6;
-	bool   Link        = 7;
+	string Serial         = 1;
+	bool   HAB            = 2;
+	string Revision       = 3;
+	string Build          = 4;
+	uint32 Version        = 5;
+	string Runtime        = 6;
+	bool   Link           = 7;
+	WitnessStatus Witness = 8;
+}
+
+/*
+
+WitnessStatus contains witness-applet specific status information.
+
+This is embedded in the general Status message if the applet has provided
+this information to the OS.
+
+*/
+message WitnessStatus {
+	// Identity is the note-formatted public key which can be used to verify
+	// checkpoints cosigned by this witness.
+	string Identity  = 1;
+	// IP is a string representation of the witness applet's current IP address.
+	string IP        = 2;
 }
 
 /*

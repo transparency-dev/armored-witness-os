@@ -109,6 +109,12 @@ func (r *RPC) Status(_ any, status *api.Status) error {
 	return nil
 }
 
+// SetWitnessStatus informs the OS of the witness Trusted Applet's status.
+func (r *RPC) SetWitnessStatus(status rpc.WitnessStatus, _ *bool) error {
+	witnessStatus = &status
+	return nil
+}
+
 // LED receives a LED state request.
 func (r *RPC) LED(led rpc.LEDStatus, _ *bool) error {
 	if strings.EqualFold(led.Name, "white") {

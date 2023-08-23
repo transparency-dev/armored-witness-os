@@ -98,7 +98,13 @@ func (p *Status) Print() string {
 	status.WriteString(fmt.Sprintf("Build ..................: %s\n", p.Build))
 	status.WriteString(fmt.Sprintf("Version ................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
 	status.WriteString(fmt.Sprintf("Runtime ................: %s\n", p.Runtime))
-	status.WriteString(fmt.Sprintf("Link ...................: %v", p.Link))
+	status.WriteString(fmt.Sprintf("Link ...................: %v\n", p.Link))
+	if p.Witness != nil {
+		status.WriteString(fmt.Sprintf("Witness/Identity .......: %v\n", p.Witness.Identity))
+		status.WriteString(fmt.Sprintf("Witness/IP .............: %v", p.Witness.IP))
+	} else {
+		status.WriteString(fmt.Sprint("Witness ................: <no status>"))
+	}
 
 	return status.String()
 }
