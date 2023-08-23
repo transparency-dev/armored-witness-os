@@ -28,6 +28,7 @@ import (
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/transparency-dev/armored-witness-os/api"
+	"github.com/transparency-dev/armored-witness-os/api/rpc"
 )
 
 const (
@@ -36,6 +37,10 @@ const (
 	// Table 22–8, Status register bit definitions, 802.3-2008
 	STATUS_LINK = 2
 )
+
+// witnessStatus represents the latest view of the witness applet's status.
+// It's intended to be updated periodially by the applet via RPC to the OS.
+var witnessStatus *rpc.WitnessStatus
 
 type controlInterface struct {
 	sync.Mutex
@@ -56,6 +61,12 @@ func getStatus() (s *api.Status) {
 		Build:    Build,
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+	}
+	if witnessStatus != nil {
+		s.Witness = &api.WitnessStatus{
+			Identity: witnessStatus.Identity,
+			IP:       witnessStatus.IP,
+		}
 	}
 
 	switch {

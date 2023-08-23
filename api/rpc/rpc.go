@@ -37,3 +37,11 @@ type Read struct {
 	Offset int64
 	Size   int64
 }
+
+// WitnessStatus represents the witness applet's status.
+type WitnessStatus struct {
+	// Identity is the note-compatible public key used to verify witness signatures.
+	Identity string
+	// IP is the currently-assigned IP address of the witness applet.
+	IP string
+}
