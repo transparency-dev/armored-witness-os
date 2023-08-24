@@ -55,7 +55,7 @@ const (
 )
 
 type RPMB struct {
-	Storage   *usdhc.USDHC
+	storage   *usdhc.USDHC
 	partition *rpmb.RPMB
 }
 
@@ -80,7 +80,7 @@ func (r *RPMB) init() (err error) {
 
 	// setup RPMB partition
 	r.partition, err = rpmb.Init(
-		r.Storage,
+		r.storage,
 		pbkdf2.Key(dk, uid[:], iter, sha256.Size, sha256.New),
 		dummySector,
 	)
