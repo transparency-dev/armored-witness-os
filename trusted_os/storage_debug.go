@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"log"
 
+	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
+	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 )
 
@@ -31,7 +33,13 @@ const (
 	fakeCardNumBlocks = int64(4<<30) / fakeCardBlockSize
 )
 
+// storage will return MMC backed storage if running on real hardware, or
+// a fake in-memory storage device otherwise.
 func storage() (Card, *RPMB) {
+	if imx6ul.Native {
+		s := usbarmory.MMC
+		return s, &RPMB{storage: s}
+	}
 	return newFakeCard(fakeCardNumBlocks), &RPMB{}
 }
 
