@@ -102,6 +102,7 @@ func (ctl *controlInterface) Config(req []byte) (res []byte) {
 
 		log.Printf("SM received configuration update, restarting applet")
 		ctl.RPC.Ctx.Stop()
+		<-ctl.RPC.Ctx.Done()
 
 		if _, err = loadApplet(taELF, ctl); err != nil {
 			return api.ErrorResponse(err)
