@@ -33,10 +33,10 @@ import (
 )
 
 const (
-	otaLimit   = 31457280
-	confSector = 2097152
-	batchSize  = 2048
-	taSector   = confSector + config.MaxLength/512
+	otaLimit     = 31457280
+	taConfSector = 0x200000
+	batchSize    = 2048
+	taSector     = taConfSector + config.MaxLength/512
 )
 
 type otaBuffer struct {
@@ -62,7 +62,7 @@ type Card interface {
 // read reads the trusted applet and its signature from internal storage, the
 // applet and signatures are *not* verified by this function.
 func read(card Card) (taELF []byte, taSig []byte, err error) {
-	buf, err := card.Read(confSector, config.MaxLength)
+	buf, err := card.Read(taConfSector, config.MaxLength)
 
 	if err != nil {
 		return
@@ -166,7 +166,7 @@ func updateApplet(taELF []byte, taSig []byte) (err error) {
 
 	log.Printf("SM flashing applet signature")
 
-	if err = flash(Storage, taSig, confSector); err != nil {
+	if err = flash(Storage, taSig, taConfSector); err != nil {
 		return fmt.Errorf("applet signature flashing error: %v", err)
 	}
 
