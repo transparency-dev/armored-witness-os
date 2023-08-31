@@ -215,6 +215,24 @@ func (r *RPC) HAB(srk []byte, _ *bool) error {
 	return hab.Activate(srk)
 }
 
+// GetInstalledVersions returns the semantic versions of the OS and Applet
+// installed on this device. These will be the same versions that are
+// currently running.
+func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
+	return errors.New("unimplemented")
+}
+
+// InstallOS updates the OS to the version contained in the firmware bundle.
+func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
+	return errors.New("unimplemented")
+
+}
+
+// InstallApplet updates the Applet to the version contained in the firmware bundle.
+func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
+	return errors.New("unimplemented")
+}
+
 // Reboot resets the system.
 func (r *RPC) Reboot(_ *any, _ *bool) error {
 	log.Printf("SM rebooting")
