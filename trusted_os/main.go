@@ -30,7 +30,6 @@ import (
 	"github.com/usbarmory/armory-boot/config"
 
 	// for now just test compilation of these
-	_ "github.com/transparency-dev/armored-witness-os/internal/ft"
 	_ "github.com/transparency-dev/armored-witness-os/internal/hab"
 	_ "github.com/transparency-dev/armored-witness-os/rpmb"
 )
