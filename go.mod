@@ -4,10 +4,11 @@ go 1.19
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.0
+	github.com/coreos/go-semver v0.3.1
 	github.com/flynn/hid v0.0.0-20190502022136-f1b9b6cc019a
 	github.com/flynn/u2f v0.0.0-20180613185708-15554eb68e5d
 	github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3
-	github.com/transparency-dev/armored-witness-boot v0.0.0-20230503134353-2eb910e5f86f
+	github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7
 	github.com/usbarmory/GoTEE v0.0.0-20230828134615-ef53a1a84ba4
 	github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d
 	github.com/usbarmory/crucible v0.0.0-20230412092556-269c90b0067e
@@ -31,9 +32,10 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
-	github.com/u-root/u-root v7.0.0+incompatible // indirect
+	github.com/u-root/u-root v0.11.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect

@@ -14,6 +14,11 @@
 
 package rpc
 
+import (
+	"github.com/coreos/go-semver/semver"
+	"github.com/transparency-dev/armored-witness-boot/config"
+)
+
 // Handler represents an RPC request for event handler registration.
 type Handler struct {
 	G uint32
@@ -44,4 +49,19 @@ type WitnessStatus struct {
 	Identity string
 	// IP is the currently-assigned IP address of the witness applet.
 	IP string
+}
+
+// FirmwareUpdate represents a firmware update
+type FirmwareUpdate struct {
+	// Image is the firmware image to be applied.
+	Image []byte
+	//  Proof contains firmware transparency artefacts for the new firmware image.
+	Proof config.ProofBundle
+}
+
+// InstalledVersions represents the installed/running versions
+// of the TrustedOS and applet.
+type InstalledVersions struct {
+	OS     semver.Version
+	Applet semver.Version
 }
