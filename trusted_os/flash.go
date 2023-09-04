@@ -180,6 +180,7 @@ func updateOS(osELF []byte, osSigs [][]byte, pb config.ProofBundle) (err error) 
 	return flashFirmware(Firmware_OS, osELF, osSigs, pb)
 }
 
+// flashFirmware writes config & elf bytes to the MMC in the correct region for the specificed type of firmware.
 func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBundle) error {
 	blink, cancel := blinkenLights()
 	defer cancel()
