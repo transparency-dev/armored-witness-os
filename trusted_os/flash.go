@@ -173,6 +173,13 @@ func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error)
 	return flashFirmware(Firmware_Applet, taELF, [][]byte{taSig}, pb)
 }
 
+// updateOS verifies an OS update and flashes it to internal storage
+func updateOS(osELF []byte, osSigs [][]byte, pb config.ProofBundle) (err error) {
+	// TODO: OS signature verification
+
+	return flashFirmware(Firmware_OS, osELF, osSigs, pb)
+}
+
 func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBundle) error {
 	blink, cancel := blinkenLights()
 	defer cancel()
