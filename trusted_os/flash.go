@@ -117,15 +117,11 @@ func flash(card Card, buf []byte, lba int) (err error) {
 	return
 }
 
-// updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
+func blinkenLights() (func(), func()) {
 	var exit = make(chan bool)
+	cancel := func() { close(exit) }
 
-	defer func() {
-		exit <- true
-	}()
-
-	go func() {
+	blink := func() {
 		var on bool
 
 		for {
@@ -142,7 +138,16 @@ func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error)
 			runtime.Gosched()
 			time.Sleep(100 * time.Millisecond)
 		}
-	}()
+	}
+
+	return blink, cancel
+}
+
+// updateApplet verifies an applet update and flashes it to internal storage
+func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
+	blink, cancel := blinkenLights()
+	defer cancel()
+	go blink()
 
 	log.Printf("SM applet verification")
 	if err = abconfig.Verify(taELF, taSig, PublicKey); err != nil {
