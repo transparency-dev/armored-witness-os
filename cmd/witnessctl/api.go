@@ -60,11 +60,44 @@ func status() (s *api.Status, err error) {
 	return
 }
 
+func sendUpdateHeader(signature []byte, total int) (err error) {
+	update := &api.AppletUpdate{
+		Total: uint32(total),
+		Seq:   uint32(0), // MUST be 0
+		Payload: &api.AppletUpdate_Header{
+			Header: &api.AppletUpdateHeader{
+				Signature: signature,
+				// TODO: fill this out
+			},
+		},
+	}
+
+	buf, err := conf.dev.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
+
+	if err != nil {
+		return err
+	}
+
+	res := &api.Response{}
+
+	if err = proto.Unmarshal(buf, res); err != nil {
+		return err
+	}
+
+	if res.Error != api.ErrorCode_NONE {
+		return fmt.Errorf("%+v", res)
+	}
+
+	return
+}
+
 func sendUpdateChunk(data []byte, seq int, total int) (err error) {
 	update := &api.AppletUpdate{
 		Total: uint32(total),
 		Seq:   uint32(seq),
-		Data:  data,
+		Payload: &api.AppletUpdate_Data{
+			Data: data,
+		},
 	}
 
 	buf, err := conf.dev.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
@@ -131,7 +164,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 
 	log.Printf("sending trusted applet signature to armored witness")
 
-	if err = sendUpdateChunk(taSig, seq, total); err != nil {
+	if err = sendUpdateHeader(taSig, total); err != nil {
 		return
 	}
 
