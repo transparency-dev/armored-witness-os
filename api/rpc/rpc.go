@@ -51,9 +51,11 @@ type WitnessStatus struct {
 	IP string
 }
 
-// FirmwareUpdate represnts a firmware update
+// FirmwareUpdate represents a firmware update
 type FirmwareUpdate struct {
+	// Image is the firmware image to be applied.
 	Image []byte
+	//  Proof contains firmware transparency artefacts for the new firmware image.
 	Proof config.ProofBundle
 }
 
