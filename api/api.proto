@@ -29,7 +29,7 @@ payload as follows:
   host > armory: AppletUpdate{
     Total:   <n>,
     Seq:     0,
-    Payload: <applet signature>,
+    Payload: <applet signature & proof bundle>,
   }
 
   host > armory: AppletUpdate{
@@ -73,14 +73,42 @@ AppletUpdate
 A `AppletUpdate` represents an OTA sequence applet slice.
 
 The `TotalChunks` value indicates the total number of chunks for the update,
-`Seq` is the transmitted `Data` chunk number (starting with 1 as the value for
-the first chunk).
+`Seq` is the transmitted AppletUpdate chunk number:
+ - `0` indicates that the struct contains verification data in `Header`.
+ - `1` onwards identifies the first, second, ... chunk of firmware image data.
 
 */
 message AppletUpdate {
 	uint32 Total = 1;
 	uint32 Seq   = 2;
-	bytes  Data  = 3;
+	oneof Payload {
+		bytes  Data  = 3;
+		AppletUpdateHeader Header = 4;
+	};
+}
+
+
+/*
+
+AppletUpdateHeader
+
+An `AppletUpdateHeader` contains verification material for an applet update.
+It's sent in the zero-th `AppletUpdate` message during an OTA.
+
+
+*/
+
+message AppletUpdateHeader {
+	// Signature holds the signature over the applet.
+	bytes  Signature  = 1;
+	// Checkpoint contains a note-formatted Log Checkpoint.
+	bytes  Checkpoint = 2;
+	// Manifest is metadata about the applet, which has been logged to a firmware transparency log.
+	bytes  Manifest = 3;
+	// InclusionProof is a log inclusion proof for Manifest committed to by Checkpoint.
+	repeated bytes InclusionProof = 4;
+	// LogIndex is the index of Manifest in the firmware transparency log.
+	uint64	LogIndex = 5; 
 }
 
 /*
