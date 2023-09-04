@@ -20,6 +20,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
@@ -36,10 +37,11 @@ import (
 
 // initialized at compile time (see Makefile)
 var (
-	Build     string
-	Revision  string
-	Version   string
-	PublicKey string
+	Build              string
+	Revision           string
+	Version            string
+	PublicKey          string
+	EmbedTrustedApplet string
 )
 
 var (
@@ -149,23 +151,30 @@ func main() {
 		}
 	}
 
-	if len(taELF) == 0 && len(taSig) == 0 {
-		if taELF, taSig, err = read(Storage); err != nil {
-			log.Printf("SM could not load applet, %v", err)
-		}
+	embed, err := strconv.ParseBool(EmbedTrustedApplet)
+	if err != nil {
+		log.Fatalf("could not parse bool EmbedTrustedApplet = %q", EmbedTrustedApplet)
 	}
 
-	if len(taELF) != 0 && len(taSig) != 0 {
-		log.Printf("SM applet verification pub:%s", PublicKey)
-
-		if err := config.Verify(taELF, taSig, PublicKey); err != nil {
-			log.Printf("SM applet verification error, %v", err)
+	if embed {
+		if len(taELF) == 0 && len(taSig) == 0 {
+			if taELF, taSig, err = read(Storage); err != nil {
+				log.Printf("SM could not load applet, %v", err)
+			}
 		}
 
-		usbarmory.LED("white", true)
+		if len(taELF) != 0 && len(taSig) != 0 {
+			log.Printf("SM applet verification pub:%s", PublicKey)
 
-		if _, err = loadApplet(taELF, ctl); err != nil {
-			log.Printf("SM applet execution error, %v", err)
+			if err := config.Verify(taELF, taSig, PublicKey); err != nil {
+				log.Printf("SM applet verification error, %v", err)
+			}
+
+			usbarmory.LED("white", true)
+
+			if _, err = loadApplet(taELF, ctl); err != nil {
+				log.Printf("SM applet execution error, %v", err)
+			}
 		}
 	}
 
