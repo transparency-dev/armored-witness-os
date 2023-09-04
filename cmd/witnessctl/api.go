@@ -92,6 +92,9 @@ func sendUpdateHeader(signature []byte, total int) (err error) {
 }
 
 func sendUpdateChunk(data []byte, seq int, total int) (err error) {
+	if seq <= 0 {
+		return fmt.Errorf("seq is %d, it must be >= 0 to send update chunks", seq)
+	}
 	update := &api.AppletUpdate{
 		Total: uint32(total),
 		Seq:   uint32(seq),
