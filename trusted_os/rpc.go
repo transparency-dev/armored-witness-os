@@ -223,12 +223,16 @@ func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
 }
 
 // InstallOS updates the OS to the version contained in the firmware bundle.
+// If the update is successful, this func will not return and the device will
+// immediately reboot.
 func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 	return errors.New("unimplemented")
 
 }
 
 // InstallApplet updates the Applet to the version contained in the firmware bundle.
+// If the update is successful, this func will not return and the device will
+// immediately reboot.
 func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
 	return errors.New("unimplemented")
 }
