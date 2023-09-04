@@ -40,10 +40,11 @@ const (
 )
 
 type otaBuffer struct {
-	total uint32
-	seq   uint32
-	sig   []byte
-	buf   []byte
+	total  uint32
+	seq    uint32
+	sig    []byte
+	buf    []byte
+	bundle *config.ProofBundle
 }
 
 // Card mostly mirrors the public API of the usdhc.Card struct, allowing
@@ -117,7 +118,7 @@ func flash(card Card, buf []byte, lba int) (err error) {
 }
 
 // updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, taSig []byte) (err error) {
+func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
 	var exit = make(chan bool)
 
 	defer func() {
@@ -154,6 +155,7 @@ func updateApplet(taELF []byte, taSig []byte) (err error) {
 		Offset:     taSector,
 		Size:       int64(len(taELF)),
 		Signatures: [][]byte{taSig},
+		Bundle:     pb,
 	}
 
 	if taSig, err = conf.Encode(); err != nil {
@@ -207,9 +209,20 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 	defer ctl.Unlock()
 
 	if update.Seq == 0 {
+		payload, ok := update.Payload.(*api.AppletUpdate_Header)
+		if !ok || payload == nil {
+			err = errors.New("invalid update, seq 0 did not have update header")
+			return
+		}
 		ctl.ota = &otaBuffer{
 			total: update.Total,
-			sig:   update.Data,
+			sig:   payload.Header.Signature,
+			bundle: &config.ProofBundle{
+				Checkpoint:     payload.Header.Checkpoint,
+				InclusionProof: payload.Header.InclusionProof,
+				LogIndex:       payload.Header.LogIndex,
+				Manifest:       payload.Header.Manifest,
+			},
 		}
 
 		log.Printf("starting applet update (%d chunks)", ctl.ota.total)
@@ -227,8 +240,14 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 		return
 	}
 
+	payload, ok := update.Payload.(*api.AppletUpdate_Data)
+	if !ok || payload == nil {
+		err = fmt.Errorf("invalid update, seq > %d did not have update data chunk", update.Seq)
+		return
+	}
+
 	ctl.ota.seq = update.Seq
-	ctl.ota.buf = append(ctl.ota.buf, update.Data...)
+	ctl.ota.buf = append(ctl.ota.buf, payload.Data...)
 
 	if ctl.ota.seq%100 == 0 {
 		log.Printf("received %d/%d applet update chunks", ctl.ota.seq, ctl.ota.total)
@@ -237,11 +256,11 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 	if ctl.ota.seq == ctl.ota.total {
 		log.Printf("received all %d firmware update chunks", ctl.ota.total)
 
-		go func(buf []byte, sig []byte) {
+		go func(buf []byte, sig []byte, pb config.ProofBundle) {
 			// avoid USB control interface timeout
 			time.Sleep(500 * time.Millisecond)
 
-			if err = updateApplet(buf, sig); err != nil {
+			if err = updateApplet(buf, sig, pb); err != nil {
 				log.Printf("firmware update error, %v", err)
 			}
 
@@ -256,7 +275,7 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 			if _, err = loadApplet(taELF, ctl); err != nil {
 				log.Printf("SM applet execution error, %v", err)
 			}
-		}(ctl.ota.buf, ctl.ota.sig)
+		}(ctl.ota.buf, ctl.ota.sig, *ctl.ota.bundle)
 
 		ctl.ota = nil
 	}
