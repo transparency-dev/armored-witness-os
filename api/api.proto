@@ -75,7 +75,7 @@ A `AppletUpdate` represents an OTA sequence applet slice.
 The `TotalChunks` value indicates the total number of chunks for the update,
 `Seq` is the transmitted AppletUpdate chunk number:
  - `0` indicates that the struct contains verification data in `Header`.
- - `1` onwards identifies the first, second, ... chuck of firmware image data.
+ - `1` onwards identifies the first, second, ... chunk of firmware image data.
 
 */
 message AppletUpdate {
@@ -101,7 +101,7 @@ It's sent in the zero-th `AppletUpdate` message during an OTA.
 message AppletUpdateHeader {
 	// Signature holds the signature over the applet.
 	bytes  Signature  = 1;
-	// Checkpoint contains a note-formatted LogCheckpoint.
+	// Checkpoint contains a note-formatted Log Checkpoint.
 	bytes  Checkpoint = 2;
 	// Manifest is metadata about the applet, which has been logged to a firmware transparency log.
 	bytes  Manifest = 3;
