@@ -195,10 +195,8 @@ func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBun
 	defer cancel()
 	go blink()
 
-	var (
-		confBlock int
-		elfBlock  int
-	)
+	confBlock := 0
+	elfBlock := 0
 	switch t {
 	case Firmware_Applet:
 		confBlock = taConfBlock
