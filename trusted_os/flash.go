@@ -33,12 +33,13 @@ import (
 )
 
 const (
-	otaLimit    = 31457280
-	taConfBlock = 0x200000
-	taBlock     = taConfBlock + config.MaxLength/512
-	osConfBlock = config.Offset / 512 // Offset is in bytes
-	osBlock     = osConfBlock + config.MaxLength/512
-	batchSize   = 2048
+	expectedBlockSize = 512 // Expected size of MMC block in bytes
+	otaLimit          = 31457280
+	taConfBlock       = 0x200000
+	taBlock           = taConfBlock + config.MaxLength/expectedBlockSize
+	osConfBlock       = config.Offset / expectedBlockSize // Offset is in bytes
+	osBlock           = osConfBlock + config.MaxLength/expectedBlockSize
+	batchSize         = 2048
 )
 
 const (
@@ -83,7 +84,12 @@ type Card interface {
 // read reads the trusted applet and its signature from internal storage, the
 // applet and signatures are *not* verified by this function.
 func read(card Card) (taELF []byte, taSig []byte, err error) {
-	buf, err := card.Read(taConfBlock*512, config.MaxLength)
+	blockSize := card.Info().BlockSize
+	if blockSize != expectedBlockSize {
+		return nil, nil, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
+	}
+
+	buf, err := card.Read(taConfBlock*expectedBlockSize, config.MaxLength)
 
 	if err != nil {
 		return
@@ -99,7 +105,7 @@ func read(card Card) (taELF []byte, taSig []byte, err error) {
 		return nil, nil, errors.New("invalid applet signature")
 	}
 
-	taSig = conf.Signatures[1]
+	taSig = conf.Signatures[0]
 	taELF, err = card.Read(conf.Offset, conf.Size)
 
 	return
@@ -108,6 +114,9 @@ func read(card Card) (taELF []byte, taSig []byte, err error) {
 // flash writes a buffer to internal storage
 func flash(card Card, buf []byte, lba int) (err error) {
 	blockSize := card.Info().BlockSize
+	if blockSize != expectedBlockSize {
+		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
+	}
 
 	if blockSize == 0 {
 		return errors.New("invalid block size")
@@ -207,7 +216,7 @@ func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBun
 		Size:       int64(len(elf)),
 		Signatures: sigs,
 		Bundle:     pb,
-		Offset:     int64(elfBlock) * 512,
+		Offset:     int64(elfBlock) * expectedBlockSize,
 	}
 
 	confEnc, err := conf.Encode()
