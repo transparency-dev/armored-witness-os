@@ -92,7 +92,7 @@ func (ErrorCode) EnumDescriptor() ([]byte, []int) {
 //The `TotalChunks` value indicates the total number of chunks for the update,
 //`Seq` is the transmitted AppletUpdate chunk number:
 //- `0` indicates that the struct contains verification data in `Header`.
-//- `1` onwards identifies the first, second, ... chuck of firmware image data.
+//- `1` onwards identifies the first, second, ... chunk of firmware image data.
 //
 type AppletUpdate struct {
 	state         protoimpl.MessageState
@@ -197,7 +197,7 @@ type AppletUpdateHeader struct {
 
 	// Signature holds the signature over the applet.
 	Signature []byte `protobuf:"bytes,1,opt,name=Signature,proto3" json:"Signature,omitempty"`
-	// Checkpoint contains a note-formatted LogCheckpoint.
+	// Checkpoint contains a note-formatted Log Checkpoint.
 	Checkpoint []byte `protobuf:"bytes,2,opt,name=Checkpoint,proto3" json:"Checkpoint,omitempty"`
 	// Manifest is metadata about the applet, which has been logged to a firmware transparency log.
 	Manifest []byte `protobuf:"bytes,3,opt,name=Manifest,proto3" json:"Manifest,omitempty"`

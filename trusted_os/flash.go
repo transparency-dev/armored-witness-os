@@ -33,11 +33,32 @@ import (
 )
 
 const (
-	otaLimit     = 31457280
-	taConfSector = 0x200000
-	batchSize    = 2048
-	taSector     = taConfSector + config.MaxLength/512
+	expectedBlockSize = 512 // Expected size of MMC block in bytes
+	otaLimit          = 31457280
+	taConfBlock       = 0x200000
+	taBlock           = taConfBlock + config.MaxLength/expectedBlockSize
+	osConfBlock       = config.Offset / expectedBlockSize // Offset is in bytes
+	osBlock           = osConfBlock + config.MaxLength/expectedBlockSize
+	batchSize         = 2048
 )
+
+const (
+	Firmware_Applet FirmwareType = iota
+	Firmware_OS
+)
+
+// FirmwareType represents the types of updatable firmware.
+type FirmwareType int
+
+func (ft FirmwareType) String() string {
+	switch ft {
+	case Firmware_Applet:
+		return "applet"
+	case Firmware_OS:
+		return "OS"
+	}
+	panic(fmt.Errorf("Unknown FirmwareType %v", ft))
+}
 
 type otaBuffer struct {
 	total  uint32
@@ -63,7 +84,12 @@ type Card interface {
 // read reads the trusted applet and its signature from internal storage, the
 // applet and signatures are *not* verified by this function.
 func read(card Card) (taELF []byte, taSig []byte, err error) {
-	buf, err := card.Read(taConfSector, config.MaxLength)
+	blockSize := card.Info().BlockSize
+	if blockSize != expectedBlockSize {
+		return nil, nil, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
+	}
+
+	buf, err := card.Read(taConfBlock*expectedBlockSize, config.MaxLength)
 
 	if err != nil {
 		return
@@ -79,7 +105,7 @@ func read(card Card) (taELF []byte, taSig []byte, err error) {
 		return nil, nil, errors.New("invalid applet signature")
 	}
 
-	taSig = conf.Signatures[1]
+	taSig = conf.Signatures[0]
 	taELF, err = card.Read(conf.Offset, conf.Size)
 
 	return
@@ -88,6 +114,9 @@ func read(card Card) (taELF []byte, taSig []byte, err error) {
 // flash writes a buffer to internal storage
 func flash(card Card, buf []byte, lba int) (err error) {
 	blockSize := card.Info().BlockSize
+	if blockSize != expectedBlockSize {
+		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
+	}
 
 	if blockSize == 0 {
 		return errors.New("invalid block size")
@@ -117,15 +146,11 @@ func flash(card Card, buf []byte, lba int) (err error) {
 	return
 }
 
-// updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
+func blinkenLights() (func(), func()) {
 	var exit = make(chan bool)
+	cancel := func() { close(exit) }
 
-	defer func() {
-		exit <- true
-	}()
-
-	go func() {
+	blink := func() {
 		var on bool
 
 		for {
@@ -142,46 +167,79 @@ func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error)
 			runtime.Gosched()
 			time.Sleep(100 * time.Millisecond)
 		}
-	}()
+	}
 
+	return blink, cancel
+}
+
+// updateApplet verifies an applet update and flashes it to internal storage
+func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
 	log.Printf("SM applet verification")
 	if err = abconfig.Verify(taELF, taSig, PublicKey); err != nil {
 		return fmt.Errorf("applet verification error: %v", err)
 	}
 
+	return flashFirmware(Firmware_Applet, taELF, [][]byte{taSig}, pb)
+}
+
+// updateOS verifies an OS update and flashes it to internal storage
+func updateOS(osELF []byte, osSigs [][]byte, pb config.ProofBundle) (err error) {
+	// TODO: OS signature verification
+
+	return flashFirmware(Firmware_OS, osELF, osSigs, pb)
+}
+
+// flashFirmware writes config & elf bytes to the MMC in the correct region for the specificed type of firmware.
+func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBundle) error {
+	blink, cancel := blinkenLights()
+	defer cancel()
+	go blink()
+
+	confBlock := 0
+	elfBlock := 0
+	switch t {
+	case Firmware_Applet:
+		confBlock = taConfBlock
+		elfBlock = taBlock
+	case Firmware_OS:
+		elfBlock = osBlock
+		confBlock = osConfBlock
+	default:
+		return fmt.Errorf("unknown firmware type %v", t)
+	}
+
 	// Convert the signature to an armory-witness-boot format to serialize
 	// all required information for applet loading.
 	conf := &config.Config{
-		Offset:     taSector,
-		Size:       int64(len(taELF)),
-		Signatures: [][]byte{taSig},
+		Size:       int64(len(elf)),
+		Signatures: sigs,
 		Bundle:     pb,
+		Offset:     int64(elfBlock) * expectedBlockSize,
 	}
 
-	if taSig, err = conf.Encode(); err != nil {
-		return
+	confEnc, err := conf.Encode()
+	if err != nil {
+		return err
 	}
 
 	if Storage == nil {
-		return fmt.Errorf("applet flashing error: missing Storage")
+		return fmt.Errorf("Flashing %s error: missing Storage", t)
 	}
 
-	log.Printf("SM flashing applet signature")
+	log.Printf("SM flashing %s config", t)
 
-	if err = flash(Storage, taSig, taConfSector); err != nil {
-		return fmt.Errorf("applet signature flashing error: %v", err)
+	if err = flash(Storage, confEnc, confBlock); err != nil {
+		return fmt.Errorf("%s signature flashing error: %v", t, err)
 	}
 
-	log.Printf("SM flashing applet")
+	log.Printf("SM flashing %s", t)
 
-	if err = flash(Storage, taELF, taSector); err != nil {
-		return fmt.Errorf("applet flashing error: %v", err)
+	if err = flash(Storage, elf, elfBlock); err != nil {
+		return fmt.Errorf("%s flashing error: %v", t, err)
 	}
 
-	log.Printf("SM applet update complete")
-	usbarmory.LED("white", false)
-
-	return
+	log.Printf("SM %s update complete", t)
+	return nil
 }
 
 // Update is the handler for U2FHID_ARMORY_OTA requests, which consist of
