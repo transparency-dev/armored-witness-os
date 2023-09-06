@@ -48,7 +48,7 @@ QEMU ?= qemu-system-arm -machine mcimx6ul-evk -cpu cortex-a7 -m 512M \
 
 ARCH = "arm"
 
-GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY} | tail -n 1)' ${EMBEDFLAG}"
+GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY} | tail -n 1)'"
 
 .PHONY: clean qemu qemu-gdb
 
@@ -58,14 +58,16 @@ all: trusted_os_embedded_applet witnessctl
 
 elf: $(APP).elf
 
+# This target builds the Trusted OS without signing it as it is intended to be
+# used by the GCP build process and signed there.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: check_os_env elf
+trusted_os: create_dummy_applet elf
 
 trusted_os_embedded_applet: APP=trusted_os
-trusted_os_embedded_applet: EMBEDFLAG=-X 'main.EmbedTrustedApplet=true'
 trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_env_vars copy_applet elf imx
+trusted_os_embedded_applet: check_os_env copy_applet elf imx
+trusted_os_embedded_applet:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
@@ -113,17 +115,6 @@ $(APP).dcd: dcd
 
 #### utilities ####
 
-check_env_vars: check_os_env
-check_env_vars:
-	@if [ "${APPLET_PUBLIC_KEY}" == "" ] || [ ! -f "${APPLET_PUBLIC_KEY}" ]; then \
-		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid authentication key path'; \
-		exit 1; \
-	fi
-	@if [ "${APPLET_PATH}" == "" ]; then \
-		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and signature files (e.g. path to armored-witness-applet/bin)'; \
-		exit 1; \
-	fi
-
 check_os_env:
 	@if [ "${OS_PRIVATE_KEY1}" == "" ] || [ ! -f "${OS_PRIVATE_KEY1}" ]; then \
 		echo 'You need to set the OS_PRIVATE_KEY1 variable to a valid signing key path'; \
@@ -133,11 +124,24 @@ check_os_env:
 		echo 'You need to set the OS_PRIVATE_KEY2 variable to a valid signing key path'; \
 		exit 1; \
 	fi
+	@if [ "${APPLET_PUBLIC_KEY}" == "" ] || [ ! -f "${APPLET_PUBLIC_KEY}" ]; then \
+		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid authentication key path'; \
+		exit 1; \
+	fi
+	@if [ "${APPLET_PATH}" == "" ]; then \
+		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and signature files (e.g. path to armored-witness-applet/bin)'; \
+		exit 1; \
+	fi
 
 copy_applet:
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
 	cp ${APPLET_PATH}/trusted_applet.sig ${CURDIR}/trusted_os/assets/
+
+create_dummy_applet:
+	mkdir -p $(DIR)/assets
+	touch $(DIR)/assets/trusted_applet.elf
+	touch $(DIR)/assets/trusted_applet.sig
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
