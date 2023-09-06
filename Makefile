@@ -54,13 +54,20 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 #### primary targets ####
 
-all: trusted_os witnessctl
+all: trusted_os_embedded_applet witnessctl
 
 elf: $(APP).elf
 
+# This target builds the Trusted OS without signing it as it is intended to be
+# used by the GCP build process and signed there.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: check_os_env copy_applet elf imx
+trusted_os: create_dummy_applet elf
+
+trusted_os_embedded_applet: APP=trusted_os
+trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
+trusted_os_embedded_applet: check_os_env copy_applet elf imx
+trusted_os_embedded_applet:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
@@ -130,6 +137,11 @@ copy_applet:
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
 	cp ${APPLET_PATH}/trusted_applet.sig ${CURDIR}/trusted_os/assets/
+
+create_dummy_applet:
+	mkdir -p $(DIR)/assets
+	rm -f $(DIR)/assets/trusted_applet.elf && touch $(DIR)/assets/trusted_applet.elf
+	rm -f $(DIR)/assets/trusted_applet.sig && touch $(DIR)/assets/trusted_applet.sig
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
