@@ -42,7 +42,7 @@ func isr() (err error) {
 	irq, end := imx6ul.GIC.GetInterrupt(true)
 
 	if end != nil {
-		end <- true
+		close(end)
 	}
 
 	if handle, ok := irqHandler[irq]; ok {
