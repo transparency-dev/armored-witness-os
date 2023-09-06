@@ -1,0 +1,7 @@
+version: '3.2'
+services:
+  trusted_os:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+
