@@ -140,8 +140,8 @@ copy_applet:
 
 create_dummy_applet:
 	mkdir -p $(DIR)/assets
-	touch $(DIR)/assets/trusted_applet.elf
-	touch $(DIR)/assets/trusted_applet.sig
+	rm -f $(DIR)/assets/trusted_applet.elf && touch $(DIR)/assets/trusted_applet.elf
+	rm -f $(DIR)/assets/trusted_applet.sig && touch $(DIR)/assets/trusted_applet.sig
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
