@@ -82,8 +82,8 @@ github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e/go.mod h1:eT+
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8 h1:VPruqXJEJxTweSRyx3NIkiIqQl9ppZHp4wZnL8+Y0aI=
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8/go.mod h1:XfTrYj8Ik3ljit1cSHTcsXs7lyJ/QMsplPDX8+g5s7c=
 github.com/usbarmory/tamago v0.0.0-20220823080407-04f05cf2a5a3/go.mod h1:Lok79mjbJnhoBGqhX5cCUsZtSemsQF5FNZW+2R1dRr8=
-github.com/usbarmory/tamago v0.0.0-20230814171810-6cd63c1accf5 h1:cu+znyiHqWwvmoPM6uplHt+bOkn5hc+133/kwg15ywk=
-github.com/usbarmory/tamago v0.0.0-20230814171810-6cd63c1accf5/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
+github.com/usbarmory/tamago v0.0.0-20230829132607-64264ab65702 h1:6ZCdT389pu9VKNyZoSBkJ0qvUESNHXuR5fnrKIczTUM=
+github.com/usbarmory/tamago v0.0.0-20230829132607-64264ab65702/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.8.0 h1:pd9TJtTueMTVQXzk8E2XESSMQDj/U7OUu0PqJqPXQjQ=
 golang.org/x/crypto v0.8.0/go.mod h1:mRqEX+O9/h5TFCrQhkgjo2yKi0yYA+9ecGkdQoHrywE=
