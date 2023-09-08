@@ -64,6 +64,16 @@ trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
 trusted_os: create_dummy_applet elf
 
+trusted_os_signed: trusted_os
+	echo "signing Trusted OS"
+	@if [ "${SIGN_PWD}" != "" ]; then \
+		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
+		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
+	else \
+		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
+		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
+	fi
+
 trusted_os_embedded_applet: APP=trusted_os
 trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
 trusted_os_embedded_applet: check_os_env copy_applet elf imx
