@@ -1,0 +1,85 @@
+steps:
+  ### Build the Trusted OS, create a detached signature for it, and upload both to GCS.
+  # Build an image containing the Trusted OS artifacts with the Dockerfile.
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg
+      - TAMAGO_VERSION=${_TAMAGO_VERSION}
+      - --build-arg
+      - PROTOC_VERSION=${_PROTOC_VERSION}
+      - --build-arg
+      - PROTOC_GEN_GO_VERSION=${_PROTOC_GEN_GO_VERSION}
+      - -t
+      - builder-image
+      # Path is relative to the root of the repo.
+      - .
+  # Prepare a container with a copy of the artifacts.
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - create
+      - --name
+      - builder_scratch
+      - builder-image
+  # Copy the artifacts from the container to the Cloud Build VM.
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - cp
+      - builder_scratch:/build/bin
+      - output
+  # List the artifacts.
+  - name: bash
+    args:
+      - ls
+      - output
+  # Sign the built OS.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - kms
+      - asymmetric-sign
+      - --digest-algorithm
+      - sha256
+      - --version
+      - ${_KMS_KEY_VERSION}
+      - --key
+      - ${_KMS_KEY}
+      - --keyring
+      - ${_KMS_KEYRING}
+      - --location
+      - ${_REGION}
+      - --input-file
+      - output/trusted_os.elf
+      - --signature-file
+      - output/trusted_os.sig
+  # Copy the artifacts from the Cloud Build VM to GCS.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - storage
+      - cp
+      - output/trusted_os.elf
+      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os.elf
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - storage
+      - cp
+      - output/trusted_os.sig
+      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_transparency_dev.sig
+
+  ### TODO(jayhou): get WithSecure to sign it, copy their signature to the bucket above.
+
+  ### TODO(jayhou): Construct log entry / Claimant Model statement.
+
+  ### TODO(jayhou): Write the firmware release to the transparency log.
+  
+substitutions:
+  # Build-related.
+  _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
+  _TAMAGO_VERSION: '1.20.6'
+  _PROTOC_VERSION: '24.2'
+  _PROTOC_GEN_GO_VERSION: '1.28.1'
+  _TEST_TAG_NAME: '0.1.2'
+  # Signing-related.
+  _REGION: europe-west2
+  _KMS_KEY: trusted-os-ci
+  _KMS_KEYRING: armored-witness
+  _KMS_KEY_VERSION: '1'
