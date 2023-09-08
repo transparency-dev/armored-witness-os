@@ -80,6 +80,6 @@ substitutions:
   _TEST_TAG_NAME: '0.1.2'
   # Signing-related.
   _REGION: europe-west2
-  _KMS_KEY: trusted-os
+  _KMS_KEY: trusted-os-ci
   _KMS_KEYRING: armored-witness
   _KMS_KEY_VERSION: '1'
