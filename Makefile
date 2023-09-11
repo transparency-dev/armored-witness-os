@@ -56,6 +56,8 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 all: trusted_os_embedded_applet witnessctl
 
+elf: APP=trusted_os
+elf: DIR=$(CURDIR)/trusted_os
 elf: $(APP).elf
 
 # This target builds the Trusted OS without signing it as it is intended to be
