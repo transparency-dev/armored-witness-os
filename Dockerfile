@@ -1,8 +1,6 @@
 FROM amd64/golang:latest
 
 ARG TAMAGO_VERSION
-ARG PROTOC_VERSION
-ARG PROTOC_GEN_GO_VERSION
 
 # Install dependencies.
 RUN apt-get update && apt-get install -y make
@@ -27,4 +25,4 @@ WORKDIR /build
 
 COPY . .
 
-RUN make trusted_os
+RUN make trusted_os_release

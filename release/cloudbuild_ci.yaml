@@ -6,10 +6,6 @@ steps:
       - build
       - --build-arg
       - TAMAGO_VERSION=${_TAMAGO_VERSION}
-      - --build-arg
-      - PROTOC_VERSION=${_PROTOC_VERSION}
-      - --build-arg
-      - PROTOC_GEN_GO_VERSION=${_PROTOC_GEN_GO_VERSION}
       - -t
       - builder-image
       # Path is relative to the root of the repo.
@@ -75,8 +71,6 @@ substitutions:
   # Build-related.
   _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
   _TAMAGO_VERSION: '1.20.6'
-  _PROTOC_VERSION: '24.2'
-  _PROTOC_GEN_GO_VERSION: '1.28.1'
   _TEST_TAG_NAME: '0.1.2'
   # Signing-related.
   _REGION: europe-west2

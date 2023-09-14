@@ -54,15 +54,15 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 #### primary targets ####
 
-all: trusted_os_embedded_applet witnessctl
+all: trusted_os_embedded_applet_signed witnessctl
 
 elf: $(APP).elf
 
-# This target builds the Trusted OS without signing it as it is intended to be
-# used by the GCP build process and signed there.
+# This target is only used for dev builds, since the proto definitions may
+# change in development and require re-compilation of protos.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: create_dummy_applet elf
+trusted_os: create_dummy_applet proto elf
 
 trusted_os_signed: trusted_os
 	echo "signing Trusted OS"
@@ -74,10 +74,10 @@ trusted_os_signed: trusted_os
 		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
 
-trusted_os_embedded_applet: APP=trusted_os
-trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_os_env copy_applet elf imx
-trusted_os_embedded_applet:
+trusted_os_embedded_applet_signed: APP=trusted_os
+trusted_os_embedded_applet_signed: DIR=$(CURDIR)/trusted_os
+trusted_os_embedded_applet_signed: check_os_env copy_applet proto elf imx
+trusted_os_embedded_applet_signed:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
@@ -92,6 +92,12 @@ witnessctl: check_tamago
 	@cd $(CURDIR)/cmd/witnessctl && GOPATH="${BUILD_GOPATH}" ${TAMAGO} build -v \
 		-ldflags "-s -w -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}'" \
 		-o $(CURDIR)/bin/witnessctl
+
+# This target builds the Trusted OS without signing it as it is intended to be
+# used by the GCP build process and signed there.
+trusted_os_release: APP=trusted_os
+trusted_os_release: DIR=$(CURDIR)/trusted_os
+trusted_os_release: create_dummy_applet elf
 
 #### ARM targets ####
 
@@ -173,5 +179,5 @@ qemu-gdb:
 
 #### application target ####
 
-$(APP).elf: check_tamago proto
+$(APP).elf: check_tamago
 	cd $(DIR) && $(GOENV) $(TAMAGO) build -tags ${BUILD_TAGS} $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
