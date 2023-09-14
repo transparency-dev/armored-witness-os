@@ -60,11 +60,11 @@ all: trusted_os_embedded_applet witnessctl
 
 # This target is only used for dev builds, since the proto definitions may
 # change in development and require re-compilation of protos.
-elf_and_proto: proto $(APP).elf
+trusted_os_nosign_dev: proto $(APP).elf
 
 trusted_os_signed: APP=trusted_os
 trusted_os_signed: DIR=$(CURDIR)/trusted_os
-trusted_os_signed: create_dummy_applet elf_and_proto
+trusted_os_signed: create_dummy_applet trusted_os_nosign_dev
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
@@ -76,7 +76,7 @@ trusted_os_signed: create_dummy_applet elf_and_proto
 
 trusted_os_embedded_applet: APP=trusted_os
 trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_os_env copy_applet elf_and_proto imx
+trusted_os_embedded_applet: check_os_env copy_applet trusted_os_nosign_dev imx
 trusted_os_embedded_applet:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
