@@ -54,7 +54,7 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 #### primary targets ####
 
-all: trusted_os_embedded_applet witnessctl
+all: trusted_os_embedded_applet_signed witnessctl
 
 elf: $(APP).elf
 
@@ -74,10 +74,10 @@ trusted_os_signed: trusted_os
 		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
 	fi
 
-trusted_os_embedded_applet: APP=trusted_os
-trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_os_env copy_applet proto elf imx
-trusted_os_embedded_applet:
+trusted_os_embedded_applet_signed: APP=trusted_os
+trusted_os_embedded_applet_signed: DIR=$(CURDIR)/trusted_os
+trusted_os_embedded_applet_signed: check_os_env copy_applet proto elf imx
+trusted_os_embedded_applet_signed:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
 		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
