@@ -1,0 +1,41 @@
+# This Cloud Build trigger copies the WithSecure signature for a certain
+# Trusted OS release version to the bucket (and "subdir") that contains the
+# Trusted OS as built by transparency.dev and the detached signature as signed
+# by transparency.dev.
+#
+# This is the second Cloud Build trigger for a given release. The first should
+# have already created the Trusted OS elf file and the transparency.dev
+# detached signature.
+#
+# The Trusted OS elf should only be used if both signatures are verified
+# successfully.
+#
+#### WithSecure Expectations ####
+#
+# WithSecure is expected to commit a signature file in the _WITHSECURE_DIR dir
+# of the Github repo for each release, and tag it with the pattern
+# `withsecure_vX.X.X`.
+#
+# Cloud Build infers the name of the file from the tag name by appending the
+# `.sig` file suffix. The expected signature file name is
+# `withsecure_vX.X.X.sig`.
+#
+# After Cloud Build locates the signature file, it copies the file to the
+# proper "subdir" (as mentioned above).
+steps:
+  # Get version number (expected to be in the `X.X.X` format) from the tag name
+  # by removing the `withsecure_v` prefix. The version number is used as the
+  # "subdir" under _TRUSTED_OS_BUCKET.
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: sh
+    args:
+      - -c
+      - >-
+        gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.sig
+        gs://${_TRUSTED_OS_BUCKET}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_withsecure.sig
+substitutions:
+  # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
+  _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
+  _WITHSECURE_DIR: release/withsecure
+  # TODO(jayhou): remove this when we flip this trigger to prod.
+  _TEST_TAG_NAME: withsecure_v0.1.2
