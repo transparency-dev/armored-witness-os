@@ -171,10 +171,12 @@ dcd:
 clean:
 	@rm -fr $(CURDIR)/bin/* $(CURDIR)/trusted_os/assets/* $(CURDIR)/qemu.dtb
 
-qemu:
+qemu: trusted_os_embedded_applet_signed
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf
 
-qemu-gdb:
+qemu-gdb: GOFLAGS := $(GOFLAGS:-w=)
+qemu-gdb: GOFLAGS := $(GOFLAGS:-s=)
+qemu-gdb: trusted_os_embedded_applet_signed
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf -S -s
 
 #### application target ####

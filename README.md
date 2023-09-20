@@ -33,7 +33,7 @@ support (requires a `tap0` device routing the Trusted Applet IP address).
 > support by QEMU.
 
 ```
-make DEBUG=1 trusted_os && make qemu
+make DEBUG=1 make qemu
 ...
 00:00:00 tamago/arm • TEE security monitor (Secure World system/monitor)
 00:00:00 SM applet verification
