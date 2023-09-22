@@ -25,13 +25,23 @@ import (
 // when memory encryption is enforced by the i.MX6UL Bus Encryption Engine
 // (BEE).
 const (
+	// The Secure Monitor RAM cannot be used as reserved area for
+	// arm.Init() as the L1/L2 page tables cannot be places in BEE aliased
+	// memory due to its caching requirements, we therefore override
+	// vecTableStart with the alias physical pointer.
+	physicalStart = 0x80000000 // imx6ul.MMDC_BASE
+
+	// Secure Monitor DMA
+	//
+	// BEE aliased regions must be accessed either through cache or 16 byte
+	// accesses, this makes it impractical for peripheral driver DMA use
+	// and we must therefore keep DMA on a non-aliased region.
+	secureDMAStart = 0x8e000000
+	secureDMASize  = 0x02000000 // 32MB
+
 	// Secure Monitor
 	secureStart = 0x10000000 // bee.AliasRegion0
 	secureSize  = 0x0e000000 // 224MB
-
-	// Secure Monitor DMA
-	secureDMAStart = 0x1e000000
-	secureDMASize  = 0x02000000 // 32MB
 
 	// Secure Monitor Applet
 	appletStart = 0x20000000
@@ -43,3 +53,6 @@ var ramStart uint32 = secureStart
 
 //go:linkname ramSize runtime.ramSize
 var ramSize uint32 = secureSize
+
+//go:linkname vecTableStart github.com/usbarmory/tamago/arm.vecTableStart
+var vecTableStart uint32 = physicalStart

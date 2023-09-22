@@ -9,13 +9,13 @@ require (
 	github.com/flynn/u2f v0.0.0-20180613185708-15554eb68e5d
 	github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3
 	github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7
-	github.com/usbarmory/GoTEE v0.0.0-20230828134615-ef53a1a84ba4
-	github.com/usbarmory/armory-boot v0.0.0-20230724181259-b0947883370d
-	github.com/usbarmory/crucible v0.0.0-20230412092556-269c90b0067e
+	github.com/usbarmory/GoTEE v0.0.0-20230914094934-f4f769daa5a9
+	github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c
+	github.com/usbarmory/crucible v0.0.0-20230721112227-63d5e1f2db77
 	github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20230829132607-64264ab65702
-	golang.org/x/crypto v0.8.0
+	github.com/usbarmory/tamago v0.0.0-20230913163007-a90ba4e21ad6
+	golang.org/x/crypto v0.12.0
 	google.golang.org/protobuf v1.30.0
 	gvisor.dev/gvisor v0.0.0-20230614190805-57027c7d31f8
 )
@@ -36,9 +36,9 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
