@@ -26,7 +26,7 @@ import (
 // (BEE).
 const (
 	// The Secure Monitor RAM cannot be used as reserved area for
-	// arm.Init() as the L1/L2 page tables cannot be places in BEE aliased
+	// arm.Init() as the L1/L2 page tables cannot be placed in BEE aliased
 	// memory due to its caching requirements, we therefore override
 	// vecTableStart with the alias physical pointer.
 	physicalStart = 0x80000000 // imx6ul.MMDC_BASE
