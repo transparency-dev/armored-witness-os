@@ -19,6 +19,9 @@ BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 BUILD = ${BUILD_USER}@${BUILD_HOST} on ${BUILD_DATE}
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
+DEV_LOG_DIR ?= ./bin/log
+DEV_LOG_ORIGIN ?= "DEV.armoredwitness.transparency.dev/${USER}"
+GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n 'v0.0.0+'`git rev-parse HEAD`) | tail -c +2 )
 
 PROTOC ?= /usr/bin/protoc
 
@@ -56,13 +59,11 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${EN
 
 all: trusted_os_embedded_applet_signed witnessctl
 
-elf: $(APP).elf
-
 # This target is only used for dev builds, since the proto definitions may
 # change in development and require re-compilation of protos.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: create_dummy_applet proto elf
+trusted_os: create_dummy_applet proto elf manifest
 
 trusted_os_signed: trusted_os
 	echo "signing Trusted OS"
@@ -76,7 +77,7 @@ trusted_os_signed: trusted_os
 
 trusted_os_embedded_applet_signed: APP=trusted_os
 trusted_os_embedded_applet_signed: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet_signed: check_os_env copy_applet proto elf imx
+trusted_os_embedded_applet_signed: check_os_env copy_applet proto elf manifest imx
 trusted_os_embedded_applet_signed:
 	echo "signing Trusted OS"
 	@if [ "${SIGN_PWD}" != "" ]; then \
@@ -97,11 +98,46 @@ witnessctl: check_tamago
 # used by the GCP build process and signed there.
 trusted_os_release: APP=trusted_os
 trusted_os_release: DIR=$(CURDIR)/trusted_os
-trusted_os_release: create_dummy_applet elf
+trusted_os_release: create_dummy_applet elf manifest
+
+## Targets for managing a local serverless log instance for dev/testing FT related bits.
+
+## log_initialise initialises the log stored at the path in DEV_LOG_DIR.
+## If the log already exists, it will be reset.
+log_initialise:
+	echo "(Re-)initialising log at ${DEV_LOG_DIR}"
+	@rm -fr ${DEV_LOG_DIR}
+	go run github.com/transparency-dev/serverless-log/cmd/integrate@a56a93b5681e5dc231882ac9de435c21cb340846 \
+		--storage_dir=${DEV_LOG_DIR} \
+		--origin=${DEV_LOG_ORIGIN} \
+		--public_key=${LOG_PUBLIC_KEY} \
+		--initialise
+
+## log_os adds the trusted_os_manifest.json file created during the build to the dev FT log.
+log_os:
+	@if [ "${LOG_PRIVATE_KEY}" == "" -o "${LOG_PUBLIC_KEY}" == "" ]; then \
+		@echo "You need to set LOG_PRIVATE_KEY and LOG_PUBLIC_KEY variables"; \
+		exit 1; \
+	fi
+	@if [ ! -f ${DEV_LOG_DIR}/checkpoint ]; then \
+		make log_initialise; \
+	fi
+	go run github.com/transparency-dev/serverless-log/cmd/sequence@a56a93b5681e5dc231882ac9de435c21cb340846 \
+		--storage_dir=${DEV_LOG_DIR} \
+		--origin=${DEV_LOG_ORIGIN} \
+		--public_key=${LOG_PUBLIC_KEY} \
+		--entries=${CURDIR}/bin/trusted_os_manifest.json
+	-go run github.com/transparency-dev/serverless-log/cmd/integrate@a56a93b5681e5dc231882ac9de435c21cb340846 \
+		--storage_dir=${DEV_LOG_DIR} \
+		--origin=${DEV_LOG_ORIGIN} \
+		--private_key=${LOG_PRIVATE_KEY} \
+		--public_key=${LOG_PUBLIC_KEY}
 
 #### ARM targets ####
 
 imx: $(APP).imx
+elf: $(APP).elf
+manifest: $(APP)_manifest.json
 
 proto:
 	@echo "generating protobuf classes"
@@ -171,13 +207,28 @@ dcd:
 clean:
 	@rm -fr $(CURDIR)/bin/* $(CURDIR)/trusted_os/assets/* $(CURDIR)/qemu.dtb
 
-qemu:
+qemu: trusted_os_embedded_applet_signed
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf
 
-qemu-gdb:
+qemu-gdb: GOFLAGS := $(GOFLAGS:-w=)
+qemu-gdb: GOFLAGS := $(GOFLAGS:-s=)
+qemu-gdb: trusted_os_embedded_applet_signed
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf -S -s
 
 #### application target ####
 
 $(APP).elf: check_tamago
 	cd $(DIR) && $(GOENV) $(TAMAGO) build -tags ${BUILD_TAGS} $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
+
+$(APP)_manifest.json: TAMAGO_SEMVER=$(shell ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
+$(APP)_manifest.json:
+	# Create manifest
+	go run github.com/transparency-dev/armored-witness/cmd/manifest@e852dd82d9d56121576aff66de89e800380e5d53 \
+		--git_tag=${GIT_SEMVER_TAG} \
+		--git_commit_fingerprint="${REV}" \
+		--firmware_file=${CURDIR}/bin/$(APP).elf \
+		--firmware_type=TRUSTED_OS \
+		--tamago_version=${TAMAGO_SEMVER} > ${CURDIR}/bin/${APP}_manifest.json
+	@echo ---------- Manifest --------------
+	@cat ${CURDIR}/bin/${APP}_manifest.json
+	@echo ----------------------------------
