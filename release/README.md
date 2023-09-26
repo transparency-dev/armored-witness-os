@@ -53,10 +53,10 @@ TODO: add links for the GCS buckets once public.
 
 | Role         | Description |
 | -----------  | ----------- |
-| **Claimant** | Transparency.dev team |
+| **Claimant** | <ul><li>For Claims #1, #2: Transparency.dev team</li><li>For Claims #1, #3: WithSecure</li></ul> |
 | **Claim**    | <ol><li>The digest of the Trusted OS firmware is derived from this source Github repository, and is reproducible.</li><li>The Trusted OS firmware is issued by the Transparency.dev team.</li><li>The Trusted OS firmware is issued by the WithSecure.</li></ol> |
 | **Believer** | Armored Witness devices |
-| **Verifier** | <ol><li>For Claim #1: third party auditing the Transparency.dev team and WithSecure</li><li>For Claim #2: the Transparency.dev team</li><li>For Claim #3: WithSecure</li></ol> |
+| **Verifier** | <ul><li>For Claim #1: third party auditing the Transparency.dev team and WithSecure</li><li>For Claim #2: the Transparency.dev team</li><li>For Claim #3: WithSecure</li></ul> |
 | **Arbiter**  | Log ecosystem participants and reliers |
 
 The **Statement** is defined in the [armored-witness-common](https://github.com/transparency-dev/armored-witness-common/blob/main/release/firmware/ftlog/log_entries.go) repo.
