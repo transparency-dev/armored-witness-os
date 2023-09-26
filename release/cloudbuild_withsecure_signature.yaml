@@ -33,6 +33,8 @@ steps:
       - >-
         gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.sig
         gs://${_TRUSTED_OS_BUCKET}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_withsecure.sig
+
+  ### TODO(jayhou): Write the firmware release to the transparency log.
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
