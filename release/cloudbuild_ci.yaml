@@ -28,6 +28,7 @@ steps:
     args:
       - ls
       - output
+  # TODO(jayhou): change this to sign in the note format.
   # Sign the built OS.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -60,13 +61,35 @@ steps:
       - cp
       - output/trusted_os.sig
       - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_transparency_dev.sig
-
-  ### TODO(jayhou): get WithSecure to sign it, copy their signature to the bucket above.
-
-  ### TODO(jayhou): Construct log entry / Claimant Model statement.
-
-  ### TODO(jayhou): Write the firmware release to the transparency log.
-  
+  ### Construct log entry / Claimant Model statement.
+  - name: golang
+    args:
+      - go
+      - get
+      - github.com/transparency-dev/armored-witness/cmd/manifest
+  - name: golang
+    args:
+      - go
+      - run
+      - github.com/transparency-dev/armored-witness/cmd/manifest
+      - -git_tag=${_TEST_TAG_NAME}
+      - -git_commit_fingerprint=${COMMIT_SHA}
+      - -firmware_file=output/trusted_os.elf
+      - -firmware_type=TRUSTED_OS
+      - -tamago_version=${_TAMAGO_VERSION}
+      - -output_file=output/trusted_os_manifest.json
+  # Print the content of the manifest JSON.
+  - name: bash
+    args:
+      - cat
+      - output/trusted_os_manifest.json
+  # Copy manifest JSON to the release bucket so that WithSecure may read it.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - storage
+      - cp
+      - output/trusted_os_manifest.json
+      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_manifest.json
 substitutions:
   # Build-related.
   _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
