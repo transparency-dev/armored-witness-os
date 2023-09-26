@@ -62,7 +62,7 @@ steps:
       - output/trusted_os.sig
       - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_transparency_dev.sig
   ### Construct log entry / Claimant Model statement.
-   - name: golang
+  - name: golang
     args:
       - go
       - get
