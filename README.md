@@ -9,10 +9,10 @@ TODO
 
 The following table summarizes currently supported SoCs and boards.
 
-| SoC          | Board                                                                                                                                                                                | SoC package                                                               | Board package                                                                        |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| NXP i.MX6UL  | [USB armory Mk II LAN](https://github.com/usbarmory/usbarmory/wiki)                                                                                                                  | [imx6ul](https://github.com/usbarmory/tamago/tree/master/soc/nxp/imx6ul)  | [usbarmory/mk2](https://github.com/usbarmory/tamago/tree/master/board/usbarmory)     |
-| NXP i.MX6ULL | [USB armory Mk II](https://github.com/usbarmory/usbarmory/wiki)                                                                                                                      | [imx6ul](https://github.com/usbarmory/tamago/tree/master/soc/nxp/imx6ul)  | [usbarmory/mk2](https://github.com/usbarmory/tamago/tree/master/board/usbarmory)     |
+| SoC          | Board                                                               | SoC package                                                              | Board package                                                                    |
+|--------------|---------------------------------------------------------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| NXP i.MX6UL  | [USB armory Mk II LAN](https://github.com/usbarmory/usbarmory/wiki) | [imx6ul](https://github.com/usbarmory/tamago/tree/master/soc/nxp/imx6ul) | [usbarmory/mk2](https://github.com/usbarmory/tamago/tree/master/board/usbarmory) |
+| NXP i.MX6ULL | [USB armory Mk II](https://github.com/usbarmory/usbarmory/wiki)     | [imx6ul](https://github.com/usbarmory/tamago/tree/master/soc/nxp/imx6ul) | [usbarmory/mk2](https://github.com/usbarmory/tamago/tree/master/board/usbarmory) |
 
 ## Purpose
 
@@ -117,6 +117,11 @@ make trusted_os
 
 Final executables are created in the `bin` subdirectory, `trusted_os.elf`
 should be used for loading through `armored-witness-boot`.
+
+Only on i.MX6UL P/Ns, the `BEE` environment variable must be set to match
+`armored-witness-boot` compilation options in case AES CTR encryption for all
+external RAM, using TamaGo [bee package](https://pkg.go.dev/github.com/usbarmory/tamago/soc/nxp/bee),
+is configured at boot.
 
 The following targets are available:
 
