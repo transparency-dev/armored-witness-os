@@ -120,7 +120,7 @@ should be used for loading through `armored-witness-boot`.
 
 Only on i.MX6UL P/Ns, the `BEE` environment variable must be set to match
 `armored-witness-boot` compilation options in case AES CTR encryption for all
-external RAM, using TamaGo[bee package](https://pkg.go.dev/github.com/usbarmory/tamago/soc/nxp/bee),
+external RAM, using TamaGo [bee package](https://pkg.go.dev/github.com/usbarmory/tamago/soc/nxp/bee),
 is configured at boot.
 
 The following targets are available:
