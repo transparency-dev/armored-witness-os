@@ -1,28 +1,18 @@
-# This Cloud Build trigger copies the WithSecure signature for a certain
-# Trusted OS release version to the bucket (and "subdir") that contains the
-# Trusted OS as built by transparency.dev and the detached signature as signed
-# by transparency.dev.
+# See README.md in this directory for an overview of the release process.
+#
+# This Cloud Build trigger:
+# 1. copies the manifest of a Trusted OS release signed in the
+#    [note format](https://pkg.go.dev/golang.org/x/mod/sumdb/note) by
+#    WithSecure and Transparency.dev to a corresponding Google Cloud Storage
+#    bucket (and "subdir"). This bucket should already contain the Trusted OS
+#    elf file as built by transparency.dev.
+# 2. writes the signed manifest to the Armored Witness firmware transparency
+#    log.
 #
 # This is the second Cloud Build trigger for a given release. The first should
-# have already created the Trusted OS elf file and the transparency.dev
-# detached signature.
-#
-# The Trusted OS elf should only be used if both signatures are verified
-# successfully.
-#
-#### WithSecure Expectations ####
-#
-# WithSecure is expected to commit a signature file in the _WITHSECURE_DIR dir
-# of the Github repo for each release, and tag it with the pattern
-# `withsecure_vX.X.X`.
-#
-# Cloud Build infers the name of the file from the tag name by appending the
-# `.sig` file suffix. The expected signature file name is
-# `withsecure_vX.X.X.sig`.
-#
-# After Cloud Build locates the signature file, it copies the file to the
-# proper "subdir" (as mentioned above).
+# have already created the Trusted OS elf file.
 steps:
+  ### Copy the signed manifest to the artifacts bucket containing the ELF.
   # Get version number (expected to be in the `X.X.X` format) from the tag name
   # by removing the `withsecure_v` prefix. The version number is used as the
   # "subdir" under _TRUSTED_OS_BUCKET.
@@ -31,13 +21,41 @@ steps:
     args:
       - -c
       - >-
-        gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.sig
-        gs://${_TRUSTED_OS_BUCKET}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_withsecure.sig
+        gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
+        gs://${_TRUSTED_OS_BUCKET}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest.txt
+  ### Write the firmware release to the transparency log.
+  # Copy the signed note to the sequence bucket, preparing to write to log.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - storage
+      - cp
+      - ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
+      - 'gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest.txt'
+  # Sequence log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - sequence
+      - '--data'
+      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+  # Integrate log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - integrate
+      - '--data'
+      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
 
-  ### TODO(jayhou): Write the firmware release to the transparency log.
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
   _WITHSECURE_DIR: release/withsecure
   # TODO(jayhou): remove this when we flip this trigger to prod.
   _TEST_TAG_NAME: withsecure_v0.1.2
+  # Log-related.
+  _ENTRIES_DIR: firmware-log-sequence
+  _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
+  # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
+  _LOG_NAME: firmware-log-ci
