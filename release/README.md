@@ -38,14 +38,18 @@ Since it is stored in the public GCS bucket, it can be read by WithSecure.
 
 WithSecure is notified of a release, and they reference the manifest for build
 details. After auditing it, and they add their signature of the manifest to the
-note as well before writing it to this repo. Once complete, they tag a release
-in this repo in the format `withsecure_vX.X.X`.
+note as well before writing it to this repo as
+`$_WITHSECURE_DIR/withsecure_vX.X.X.txt` (as defined in the yaml). Once
+complete, they tag a release in this repo in the format `withsecure_vX.X.X`.
 
 ### Release completion
 
 Finally, the trigger defined on `cloudbuild_withsecure_signature.yaml` reads the
-signed note written to this repository by WithSecure and adds it as an entry to
-the public firmware transparency log.
+signed note written to this repository by WithSecure and adds it to the
+artifacts bucket and the public firmware transparency log.
+
+The Trusted OS elf should only be used if both Transparency.dev and WithSecure
+signatures are verified successfully.
 
 TODO: add links for the GCS buckets once public.
 
