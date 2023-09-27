@@ -22,7 +22,7 @@ steps:
       - -c
       - >-
         gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
-        gs://${_TRUSTED_OS_BUCKET}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest.txt
+        gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest.txt
   ### Write the firmware release to the transparency log.
   # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
@@ -30,7 +30,7 @@ steps:
       - storage
       - cp
       - ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
-      - 'gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest.txt'
+      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest.txt
   # Sequence log entry.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -50,12 +50,14 @@ steps:
 
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
-  _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
+  _FIRMWARE_BUCKET: armored-witness-firmware-ci
+  _FIRMWARE_COMPONENT: trusted-os
   _WITHSECURE_DIR: release/withsecure
   # TODO(jayhou): remove this when we flip this trigger to prod.
   _TEST_TAG_NAME: withsecure_v0.1.2
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
+  # TODO(jayhou): switch to prod origin.
   _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
-  _LOG_NAME: firmware-log-ci
+  _LOG_NAME: armored-witness-firmware-log-ci
