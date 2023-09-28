@@ -54,7 +54,7 @@ steps:
       - storage
       - cp
       - output/trusted_os.elf
-      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/firmware.elf
+      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os.elf
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
