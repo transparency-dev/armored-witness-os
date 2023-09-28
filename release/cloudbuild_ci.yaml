@@ -54,13 +54,13 @@ steps:
       - storage
       - cp
       - output/trusted_os.elf
-      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os.elf
+      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os.elf
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
       - output/trusted_os.sig
-      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_transparency_dev.sig
+      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_transparency_dev.sig
   ### Construct log entry / Claimant Model statement.
   - name: golang
     args:
@@ -89,10 +89,11 @@ steps:
       - storage
       - cp
       - output/trusted_os_manifest.json
-      - gs://${_TRUSTED_OS_BUCKET}/${_TEST_TAG_NAME}/trusted_os_manifest.json
+      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_manifest.json
 substitutions:
   # Build-related.
-  _TRUSTED_OS_BUCKET: trusted-os-artifacts-ci
+  _FIRMWARE_BUCKET: armored-witness-firmware-ci
+  _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
   _TEST_TAG_NAME: '0.1.2'
   # Signing-related.
