@@ -113,7 +113,7 @@ log_initialise:
 
 ## log_os adds the trusted_os_manifest.json file created during the build to the dev FT log.
 log_os: LOG_STORAGE_DIR=$(DEV_LOG_DIR)/log
-log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/os/$(GIT_SEMVER_TAG)
+log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/trusted-os/$(GIT_SEMVER_TAG)
 log_os:
 	@if [ "${LOG_PRIVATE_KEY}" == "" -o "${LOG_PUBLIC_KEY}" == "" ]; then \
 		@echo "You need to set LOG_PRIVATE_KEY and LOG_PUBLIC_KEY variables"; \
