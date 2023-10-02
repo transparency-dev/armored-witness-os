@@ -39,7 +39,7 @@ Since it is stored in the public GCS bucket, it can be read by WithSecure.
 WithSecure is notified of a release, and they reference the manifest for build
 details. After auditing it, and they add their signature of the manifest to the
 note as well before writing it to this repo as
-`$_WITHSECURE_DIR/withsecure_vX.X.X.txt` (as defined in the yaml). Once
+`$_WITHSECURE_DIR/withsecure_vX.X.X` (as defined in the yaml). Once
 complete, they tag a release in this repo in the format `withsecure_vX.X.X`.
 
 ### Release completion
