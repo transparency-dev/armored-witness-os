@@ -32,6 +32,10 @@ steps:
       - >-
         gcloud storage rm
         gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest_transparency_dev
+  # TODO: write a check for 1) both signatures are present and valid and 2) the
+  # message in the note is identical to the one in our signed manifest (in case
+  # e.g WS were to accidentally upload an "old" countersigned manifest)
+
   ### Write the firmware release to the transparency log.
   # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
