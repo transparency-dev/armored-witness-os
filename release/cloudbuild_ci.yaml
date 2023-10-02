@@ -72,24 +72,26 @@ steps:
       - go
       - run
       - github.com/transparency-dev/armored-witness/cmd/manifest
-      - -git_tag=${_TEST_TAG_NAME}
-      - -git_commit_fingerprint=${COMMIT_SHA}
-      - -firmware_file=output/trusted_os.elf
-      - -firmware_type=TRUSTED_OS
-      - -tamago_version=${_TAMAGO_VERSION}
-      - -output_file=output/trusted_os_manifest.json
-  # Print the content of the manifest JSON.
+      - create
+      - --git_tag=${_TEST_TAG_NAME}
+      - --git_commit_fingerprint=${COMMIT_SHA}
+      - --firmware_file=output/trusted_os.elf
+      - --firmware_type=TRUSTED_OS
+      - --tamago_version=${_TAMAGO_VERSION}
+      - --raw
+      - --output_file=output/trusted_os_manifest
+  # Print the content of the manifest.
   - name: bash
     args:
       - cat
-      - output/trusted_os_manifest.json
-  # Copy manifest JSON to the release bucket so that WithSecure may read it.
+      - output/trusted_os_manifest
+  # Copy manifest to the release bucket so that WithSecure may read it.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
-      - output/trusted_os_manifest.json
-      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_manifest.json
+      - output/trusted_os_manifest
+      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_manifest
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
