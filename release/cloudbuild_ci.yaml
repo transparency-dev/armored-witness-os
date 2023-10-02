@@ -73,13 +73,13 @@ steps:
       - run
       - github.com/transparency-dev/armored-witness/cmd/manifest
       - create
-      - -git_tag=${_TEST_TAG_NAME}
-      - -git_commit_fingerprint=${COMMIT_SHA}
-      - -firmware_file=output/trusted_os.elf
-      - -firmware_type=TRUSTED_OS
-      - -tamago_version=${_TAMAGO_VERSION}
-      - -raw
-      - -output_file=output/trusted_os_manifest
+      - --git_tag=${_TEST_TAG_NAME}
+      - --git_commit_fingerprint=${COMMIT_SHA}
+      - --firmware_file=output/trusted_os.elf
+      - --firmware_type=TRUSTED_OS
+      - --tamago_version=${_TAMAGO_VERSION}
+      - --raw
+      - --output_file=output/trusted_os_manifest
   # Print the content of the manifest.
   - name: bash
     args:
