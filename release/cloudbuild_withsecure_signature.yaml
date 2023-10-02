@@ -21,16 +21,29 @@ steps:
     args:
       - -c
       - >-
-        gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
-        gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest.txt
+        gcloud storage cp ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}
+        gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest
+  ### Delete the manifest that was only signed by Transparency.dev, since the
+  ### manifest above should be signed by both Transparency.dev and WithSecure.
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: sh
+    args:
+      - -c
+      - >-
+        gcloud storage rm
+        gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/$(echo ${_TEST_TAG_NAME} | sed -e "s/^withsecure_v//")/trusted_os_manifest_transparency_dev
+  # TODO: write a check for 1) both signatures are present and valid and 2) the
+  # message in the note is identical to the one in our signed manifest (in case
+  # e.g WS were to accidentally upload an "old" countersigned manifest)
+
   ### Write the firmware release to the transparency log.
   # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
-      - ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}.txt
-      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest.txt
+      - ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}
+      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
   # Sequence log entry.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -47,7 +60,6 @@ steps:
       - integrate
       - '--data'
       - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
-
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
