@@ -12,7 +12,8 @@ updates:
   schedule:
     interval: daily
   commit-message:
-      prefix: ":seedling:"
+    prefix: ":seedling:"
+    include: "scope"
 - package-ecosystem: "github-actions"
   directory: "/"
   groups:
@@ -20,6 +21,7 @@ updates:
       patterns:
         - "*"
   schedule:
-      interval: "daily"
+    interval: "daily"
   commit-message:
-      prefix: ":seedling:"
+    prefix: ":seedling:"
+    include: "scope"
