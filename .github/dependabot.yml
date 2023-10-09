@@ -5,13 +5,23 @@ version: 2
 updates:
 - package-ecosystem: gomod
   directory: "/"
+  groups:
+    all-go-deps:
+      patterns:
+        - "*"
   schedule:
     interval: daily
   commit-message:
-      prefix: ":seedling:"
+    prefix: ":seedling:"
+    include: "scope"
 - package-ecosystem: "github-actions"
   directory: "/"
+  groups:
+    all-gha-deps:
+      patterns:
+        - "*"
   schedule:
-      interval: "daily"
+    interval: "daily"
   commit-message:
-      prefix: ":seedling:"
+    prefix: ":seedling:"
+    include: "scope"
