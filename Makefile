@@ -111,7 +111,7 @@ log_initialise:
 		--public_key=${LOG_PUBLIC_KEY} \
 		--initialise
 
-## log_os adds the trusted_os_manifest.json file created during the build to the dev FT log.
+## log_os adds the trusted_os_manifest file created during the build to the dev FT log.
 log_os: LOG_STORAGE_DIR=$(DEV_LOG_DIR)/log
 log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/trusted-os/$(GIT_SEMVER_TAG)
 log_os:
@@ -131,7 +131,7 @@ log_os:
 		--storage_dir=${LOG_STORAGE_DIR} \
 		--origin=${DEV_LOG_ORIGIN} \
 		--public_key=${LOG_PUBLIC_KEY} \
-		--entries=${CURDIR}/bin/trusted_os_manifest.json
+		--entries=${CURDIR}/bin/trusted_os_manifest
 	-go run github.com/transparency-dev/serverless-log/cmd/integrate@a56a93b5681e5dc231882ac9de435c21cb340846 \
 		--storage_dir=${LOG_STORAGE_DIR} \
 		--origin=${DEV_LOG_ORIGIN} \
@@ -145,7 +145,7 @@ log_os:
 
 imx: $(APP).imx
 elf: $(APP).elf
-manifest: $(APP)_manifest.json
+manifest: $(APP)_manifest
 
 proto:
 	@echo "generating protobuf classes"
@@ -228,15 +228,17 @@ qemu-gdb: trusted_os_embedded_applet_signed
 $(APP).elf: check_tamago
 	cd $(DIR) && $(GOENV) $(TAMAGO) build -tags ${BUILD_TAGS} $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
 
-$(APP)_manifest.json: TAMAGO_SEMVER=$(shell ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
-$(APP)_manifest.json:
+$(APP)_manifest: TAMAGO_SEMVER=$(shell ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
+$(APP)_manifest:
 	# Create manifest
-	go run github.com/transparency-dev/armored-witness/cmd/manifest@e852dd82d9d56121576aff66de89e800380e5d53 \
+	@echo ---------- Manifest --------------
+	go run github.com/transparency-dev/armored-witness/cmd/manifest@228f2f6432babe1f1657e150ce0ca4a96ab394da \
+		create \
 		--git_tag=${GIT_SEMVER_TAG} \
 		--git_commit_fingerprint="${REV}" \
 		--firmware_file=${CURDIR}/bin/$(APP).elf \
 		--firmware_type=TRUSTED_OS \
-		--tamago_version=${TAMAGO_SEMVER} > ${CURDIR}/bin/${APP}_manifest.json
-	@echo ---------- Manifest --------------
-	@cat ${CURDIR}/bin/${APP}_manifest.json
+		--tamago_version=${TAMAGO_SEMVER} \
+		--private_key_file=${OS_PRIVATE_KEY1} \
+		--output_file=${CURDIR}/bin/${APP}_manifest
 	@echo ----------------------------------
