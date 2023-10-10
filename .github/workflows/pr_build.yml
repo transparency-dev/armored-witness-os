@@ -29,13 +29,9 @@ jobs:
         echo "${HOME}/go/bin" >> $GITHUB_PATH
     - name: Create throwaway keys & fake embed
       run: |
-        signify-openbsd -G -n -p ${APPLET_PUBLIC_KEY} -s ${APPLET_PRIVATE_KEY}
-        signify-openbsd -G -n -p ${OS_PUBLIC_KEY1} -s ${OS_PRIVATE_KEY1}
-        signify-openbsd -G -n -p ${OS_PUBLIC_KEY2} -s ${OS_PRIVATE_KEY2}
-        # Now create a fake applet to embed, and sign it
-        mkdir -p ${APPLET_PATH}
-        echo "When I grow up, I want to be an applet" > ${APPLET_PATH}/trusted_applet.elf
-        signify-openbsd -S -s ${APPLET_PRIVATE_KEY} -m ${APPLET_PATH}/trusted_applet.elf -x ${APPLET_PATH}/trusted_applet.sig
+        go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-APPLET" --out_priv=${APPLET_PRIVATE_KEY} --out_pub=${APPLET_PUBLIC_KEY}
+        go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-OS-1" --out_priv=${OS_PRIVATE_KEY1} --out_pub=${OS_PUBLIC_KEY1}
+        go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-OS-2" --out_priv=${OS_PRIVATE_KEY2} --out_pub=${OS_PUBLIC_KEY2}
     - name: Make
       run: |
         DEBUG=1 make trusted_os
