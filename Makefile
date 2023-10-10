@@ -242,3 +242,12 @@ $(APP)_manifest:
 		--private_key_file=${OS_PRIVATE_KEY1} \
 		--output_file=${CURDIR}/bin/${APP}_manifest
 	@echo ----------------------------------
+	# Now counter sign with OS_PRIVATE_KEY2
+	go run github.com/transparency-dev/armored-witness/cmd/manifest@228f2f6432babe1f1657e150ce0ca4a96ab394da \
+		create \
+		--git_tag=${GIT_SEMVER_TAG} \
+		--git_commit_fingerprint="${REV}" \
+		--firmware_file=${CURDIR}/bin/$(APP).elf \
+		--firmware_type=TRUSTED_OS \
+		--tamago_version=${TAMAGO_SEMVER} \
+		--private_key_file=${OS_PRIVATE_KEY2} | tail -1 >> ${CURDIR}/bin/${APP}_manifest
