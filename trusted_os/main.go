@@ -127,7 +127,7 @@ func main() {
 	rpc := &RPC{
 		RPMB:        rpmb,
 		Storage:     Storage,
-		Diversifier: sha256.Sum256([]byte(AppletLogVerifier)),
+		Diversifier: sha256.Sum256([]byte(AppletManifestVerifier)),
 	}
 
 	ctl := &controlInterface{
