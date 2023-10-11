@@ -147,10 +147,12 @@ func main() {
 		}
 	}
 
+	log.Printf("SM log verification pub: %s", AppletLogVerifier)
 	logVerifier, err := note.NewVerifier(AppletLogVerifier)
 	if err != nil {
 		log.Fatalf("Invalid AppletLogVerifier: %v", err)
 	}
+	log.Printf("SM applet verification pub: %s", AppletManifestVerifier)
 	appletVerifier, err := note.NewVerifier(AppletManifestVerifier)
 	if err != nil {
 		log.Fatalf("Invalid AppletlManifestogVerifier: %v", err)
@@ -167,8 +169,6 @@ func main() {
 	}
 
 	if ta != nil {
-		log.Printf("SM log verification pub: %s", logVerifier.Name())
-		log.Printf("SM applet verification pub: %s", appletVerifier.Name())
 		bv := firmware.BundleVerifier{
 			LogOrigin:         AppletLogOrigin,
 			LogVerifer:        logVerifier,

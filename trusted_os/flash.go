@@ -81,8 +81,8 @@ type Card interface {
 	Detect() error
 }
 
-// read reads the trusted applet and its signature from internal storage, the
-// applet and signatures are *not* verified by this function.
+// read reads the trusted applet bundle from internal storage, the
+// applet and FT proofs are *not* verified by this function.
 func read(card Card) (fw *firmware.Bundle, err error) {
 	blockSize := card.Info().BlockSize
 	if blockSize != expectedBlockSize {
@@ -110,7 +110,7 @@ func read(card Card) (fw *firmware.Bundle, err error) {
 
 	fw.Firmware, err = card.Read(conf.Offset, conf.Size)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read firmware: %v", err)
+		return nil, fmt.Errorf("failed to read firmware: %v", err)
 	}
 
 	return
