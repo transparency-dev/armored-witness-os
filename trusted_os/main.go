@@ -26,20 +26,22 @@ import (
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
-
-	"github.com/usbarmory/armory-boot/config"
+	"golang.org/x/mod/sumdb/note"
 
 	// for now just test compilation of these
+	"github.com/transparency-dev/armored-witness-common/release/firmware"
 	_ "github.com/transparency-dev/armored-witness-os/internal/hab"
 	_ "github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 // initialized at compile time (see Makefile)
 var (
-	Build     string
-	Revision  string
-	Version   string
-	PublicKey string
+	Build                  string
+	Revision               string
+	Version                string
+	AppletLogVerifier      string
+	AppletLogOrigin        string
+	AppletManifestVerifier string
 )
 
 var (
@@ -59,17 +61,13 @@ var (
 	//go:embed assets/trusted_applet.elf
 	taELF []byte
 
-	//go:embed assets/trusted_applet.sig
-	taSig []byte
+	//go:embed assets/trusted_applet.proofbundle
+	proofBundle []byte
 )
 
 func init() {
 	log.SetFlags(log.Ltime)
 	log.SetOutput(os.Stdout)
-
-	if len(PublicKey) == 0 {
-		log.Fatal("SM applet authentication key is missing")
-	}
 
 	if imx6ul.Native {
 		imx6ul.SetARMFreq(imx6ul.Freq528)
@@ -129,7 +127,7 @@ func main() {
 	rpc := &RPC{
 		RPMB:        rpmb,
 		Storage:     Storage,
-		Diversifier: sha256.Sum256([]byte(PublicKey)),
+		Diversifier: sha256.Sum256([]byte(AppletLogVerifier)),
 	}
 
 	ctl := &controlInterface{
@@ -149,22 +147,41 @@ func main() {
 		}
 	}
 
-	if len(taELF) == 0 && len(taSig) == 0 {
-		if taELF, taSig, err = read(Storage); err != nil {
+	logVerifier, err := note.NewVerifier(AppletLogVerifier)
+	if err != nil {
+		log.Fatalf("Invalid AppletLogVerifier: %v", err)
+	}
+	appletVerifier, err := note.NewVerifier(AppletManifestVerifier)
+	if err != nil {
+		log.Fatalf("Invalid AppletlManifestogVerifier: %v", err)
+	}
+
+	var ta *firmware.Bundle
+	if len(taELF) > 0 && len(proofBundle) > 0 {
+		// Handle embedded applet & proof.
+		panic("not implemented yet")
+	} else {
+		if ta, err = read(Storage); err != nil {
 			log.Printf("SM could not load applet, %v", err)
 		}
 	}
 
-	if len(taELF) != 0 && len(taSig) != 0 {
-		log.Printf("SM applet verification pub:%s", PublicKey)
+	if ta != nil {
+		log.Printf("SM log verification pub: %s", logVerifier.Name())
+		log.Printf("SM applet verification pub: %s", appletVerifier.Name())
+		bv := firmware.BundleVerifier{
+			LogOrigin:         AppletLogOrigin,
+			LogVerifer:        logVerifier,
+			ManifestVerifiers: []note.Verifier{appletVerifier},
+		}
 
-		if err := config.Verify(taELF, taSig, PublicKey); err != nil {
+		if err := bv.Verify(*ta); err != nil {
 			log.Printf("SM applet verification error, %v", err)
 		}
 
 		usbarmory.LED("white", true)
 
-		if _, err = loadApplet(taELF, ctl); err != nil {
+		if _, err = loadApplet(ta.Firmware, ctl); err != nil {
 			log.Printf("SM applet execution error, %v", err)
 		}
 	}

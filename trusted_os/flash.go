@@ -27,7 +27,7 @@ import (
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
 	"github.com/transparency-dev/armored-witness-boot/config"
-	abconfig "github.com/usbarmory/armory-boot/config"
+	"github.com/transparency-dev/armored-witness-common/release/firmware"
 
 	"github.com/transparency-dev/armored-witness-os/api"
 )
@@ -83,10 +83,10 @@ type Card interface {
 
 // read reads the trusted applet and its signature from internal storage, the
 // applet and signatures are *not* verified by this function.
-func read(card Card) (taELF []byte, taSig []byte, err error) {
+func read(card Card) (fw *firmware.Bundle, err error) {
 	blockSize := card.Info().BlockSize
 	if blockSize != expectedBlockSize {
-		return nil, nil, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
+		return nil, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
 	}
 
 	buf, err := card.Read(taConfBlock*expectedBlockSize, config.MaxLength)
@@ -101,12 +101,17 @@ func read(card Card) (taELF []byte, taSig []byte, err error) {
 		return
 	}
 
-	if len(conf.Signatures) < 1 {
-		return nil, nil, errors.New("invalid applet signature")
+	fw = &firmware.Bundle{
+		Checkpoint:     conf.Bundle.Checkpoint,
+		Index:          conf.Bundle.LogIndex,
+		InclusionProof: conf.Bundle.InclusionProof,
+		Manifest:       conf.Bundle.Manifest,
 	}
 
-	taSig = conf.Signatures[0]
-	taELF, err = card.Read(conf.Offset, conf.Size)
+	fw.Firmware, err = card.Read(conf.Offset, conf.Size)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read firmware: %v", err)
+	}
 
 	return
 }
@@ -174,10 +179,7 @@ func blinkenLights() (func(), func()) {
 
 // updateApplet verifies an applet update and flashes it to internal storage
 func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
-	log.Printf("SM applet verification")
-	if err = abconfig.Verify(taELF, taSig, PublicKey); err != nil {
-		return fmt.Errorf("applet verification error: %v", err)
-	}
+	// TODO: OS applet verification
 
 	return flashFirmware(Firmware_Applet, taELF, [][]byte{taSig}, pb)
 }

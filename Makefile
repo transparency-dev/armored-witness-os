@@ -19,7 +19,7 @@ BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 BUILD = ${BUILD_USER}@${BUILD_HOST} on ${BUILD_DATE}
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
-DEV_LOG_ORIGIN ?= "DEV.armoredwitness.transparency.dev/${USER}"
+LOG_ORIGIN ?= "DEV.armoredwitness.transparency.dev/${USER}"
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n 'v0.0.0+'`git rev-parse HEAD`) | tail -c +2 )
 
 PROTOC ?= /usr/bin/protoc
@@ -29,9 +29,6 @@ SHELL = /bin/bash
 ifeq ("${DEBUG}","1")
 	BUILD_TAGS := ${BUILD_TAGS},debug
 endif
-
-SIGN = $(shell type -p signify || type -p signify-openbsd || type -p minisign)
-SIGN_PWD ?= "armored-witness"
 
 APP := ""
 TEXT_START = 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000
@@ -50,13 +47,20 @@ QEMU ?= qemu-system-arm -machine mcimx6ul-evk -cpu cortex-a7 -m 512M \
 
 ARCH = "arm"
 
-GOFLAGS = -tags ${BUILD_TAGS} -trimpath -ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}' -X 'main.Version=${BUILD_EPOCH}' -X 'main.PublicKey=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY} | tail -n 1)'"
+GOFLAGS = -tags ${BUILD_TAGS} -trimpath \
+	-ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
+		-X 'main.Build=${BUILD}' \
+		-X 'main.Revision=${REV}' \
+		-X 'main.Version=${BUILD_EPOCH}' \
+		-X 'main.AppletLogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
+		-X 'main.AppletLogOrigin=${LOG_ORIGIN}' \
+		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})'"
 
 .PHONY: clean qemu qemu-gdb
 
 #### primary targets ####
 
-all: trusted_os_embedded_applet_signed witnessctl
+all: trusted_os_embedded_applet witnessctl
 
 # This target is only used for dev builds, since the proto definitions may
 # change in development and require re-compilation of protos.
@@ -64,28 +68,12 @@ trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
 trusted_os: create_dummy_applet proto elf manifest
 
-trusted_os_signed: trusted_os
-	echo "signing Trusted OS"
-	@if [ "${SIGN_PWD}" != "" ]; then \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
-	else \
-		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
-	fi
-
-trusted_os_embedded_applet_signed: APP=trusted_os
-trusted_os_embedded_applet_signed: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet_signed: check_os_env copy_applet proto elf manifest imx
-trusted_os_embedded_applet_signed:
-	echo "signing Trusted OS"
-	@if [ "${SIGN_PWD}" != "" ]; then \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		echo -e "${SIGN_PWD}\n" | ${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
-	else \
-		${SIGN} -S -s ${OS_PRIVATE_KEY1} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig1; \
-		${SIGN} -S -s ${OS_PRIVATE_KEY2} -m ${CURDIR}/bin/trusted_os.elf -x ${CURDIR}/bin/trusted_os.sig2; \
-	fi
+trusted_os_embedded_applet: APP=trusted_os
+trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
+trusted_os_embedded_applet: check_os_env copy_applet proto elf manifest imx
+trusted_os_embedded_applet:
+	# TODO: fix this
+	touch ${CURDIR}/bin/trusted_applet.proofbundle
 
 witnessctl: check_tamago
 	@echo "building armored-witness control tool"
@@ -106,7 +94,7 @@ log_initialise:
 	echo "(Re-)initialising log at ${LOG_STORAGE_DIR}"
 	go run github.com/transparency-dev/serverless-log/cmd/integrate@a56a93b5681e5dc231882ac9de435c21cb340846 \
 		--storage_dir=${LOG_STORAGE_DIR} \
-		--origin=${DEV_LOG_ORIGIN} \
+		--origin=${LOG_ORIGIN} \
 		--private_key=${LOG_PRIVATE_KEY} \
 		--public_key=${LOG_PUBLIC_KEY} \
 		--initialise
@@ -129,12 +117,12 @@ log_os:
 	fi
 	go run github.com/transparency-dev/serverless-log/cmd/sequence@a56a93b5681e5dc231882ac9de435c21cb340846 \
 		--storage_dir=${LOG_STORAGE_DIR} \
-		--origin=${DEV_LOG_ORIGIN} \
+		--origin=${LOG_ORIGIN} \
 		--public_key=${LOG_PUBLIC_KEY} \
 		--entries=${CURDIR}/bin/trusted_os_manifest
 	-go run github.com/transparency-dev/serverless-log/cmd/integrate@a56a93b5681e5dc231882ac9de435c21cb340846 \
 		--storage_dir=${LOG_STORAGE_DIR} \
-		--origin=${DEV_LOG_ORIGIN} \
+		--origin=${LOG_ORIGIN} \
 		--private_key=${LOG_PRIVATE_KEY} \
 		--public_key=${LOG_PUBLIC_KEY}
 	@mkdir -p ${LOG_ARTEFACT_DIR}
@@ -189,19 +177,19 @@ check_os_env:
 		exit 1; \
 	fi
 	@if [ "${APPLET_PATH}" == "" ]; then \
-		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and signature files (e.g. path to armored-witness-applet/bin)'; \
+		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and proof bundle files (e.g. path to armored-witness-applet/bin)'; \
 		exit 1; \
 	fi
 
 copy_applet:
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
-	cp ${APPLET_PATH}/trusted_applet.sig ${CURDIR}/trusted_os/assets/
+	cp ${APPLET_PATH}/trusted_applet.proofbundle ${CURDIR}/trusted_os/assets/
 
 create_dummy_applet:
 	mkdir -p $(DIR)/assets
 	rm -f $(DIR)/assets/trusted_applet.elf && touch $(DIR)/assets/trusted_applet.elf
-	rm -f $(DIR)/assets/trusted_applet.sig && touch $(DIR)/assets/trusted_applet.sig
+	rm -f $(DIR)/assets/trusted_applet.proofbundle && touch $(DIR)/assets/trusted_applet.proofbundle
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
@@ -215,12 +203,12 @@ dcd:
 clean:
 	@rm -fr $(CURDIR)/bin/* $(CURDIR)/trusted_os/assets/* $(CURDIR)/qemu.dtb
 
-qemu: trusted_os_embedded_applet_signed
+qemu: trusted_os_embedded_applet
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf
 
 qemu-gdb: GOFLAGS := $(GOFLAGS:-w=)
 qemu-gdb: GOFLAGS := $(GOFLAGS:-s=)
-qemu-gdb: trusted_os_embedded_applet_signed
+qemu-gdb: trusted_os_embedded_applet
 	$(QEMU) -kernel $(CURDIR)/bin/trusted_os.elf -S -s
 
 #### application target ####
