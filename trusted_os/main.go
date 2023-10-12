@@ -62,7 +62,7 @@ var (
 	taELF []byte
 
 	//go:embed assets/trusted_applet.proofbundle
-	proofBundle []byte
+	taProofBundle []byte
 )
 
 func init() {
@@ -150,16 +150,16 @@ func main() {
 	log.Printf("SM log verification pub: %s", AppletLogVerifier)
 	logVerifier, err := note.NewVerifier(AppletLogVerifier)
 	if err != nil {
-		log.Fatalf("Invalid AppletLogVerifier: %v", err)
+		log.Fatalf("SM invalid AppletLogVerifier: %v", err)
 	}
 	log.Printf("SM applet verification pub: %s", AppletManifestVerifier)
 	appletVerifier, err := note.NewVerifier(AppletManifestVerifier)
 	if err != nil {
-		log.Fatalf("Invalid AppletlManifestogVerifier: %v", err)
+		log.Fatalf("SM invalid AppletlManifestogVerifier: %v", err)
 	}
 
 	var ta *firmware.Bundle
-	if len(taELF) > 0 && len(proofBundle) > 0 {
+	if len(taELF) > 0 && len(taProofBundle) > 0 {
 		// Handle embedded applet & proof.
 		panic("not implemented yet")
 	} else {
