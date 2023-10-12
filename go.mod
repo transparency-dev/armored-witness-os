@@ -36,7 +36,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
