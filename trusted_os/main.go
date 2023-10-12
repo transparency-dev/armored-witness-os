@@ -15,8 +15,10 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	_ "embed"
+	"encoding/gob"
 	"log"
 	"os"
 	"runtime"
@@ -161,7 +163,12 @@ func main() {
 	var ta *firmware.Bundle
 	if len(taELF) > 0 && len(taProofBundle) > 0 {
 		// Handle embedded applet & proof.
-		panic("not implemented yet")
+		dec := gob.NewDecoder(bytes.NewBuffer(taProofBundle))
+		ta = &firmware.Bundle{}
+		if err := dec.Decode(ta); err != nil {
+			log.Printf("SM invalid embedded proof bundle: %v", err)
+		}
+		ta.Firmware = taELF
 	} else {
 		if ta, err = read(Storage); err != nil {
 			log.Printf("SM could not load applet, %v", err)
