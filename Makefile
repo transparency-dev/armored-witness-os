@@ -97,7 +97,7 @@ witnessctl: check_tamago
 # used by the GCP build process and signed there.
 trusted_os_release: APP=trusted_os
 trusted_os_release: DIR=$(CURDIR)/trusted_os
-trusted_os_release: create_dummy_applet elf manifest
+trusted_os_release: create_dummy_applet elf 
 
 ## Targets for managing a local serverless log instance for dev/testing FT related bits.
 
