@@ -1,6 +1,5 @@
 # ArmoredWitness Trusted OS
 
-
 ## Introduction
 
 TODO
@@ -32,7 +31,7 @@ support (requires a `tap0` device routing the Trusted Applet IP address).
 > :warning: emulated runs perform partial tests due to lack of full hardware
 > support by QEMU.
 
-```
+```bash
 make DEBUG=1 make qemu
 ...
 00:00:00 tamago/arm • TEE security monitor (Secure World system/monitor)
@@ -50,8 +49,7 @@ make DEBUG=1 make qemu
 00:00:02 TA starting ssh server (SHA256:eeMIwwN/zw1ov1BvO6sW3wtYi463sq+oLgKhmAew1WE) at 10.0.0.1:22
 ```
 
-Trusted OS signing
-==================
+## Trusted OS signing
 
 To maintain the chain of trust the Trusted OS must be signed, to this end the
 `OS_PRIVATE_KEY1` and `OS_PRIVATE_KEY2` environment variables must be set to the path
@@ -72,8 +70,7 @@ $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
   --out_pub=armored-witness-os-2.pub
 ```
 
-Trusted Applet authentication
-=============================
+## Trusted Applet authentication
 
 To maintain the chain of trust the OS performs trusted applet authentication
 before loading it, to this end the `APPLET_PUBLIC_KEY` environment variable
@@ -91,25 +88,23 @@ $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
   --out_pub=armored-witness-applet.pub
 ```
 
-Building the compiler
-=====================
+## Building the compiler
 
 Build the [TamaGo compiler](https://github.com/usbarmory/tamago-go)
 (or use the [latest binary release](https://github.com/usbarmory/tamago-go/releases/latest)):
 
-```
+```bash
 wget https://github.com/usbarmory/tamago-go/archive/refs/tags/latest.zip
 unzip latest.zip
 cd tamago-go-latest/src && ./all.bash
 cd ../bin && export TAMAGO=`pwd`/go
 ```
 
-Building and executing on ARM targets
-=====================================
+## Building and executing on ARM targets
 
 Build the example trusted applet and kernel executables as follows:
 
-```
+```bash
 make trusted_os
 ```
 
@@ -130,20 +125,19 @@ The following targets are available:
 The targets support native (see relevant documentation links in the table above)
 as well as emulated execution (e.g. `make qemu`).
 
-Debugging
----------
+## Debugging
 
 An optional Serial over USB console can be used to access Trusted OS and
 Trusted Applet logs, it can be enabled when compiling with the `DEBUG`
 environment variable set:
 
-```
+```bash
 make DEBUG=1 trusted_os
 ```
 
 The Serial over USB console can be accessed from a Linux host as follows:
 
-```
+```bash
 picocom -b 115200 -eb /dev/ttyACM0 --imap lfcrlf
 ```
 
@@ -151,14 +145,14 @@ picocom -b 115200 -eb /dev/ttyACM0 --imap lfcrlf
 
 The Trusted OS image can be executed under emulation as follows:
 
-```
+```bash
 make qemu
 ```
 
 The emulation run network connectivity should be configured as follows (Linux
 example with tap0):
 
-```
+```bash
 ip addr add 10.0.0.2/24 dev tap0
 ip link set tap0 up
 ip tuntap add dev tap0 mode tap group <your user group>
@@ -167,24 +161,22 @@ ip tuntap add dev tap0 mode tap group <your user group>
 The emulated target can be debugged with GDB using `make qemu-gdb`, this will
 make qemu waiting for a GDB connection that can be launched as follows:
 
-```
+```bash
 arm-none-eabi-gdb -ex "target remote 127.0.0.1:1234" example
 ```
 
 Breakpoints can be set in the usual way:
 
-```
+```none
 b ecdsa.GenerateKey
 continue
 ```
 
-Trusted Applet installation
-===========================
+## Trusted Applet installation
 
 TODO
 
-LED status
-==========
+## LED status
 
 The [USB armory Mk II](https://github.com/usbarmory/usbarmory/wiki) LEDs
 are used, in sequence, as follows:
