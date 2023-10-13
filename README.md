@@ -55,21 +55,21 @@ Trusted OS signing
 
 To maintain the chain of trust the Trusted OS must be signed, to this end the
 `OS_PRIVATE_KEY1` and `OS_PRIVATE_KEY2` environment variables must be set to the path
-of either [signify](https://man.openbsd.org/signify) or
-[minisign](https://jedisct1.github.io/minisign/) siging keys, while compiling.
+of [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys while compiling.
 
-Example key generation (signify, called signify-openbsd on some OS):
+Keys can be generated using the
+[generate_keys](https://github.com/transparency-dev/serverless-log/tree/main/cmd/generate_keys)
+command in the [serverless-log](https://github.com/transparency-dev/serverless-log) repo:
 
-```
-signify -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
-signify -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
-```
-
-Example key generation (minisign):
-
-```
-minisign -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
-minisign -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
+```bash
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="TrustedOS-1" \
+  --out_priv=armored-witness-os-1.sec \
+  --out_pub=armored-witness-os-1.pub
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="TrustedOS-2" \
+  --out_priv=armored-witness-os-2.sec \
+  --out_pub=armored-witness-os-2.pub
 ```
 
 Trusted Applet authentication
@@ -77,20 +77,18 @@ Trusted Applet authentication
 
 To maintain the chain of trust the OS performs trusted applet authentication
 before loading it, to this end the `APPLET_PUBLIC_KEY` environment variable
-must be set to the path of either
-[signify](https://man.openbsd.org/signify) or
-[minisign](https://jedisct1.github.io/minisign/) keys, while compiling.
+must be set to the path of a [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note)
+signing key while compiling.
 
-Example key generation (signify):
+Example key generation using the
+[generate_keys](https://github.com/transparency-dev/serverless-log/tree/main/cmd/generate_keys)
+command in the [serverless-log](https://github.com/transparency-dev/serverless-log) repo:
 
-```
-signify -G -p armored-witness.pub -s armored-witness.sec
-```
-
-Example key generation (minisign):
-
-```
-minisign -G -p armored-witness.pub -s armored-witness.sec
+```bash
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="TrustedApplet" \
+  --out_priv=armored-witness-applet.sec \
+  --out_pub=armored-witness-applet.pub
 ```
 
 Building the compiler
