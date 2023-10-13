@@ -51,9 +51,16 @@ make DEBUG=1 make qemu
 
 ## Trusted OS signing
 
-To maintain the chain of trust the Trusted OS must be signed, to this end the
-`OS_PRIVATE_KEY1` and `OS_PRIVATE_KEY2` environment variables must be set to the path
-of [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys while compiling.
+For an overview of the firmware authentication process please see 
+<https://github.com/transparency-dev/armored-witness/tree/main/docs/firmware_auth.md>.
+
+To maintain the chain of trust the Trusted OS must be signed and logged, to this end the
+following environment variables must be set to the path of
+[note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys while compiling:
+
+- `OS_PRIVATE_KEY1`
+- `OS_PRIVATE_KEY2`
+- `LOG_PRIVATE_KEY`
 
 Keys can be generated using the
 [generate_keys](https://github.com/transparency-dev/serverless-log/tree/main/cmd/generate_keys)
@@ -68,7 +75,14 @@ $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
   --key_name="TrustedOS-2" \
   --out_priv=armored-witness-os-2.sec \
   --out_pub=armored-witness-os-2.pub
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="Dev-Log" \
+  --out_priv=armored-witness-log.sec \
+  --out_pub=armored-witness-log.pub
 ```
+
+The provided `Makefile` has support for maintaining a local firmware transparency log on disk.
+This is primarily intended to be used for development only.
 
 ## Trusted Applet authentication
 
@@ -102,14 +116,32 @@ cd ../bin && export TAMAGO=`pwd`/go
 
 ## Building and executing on ARM targets
 
-Build the example trusted applet and kernel executables as follows:
+The OS firmware image can be built with the following command:
 
 ```bash
-make trusted_os
+# The trusted_os target builds the firmware image, and log_os target adds it
+# to the local firmware transparency log.
+make trusted_os log_os
 ```
 
-Final executables are created in the `bin` subdirectory, `trusted_os.elf`
+The final executable, `tristed_os.elf` is created in the `bin` subdirectory, and
 should be used for loading through `armored-witness-boot`.
+
+### Development builds
+
+To aid in development, it is also possible to build the OS with the Trusted Applet
+directly embedded within it:
+
+```bash
+# The trusted_os_embedded_applet target builds the firmware image with the applet
+# embedded, and log_os target adds it to the local firmware transparency log.
+make trusted_os_embedded_applet log_os
+```
+
+The resulting `bin/trusted_os.elf` may be seral booted directly to the device with
+the `imx_boot` tool, or similar.
+
+### Encrypted RAM support
 
 Only on i.MX6UL P/Ns, the `BEE` environment variable must be set to match
 `armored-witness-boot` compilation options in case AES CTR encryption for all
@@ -174,7 +206,9 @@ continue
 
 ## Trusted Applet installation
 
-TODO
+Installing the various firmware images onto the device can be accomplished using the
+[provision](https://github.com/transparency-dev/armored-witness/tree/main/cmd/provision)
+tool.
 
 ## LED status
 
