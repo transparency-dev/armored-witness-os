@@ -49,60 +49,56 @@ make DEBUG=1 make qemu
 00:00:02 TA starting ssh server (SHA256:eeMIwwN/zw1ov1BvO6sW3wtYi463sq+oLgKhmAew1WE) at 10.0.0.1:22
 ```
 
+
+
 ## Trusted OS signing
 
-For an overview of the firmware authentication process please see 
+For an overview of the firmware authentication process please see
 <https://github.com/transparency-dev/armored-witness/tree/main/docs/firmware_auth.md>.
 
-To maintain the chain of trust the Trusted OS must be signed and logged, to this end the
-following environment variables must be set to the path of
-[note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys while compiling:
-
-- `OS_PRIVATE_KEY1`
-- `OS_PRIVATE_KEY2`
-- `LOG_PRIVATE_KEY`
-
-Keys can be generated using the
-[generate_keys](https://github.com/transparency-dev/serverless-log/tree/main/cmd/generate_keys)
-command in the [serverless-log](https://github.com/transparency-dev/serverless-log) repo:
+To maintain the chain of trust the Trusted OS must be signed and logged.
+To this end, two [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys
+must be generated.
 
 ```bash
 $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
-  --key_name="TrustedOS-1" \
+  --key_name="DEV-TrustedOS-1" \
   --out_priv=armored-witness-os-1.sec \
   --out_pub=armored-witness-os-1.pub
 $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
-  --key_name="TrustedOS-2" \
+  --key_name="DEV-TrustedOS-2" \
   --out_priv=armored-witness-os-2.sec \
   --out_pub=armored-witness-os-2.pub
-$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
-  --key_name="Dev-Log" \
-  --out_priv=armored-witness-log.sec \
-  --out_pub=armored-witness-log.pub
 ```
 
-The provided `Makefile` has support for maintaining a local firmware transparency log on disk.
-This is primarily intended to be used for development only.
+The corresponding public key files will be built into the bootloader to verify the OS.
 
 ## Trusted Applet authentication
 
 To maintain the chain of trust the OS performs trusted applet authentication
-before loading it, to this end the `APPLET_PUBLIC_KEY` environment variable
-must be set to the path of a [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note)
-signing key while compiling.
+before executing it. This includes verifying signatures and Firmware Transparency
+artefacts produced when the applet was built.
 
-Example key generation using the
-[generate_keys](https://github.com/transparency-dev/serverless-log/tree/main/cmd/generate_keys)
-command in the [serverless-log](https://github.com/transparency-dev/serverless-log) repo:
+## Firmware transparency
+
+All ArmoredWitness firmware artefacts need to be added to a firmware transparency log.
+
+The provided `Makefile` has support for maintaining a local firmware transparency
+log on disk. This is primarily intended to be used for development only.
+
+In order to use this functionality, a log key pair can be generated with the
+following command:
 
 ```bash
 $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
-  --key_name="TrustedApplet" \
-  --out_priv=armored-witness-applet.sec \
-  --out_pub=armored-witness-applet.pub
+  --key_name="DEV-Log" \
+  --out_priv=armored-witness-log.sec \
+  --out_pub=armored-witness-log.pub
 ```
 
-## Building the compiler
+## Building and executing on ARM targets
+
+### Building the compiler
 
 Build the [TamaGo compiler](https://github.com/usbarmory/tamago-go)
 (or use the [latest binary release](https://github.com/usbarmory/tamago-go/releases/latest)):
@@ -114,9 +110,20 @@ cd tamago-go-latest/src && ./all.bash
 cd ../bin && export TAMAGO=`pwd`/go
 ```
 
-## Building and executing on ARM targets
+### Building the OS
 
-The OS firmware image can be built with the following command:
+Ensure the following environment variables are set:
+
+| Variable            | Description
+|---------------------|------------
+| `OS_PRIVATE_KEY1`   | Path to OS firmware signing key 1. Used by the Makefile to sign the OS.
+| `OS_PRIVATE_KEY2`   | Path to OS firmware signing key 2. Used by the Makefile to sign the OS.
+| `APPLET_PUBLIC_KEY` | Path to applet firmware verification key. Embedded into the OS to verify the applet at run-time.
+| `LOG_PUBLIC_KEY`    | Path to log verification key. Embedded into the OS to verify at run-time that the applet is correctly logged.
+| `LOG_ORIGIN`        | FT log origin string. Embedded into the OS to verify applet firmware transparency.
+| `LOG_PRIVATE_KEY`   | Path to log signing key. Used by Makefile to add the new OS firmware to the local dev log.
+
+The OS firmware image can then be built, signed, and logged with the following command:
 
 ```bash
 # The trusted_os target builds the firmware image, and log_os target adds it
@@ -124,7 +131,7 @@ The OS firmware image can be built with the following command:
 make trusted_os log_os
 ```
 
-The final executable, `tristed_os.elf` is created in the `bin` subdirectory, and
+The final executable, `trusted_os.elf` is created in the `bin` subdirectory, and
 should be used for loading through `armored-witness-boot`.
 
 ### Development builds
@@ -133,13 +140,13 @@ To aid in development, it is also possible to build the OS with the Trusted Appl
 directly embedded within it:
 
 ```bash
-# The trusted_os_embedded_applet target builds the firmware image with the applet
-# embedded, and log_os target adds it to the local firmware transparency log.
-make trusted_os_embedded_applet log_os
+make trusted_os_embedded_applet
 ```
 
 The resulting `bin/trusted_os.elf` may be seral booted directly to the device with
 the `imx_boot` tool, or similar.
+Note that since this OS image is not being loaded via the bootloader, it does not need
+to be added to the FT log.
 
 ### Encrypted RAM support
 
