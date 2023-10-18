@@ -1,6 +1,5 @@
 # ArmoredWitness Trusted OS
 
-
 ## Introduction
 
 TODO
@@ -32,7 +31,7 @@ support (requires a `tap0` device routing the Trusted Applet IP address).
 > :warning: emulated runs perform partial tests due to lack of full hardware
 > support by QEMU.
 
-```
+```bash
 make DEBUG=1 make qemu
 ...
 00:00:00 tamago/arm • TEE security monitor (Secure World system/monitor)
@@ -50,73 +49,107 @@ make DEBUG=1 make qemu
 00:00:02 TA starting ssh server (SHA256:eeMIwwN/zw1ov1BvO6sW3wtYi463sq+oLgKhmAew1WE) at 10.0.0.1:22
 ```
 
-Trusted OS signing
-==================
 
-To maintain the chain of trust the Trusted OS must be signed, to this end the
-`OS_PRIVATE_KEY1` and `OS_PRIVATE_KEY2` environment variables must be set to the path
-of either [signify](https://man.openbsd.org/signify) or
-[minisign](https://jedisct1.github.io/minisign/) siging keys, while compiling.
 
-Example key generation (signify, called signify-openbsd on some OS):
+## Trusted OS signing
 
+For an overview of the firmware authentication process please see
+<https://github.com/transparency-dev/armored-witness/tree/main/docs/firmware_auth.md>.
+
+To maintain the chain of trust the Trusted OS must be signed and logged.
+To this end, two [note](https://pkg.go.dev/golang.org/x/mod/sumdb/note) signing keys
+must be generated.
+
+```bash
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="DEV-TrustedOS-1" \
+  --out_priv=armored-witness-os-1.sec \
+  --out_pub=armored-witness-os-1.pub
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="DEV-TrustedOS-2" \
+  --out_priv=armored-witness-os-2.sec \
+  --out_pub=armored-witness-os-2.pub
 ```
-signify -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
-signify -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
-```
 
-Example key generation (minisign):
+The corresponding public key files will be built into the bootloader to verify the OS.
 
-```
-minisign -G -p armored-witness-os-1.pub -s armored-witness-os-1.sec
-minisign -G -p armored-witness-os-2.pub -s armored-witness-os-2.sec
-```
-
-Trusted Applet authentication
-=============================
+## Trusted Applet authentication
 
 To maintain the chain of trust the OS performs trusted applet authentication
-before loading it, to this end the `APPLET_PUBLIC_KEY` environment variable
-must be set to the path of either
-[signify](https://man.openbsd.org/signify) or
-[minisign](https://jedisct1.github.io/minisign/) keys, while compiling.
+before executing it. This includes verifying signatures and Firmware Transparency
+artefacts produced when the applet was built.
 
-Example key generation (signify):
+## Firmware transparency
 
+All ArmoredWitness firmware artefacts need to be added to a firmware transparency log.
+
+The provided `Makefile` has support for maintaining a local firmware transparency
+log on disk. This is intended to be used for development only.
+
+In order to use this functionality, a log key pair can be generated with the
+following command:
+
+```bash
+$ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
+  --key_name="DEV-Log" \
+  --out_priv=armored-witness-log.sec \
+  --out_pub=armored-witness-log.pub
 ```
-signify -G -p armored-witness.pub -s armored-witness.sec
-```
 
-Example key generation (minisign):
+## Building and executing on ARM targets
 
-```
-minisign -G -p armored-witness.pub -s armored-witness.sec
-```
-
-Building the compiler
-=====================
+### Building the compiler
 
 Build the [TamaGo compiler](https://github.com/usbarmory/tamago-go)
 (or use the [latest binary release](https://github.com/usbarmory/tamago-go/releases/latest)):
 
-```
+```bash
 wget https://github.com/usbarmory/tamago-go/archive/refs/tags/latest.zip
 unzip latest.zip
 cd tamago-go-latest/src && ./all.bash
 cd ../bin && export TAMAGO=`pwd`/go
 ```
 
-Building and executing on ARM targets
-=====================================
+### Building the OS
 
-Build the example trusted applet and kernel executables as follows:
+Ensure the following environment variables are set:
 
+| Variable            | Description
+|---------------------|------------
+| `OS_PRIVATE_KEY1`   | Path to OS firmware signing key 1. Used by the Makefile to sign the OS.
+| `OS_PRIVATE_KEY2`   | Path to OS firmware signing key 2. Used by the Makefile to sign the OS.
+| `APPLET_PUBLIC_KEY` | Path to applet firmware verification key. Embedded into the OS to verify the applet at run-time.
+| `LOG_PUBLIC_KEY`    | Path to log verification key. Embedded into the OS to verify at run-time that the applet is correctly logged.
+| `LOG_ORIGIN`        | FT log origin string. Embedded into the OS to verify applet firmware transparency.
+| `LOG_PRIVATE_KEY`   | Path to log signing key. Used by Makefile to add the new OS firmware to the local dev log.
+| `DEV_LOG_DIR`       | Path to directory in which to store the dev FT log files.
+
+The OS firmware image can then be built, signed, and logged with the following command:
+
+```bash
+# The trusted_os target builds the firmware image, and log_os target adds it
+# to the local firmware transparency log.
+make trusted_os log_os
 ```
-make trusted_os
-```
 
-Final executables are created in the `bin` subdirectory, `trusted_os.elf`
+The final executable, `trusted_os.elf` is created in the `bin` subdirectory, and
 should be used for loading through `armored-witness-boot`.
+
+### Development builds
+
+To aid in development, it is also possible to build the OS with the Trusted Applet
+directly embedded within it:
+
+```bash
+make trusted_os_embedded_applet
+```
+
+The resulting `bin/trusted_os.elf` may be seral booted directly to the device with
+the `imx_boot` tool, or similar.
+Note that since this OS image is not being loaded via the bootloader, it does not need
+to be added to the FT log.
+
+### Encrypted RAM support
 
 Only on i.MX6UL P/Ns, the `BEE` environment variable must be set to match
 `armored-witness-boot` compilation options in case AES CTR encryption for all
@@ -132,20 +165,19 @@ The following targets are available:
 The targets support native (see relevant documentation links in the table above)
 as well as emulated execution (e.g. `make qemu`).
 
-Debugging
----------
+## Debugging
 
 An optional Serial over USB console can be used to access Trusted OS and
 Trusted Applet logs, it can be enabled when compiling with the `DEBUG`
 environment variable set:
 
-```
+```bash
 make DEBUG=1 trusted_os
 ```
 
 The Serial over USB console can be accessed from a Linux host as follows:
 
-```
+```bash
 picocom -b 115200 -eb /dev/ttyACM0 --imap lfcrlf
 ```
 
@@ -153,14 +185,14 @@ picocom -b 115200 -eb /dev/ttyACM0 --imap lfcrlf
 
 The Trusted OS image can be executed under emulation as follows:
 
-```
+```bash
 make qemu
 ```
 
 The emulation run network connectivity should be configured as follows (Linux
 example with tap0):
 
-```
+```bash
 ip addr add 10.0.0.2/24 dev tap0
 ip link set tap0 up
 ip tuntap add dev tap0 mode tap group <your user group>
@@ -169,24 +201,24 @@ ip tuntap add dev tap0 mode tap group <your user group>
 The emulated target can be debugged with GDB using `make qemu-gdb`, this will
 make qemu waiting for a GDB connection that can be launched as follows:
 
-```
+```bash
 arm-none-eabi-gdb -ex "target remote 127.0.0.1:1234" example
 ```
 
 Breakpoints can be set in the usual way:
 
-```
+```none
 b ecdsa.GenerateKey
 continue
 ```
 
-Trusted Applet installation
-===========================
+## Trusted Applet installation
 
-TODO
+Installing the various firmware images onto the device can be accomplished using the
+[provision](https://github.com/transparency-dev/armored-witness/tree/main/cmd/provision)
+tool.
 
-LED status
-==========
+## LED status
 
 The [USB armory Mk II](https://github.com/usbarmory/usbarmory/wiki) LEDs
 are used, in sequence, as follows:
