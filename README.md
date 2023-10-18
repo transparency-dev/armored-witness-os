@@ -122,6 +122,7 @@ Ensure the following environment variables are set:
 | `LOG_PUBLIC_KEY`    | Path to log verification key. Embedded into the OS to verify at run-time that the applet is correctly logged.
 | `LOG_ORIGIN`        | FT log origin string. Embedded into the OS to verify applet firmware transparency.
 | `LOG_PRIVATE_KEY`   | Path to log signing key. Used by Makefile to add the new OS firmware to the local dev log.
+| `DEV_LOG_DIR`       | Path to directory in which to store the dev FT log files.
 
 The OS firmware image can then be built, signed, and logged with the following command:
 
