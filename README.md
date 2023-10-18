@@ -84,7 +84,7 @@ artefacts produced when the applet was built.
 All ArmoredWitness firmware artefacts need to be added to a firmware transparency log.
 
 The provided `Makefile` has support for maintaining a local firmware transparency
-log on disk. This is primarily intended to be used for development only.
+log on disk. This is intended to be used for development only.
 
 In order to use this functionality, a log key pair can be generated with the
 following command:
