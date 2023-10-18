@@ -72,8 +72,6 @@ trusted_os_embedded_applet: APP=trusted_os
 trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
 trusted_os_embedded_applet: check_os_env copy_applet proto elf manifest imx
 trusted_os_embedded_applet:
-	# TODO: fix this
-	touch ${CURDIR}/bin/trusted_applet.proofbundle
 
 witnessctl: check_tamago
 	@echo "building armored-witness control tool"
@@ -181,10 +179,19 @@ check_os_env:
 		exit 1; \
 	fi
 
+copy_applet: LOG_URL=file://$(DEV_LOG_DIR)/log/
 copy_applet:
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
-	cp ${APPLET_PATH}/trusted_applet.proofbundle ${CURDIR}/trusted_os/assets/
+	cp ${APPLET_PATH}/trusted_applet_manifest ${CURDIR}/trusted_os/assets/
+	go run ./cmd/proofbundle \
+		--log_origin=${LOG_ORIGIN} \
+		--log_url=${LOG_URL} \
+		--log_pubkey_file=${LOG_PUBLIC_KEY} \
+		--manifest_pubkey_file=${APPLET_PUBLIC_KEY} \
+		--manifest_file=${CURDIR}/trusted_os/assets/trusted_applet_manifest \
+		--applet_file=${CURDIR}/trusted_os/assets/trusted_applet.elf \
+		--output_file=${CURDIR}/trusted_os/assets/trusted_applet.proofbundle
 
 create_dummy_applet:
 	mkdir -p $(DIR)/assets
