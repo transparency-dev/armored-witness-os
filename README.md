@@ -98,17 +98,8 @@ $ go run github.com/transparency-dev/serverless-log/cmd/generate_keys@HEAD \
 
 ## Building and executing on ARM targets
 
-### Building the compiler
-
-Build the [TamaGo compiler](https://github.com/usbarmory/tamago-go)
-(or use the [latest binary release](https://github.com/usbarmory/tamago-go/releases/latest)):
-
-```bash
-wget https://github.com/usbarmory/tamago-go/archive/refs/tags/latest.zip
-unzip latest.zip
-cd tamago-go-latest/src && ./all.bash
-cd ../bin && export TAMAGO=`pwd`/go
-```
+Download and install the
+[latest TamaGo binary release](https://github.com/usbarmory/tamago-go/releases/latest).
 
 ### Building the OS
 
@@ -134,6 +125,8 @@ make trusted_os log_os
 
 The final executable, `trusted_os.elf` is created in the `bin` subdirectory, and
 should be used for loading through `armored-witness-boot`.
+
+Firmware transparency artefacts will be written into `${DEV_LOG_DIR}`.
 
 ### Development builds
 
