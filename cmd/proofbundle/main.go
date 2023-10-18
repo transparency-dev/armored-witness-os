@@ -123,7 +123,7 @@ func main() {
 func newFetcherOrDie(logURL string) client.Fetcher {
 	root, err := url.Parse(logURL)
 	if err != nil {
-		klog.Exitf("Couldn't parse log_base_url: %v", err)
+		klog.Exitf("Couldn't parse log_url: %v", err)
 	}
 
 	get := getByScheme[root.Scheme]
