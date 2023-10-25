@@ -219,7 +219,11 @@ func (r *RPC) HAB(srk []byte, _ *bool) error {
 // installed on this device. These will be the same versions that are
 // currently running.
 func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
-	return errors.New("unimplemented")
+	if v != nil {
+		v.Applet = loadedAppletVersion
+		v.OS = osVersion
+	}
+	return nil
 }
 
 // InstallOS updates the OS to the version contained in the firmware bundle.

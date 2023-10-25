@@ -20,7 +20,7 @@ BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 BUILD = ${BUILD_USER}@${BUILD_HOST} on ${BUILD_DATE}
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
 LOG_ORIGIN ?= "DEV.armoredwitness.transparency.dev/${USER}"
-GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n 'v0.0.0+'`git rev-parse HEAD`) | tail -c +2 )
+GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
 
 PROTOC ?= /usr/bin/protoc
 
@@ -48,10 +48,10 @@ QEMU ?= qemu-system-arm -machine mcimx6ul-evk -cpu cortex-a7 -m 512M \
 ARCH = "arm"
 
 GOFLAGS = -tags ${BUILD_TAGS} -trimpath \
-	-ldflags "-s -w -T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
+	-ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
 		-X 'main.Build=${BUILD}' \
 		-X 'main.Revision=${REV}' \
-		-X 'main.Version=${BUILD_EPOCH}' \
+		-X 'main.Version=${GIT_SEMVER_TAG}' \
 		-X 'main.AppletLogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
 		-X 'main.AppletLogOrigin=${LOG_ORIGIN}' \
 		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})'"

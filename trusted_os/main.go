@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/coreos/go-semver/semver"
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -56,6 +57,12 @@ var (
 
 	// USB armory Mk II LAN - UA-MKII-LAN
 	LAN *enet.ENET
+
+	// osVersion is the semver parsed representation of the Version string above.
+	osVersion semver.Version
+	// loadedAppletVersion is taken from the manifest used to verify the
+	// applet.
+	loadedAppletVersion semver.Version
 )
 
 // A Trusted Applet can be embedded for testing purposes with QEMU.
@@ -160,6 +167,12 @@ func main() {
 		log.Fatalf("SM invalid AppletlManifestogVerifier: %v", err)
 	}
 
+	if v, err := semver.NewVersion(Version); err != nil {
+		log.Printf("Failed to parse OS version %q: %v", Version, err)
+	} else {
+		osVersion = *v
+	}
+
 	var ta *firmware.Bundle
 	if len(taELF) > 0 && len(taProofBundle) > 0 {
 		// Handle embedded applet & proof.
@@ -182,9 +195,12 @@ func main() {
 			ManifestVerifiers: []note.Verifier{appletVerifier},
 		}
 
-		if err := bv.Verify(*ta); err != nil {
+		manifest, err := bv.Verify(*ta)
+		if err != nil {
 			log.Printf("SM applet verification error, %v", err)
 		}
+		loadedAppletVersion = manifest.GitTagName
+		log.Printf("Loaded applet version %s", loadedAppletVersion.String())
 
 		usbarmory.LED("white", true)
 
