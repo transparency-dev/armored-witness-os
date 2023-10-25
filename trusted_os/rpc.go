@@ -230,7 +230,7 @@ func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
 // If the update is successful, this func will not return and the device will
 // immediately reboot.
 func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
-	if err := updateOS(b.Image, b.Signatures, b.Proof); err != nil {
+	if err := updateOS(b.Image, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()
@@ -243,11 +243,7 @@ func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 // If the update is successful, this func will not return and the device will
 // immediately reboot.
 func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
-	if len(b.Signatures) == 0 {
-		return errors.New("missing signature")
-	}
-
-	if err := updateApplet(b.Image, b.Signatures[0], b.Proof); err != nil {
+	if err := updateApplet(b.Image, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()

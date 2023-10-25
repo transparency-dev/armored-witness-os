@@ -178,21 +178,21 @@ func blinkenLights() (func(), func()) {
 }
 
 // updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
+func updateApplet(taELF []byte, pb config.ProofBundle) (err error) {
 	// TODO: OS applet verification
 
-	return flashFirmware(Firmware_Applet, taELF, [][]byte{taSig}, pb)
+	return flashFirmware(Firmware_Applet, taELF, pb)
 }
 
 // updateOS verifies an OS update and flashes it to internal storage
-func updateOS(osELF []byte, osSigs [][]byte, pb config.ProofBundle) (err error) {
+func updateOS(osELF []byte, pb config.ProofBundle) (err error) {
 	// TODO: OS signature verification
 
-	return flashFirmware(Firmware_OS, osELF, osSigs, pb)
+	return flashFirmware(Firmware_OS, osELF, pb)
 }
 
 // flashFirmware writes config & elf bytes to the MMC in the correct region for the specificed type of firmware.
-func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBundle) error {
+func flashFirmware(t FirmwareType, elf []byte, pb config.ProofBundle) error {
 	blink, cancel := blinkenLights()
 	defer cancel()
 	go blink()
@@ -213,10 +213,9 @@ func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBun
 	// Convert the signature to an armory-witness-boot format to serialize
 	// all required information for applet loading.
 	conf := &config.Config{
-		Size:       int64(len(elf)),
-		Signatures: sigs,
-		Bundle:     pb,
-		Offset:     int64(elfBlock) * expectedBlockSize,
+		Size:   int64(len(elf)),
+		Bundle: pb,
+		Offset: int64(elfBlock) * expectedBlockSize,
 	}
 
 	confEnc, err := conf.Encode()
@@ -316,11 +315,11 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 	if ctl.ota.seq == ctl.ota.total {
 		log.Printf("received all %d firmware update chunks", ctl.ota.total)
 
-		go func(buf []byte, sig []byte, pb config.ProofBundle) {
+		go func(buf []byte, pb config.ProofBundle) {
 			// avoid USB control interface timeout
 			time.Sleep(500 * time.Millisecond)
 
-			if err = updateApplet(buf, sig, pb); err != nil {
+			if err = updateApplet(buf, pb); err != nil {
 				log.Printf("firmware update error, %v", err)
 			}
 
@@ -335,7 +334,7 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 			if _, err = loadApplet(taELF, ctl); err != nil {
 				log.Printf("SM applet execution error, %v", err)
 			}
-		}(ctl.ota.buf, ctl.ota.sig, *ctl.ota.bundle)
+		}(ctl.ota.buf, *ctl.ota.bundle)
 
 		ctl.ota = nil
 	}
