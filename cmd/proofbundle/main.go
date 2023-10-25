@@ -96,7 +96,7 @@ func main() {
 		LogVerifer:        logVerifier,
 		ManifestVerifiers: []note.Verifier{mv},
 	}
-	if err := v.Verify(bundle); err != nil {
+	if _, err := v.Verify(bundle); err != nil {
 		klog.Exitf("Failed to verify proof bundle: %v", err)
 	}
 
