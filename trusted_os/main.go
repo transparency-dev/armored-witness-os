@@ -49,7 +49,6 @@ var (
 
 var (
 	Control *usb.USB
-	Storage Card
 
 	// USB armory Mk II (rev. β) - UA-MKII-β
 	// USB armory Mk II (rev. γ) - UA-MKII-γ

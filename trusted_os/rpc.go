@@ -230,7 +230,7 @@ func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
 // If the update is successful, this func will not return and the device will
 // immediately reboot.
 func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
-	if err := updateOS(b.Image, b.Proof); err != nil {
+	if err := updateOS(r.Storage, b.Image, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()
@@ -243,7 +243,7 @@ func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 // If the update is successful, this func will not return and the device will
 // immediately reboot.
 func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
-	if err := updateApplet(b.Image, b.Proof); err != nil {
+	if err := updateApplet(r.Storage, b.Image, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()
@@ -255,6 +255,8 @@ func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
 // Reboot resets the system.
 func (r *RPC) Reboot(_ *any, _ *bool) error {
 	log.Printf("SM rebooting")
+	// Reduce Watchdog timeout for a faster reboot:
+	imx6ul.WDOG2.Service(500)
 	usbarmory.Reset()
 
 	return nil
