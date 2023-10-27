@@ -203,7 +203,7 @@ func updateApplet(storage Card, taELF []byte, pb config.ProofBundle) (err error)
 
 // updateOS verifies an OS update and flashes it to internal storage
 func updateOS(storage Card, osELF []byte, pb config.ProofBundle) (err error) {
-	// TODO: OS signature verification
+	// TODO: OS proof bundle verification
 
 	return flashFirmware(storage, Firmware_OS, osELF, pb)
 }
