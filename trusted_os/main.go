@@ -195,7 +195,7 @@ func main() {
 	}
 
 	if ta != nil {
-		_, err := AppletBundleVerifier.Verify(*ta)
+		manifest, err := AppletBundleVerifier.Verify(*ta)
 		if err != nil {
 			log.Printf("SM applet verification error, %v", err)
 		}
