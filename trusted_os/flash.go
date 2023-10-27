@@ -183,8 +183,20 @@ func blinkenLights() (func(), func()) {
 }
 
 // updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, pb config.ProofBundle) (err error) {
-	// TODO: OS applet verification
+func updateApplet(storage Card, taELF []byte, pb config.ProofBundle) (err error) {
+	// First, verify everything is correct and that, as far as we can tell,
+	// we would succeed in loadering and launching this applet upon next boot.
+	bundle := firmware.Bundle{
+		Checkpoint:     pb.Checkpoint,
+		Index:          pb.LogIndex,
+		InclusionProof: pb.InclusionProof,
+		Manifest:       pb.Manifest,
+		Firmware:       taELF,
+	}
+	if _, err := AppletBundleVerifier.Verify(bundle); err != nil {
+		return err
+	}
+	log.Printf("SM verified applet bundle for update")
 
 	return flashFirmware(storage, Firmware_Applet, taELF, pb)
 }
