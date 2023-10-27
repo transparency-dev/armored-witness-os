@@ -62,6 +62,8 @@ var (
 	// loadedAppletVersion is taken from the manifest used to verify the
 	// applet.
 	loadedAppletVersion semver.Version
+
+	AppletBundleVerifier firmware.BundleVerifier
 )
 
 // A Trusted Applet can be embedded for testing purposes with QEMU.
@@ -165,6 +167,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("SM invalid AppletlManifestogVerifier: %v", err)
 	}
+	AppletBundleVerifier = firmware.BundleVerifier{
+		LogOrigin:         AppletLogOrigin,
+		LogVerifer:        logVerifier,
+		ManifestVerifiers: []note.Verifier{appletVerifier},
+	}
 
 	if v, err := semver.NewVersion(Version); err != nil {
 		log.Printf("Failed to parse OS version %q: %v", Version, err)
@@ -188,13 +195,7 @@ func main() {
 	}
 
 	if ta != nil {
-		bv := firmware.BundleVerifier{
-			LogOrigin:         AppletLogOrigin,
-			LogVerifer:        logVerifier,
-			ManifestVerifiers: []note.Verifier{appletVerifier},
-		}
-
-		manifest, err := bv.Verify(*ta)
+		_, err := AppletBundleVerifier.Verify(*ta)
 		if err != nil {
 			log.Printf("SM applet verification error, %v", err)
 		}
