@@ -9,7 +9,7 @@ require (
 	github.com/flynn/u2f v0.0.0-20180613185708-15554eb68e5d
 	github.com/gsora/fidati v0.0.0-20220824075547-eeb0a5f7d6c3
 	github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7
-	github.com/transparency-dev/armored-witness-common v0.0.0-20231012085018-f5e62744cd3e
+	github.com/transparency-dev/armored-witness-common v0.0.0-20231027110430-3802c9e3e15d
 	github.com/usbarmory/GoTEE v0.0.0-20230914094934-f4f769daa5a9
 	github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c
 	github.com/usbarmory/crucible v0.0.0-20230721112227-63d5e1f2db77
