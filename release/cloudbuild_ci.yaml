@@ -91,7 +91,7 @@ substitutions:
   _TAMAGO_VERSION: '1.20.6'
   _TEST_TAG_NAME: '0.1.2'
   # Signing-related.
-  _REGION: europe-west2
-  _KMS_KEY: trusted-os-ci
-  _KMS_KEYRING: armored-witness
+  _REGION: global
+  _KMS_KEY: trusted-os-1-ci
+  _KMS_KEYRING: firmware-release-ci
   _KMS_KEY_VERSION: '1'
