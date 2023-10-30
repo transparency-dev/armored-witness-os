@@ -126,10 +126,6 @@ func flash(card Card, buf []byte, lba int) (err error) {
 		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
 	}
 
-	if blockSize == 0 {
-		return errors.New("invalid block size")
-	}
-
 	if rem := len(buf) % blockSize; rem > 0 {
 		buf = append(buf, make([]byte, blockSize-rem)...)
 	}
