@@ -37,7 +37,7 @@ const (
 	otaLimit          = 31457280
 	taConfBlock       = 0x200000
 	taBlock           = taConfBlock + config.MaxLength/expectedBlockSize
-	osConfBlock       = config.Offset / expectedBlockSize // Offset is in bytes
+	osConfBlock       = 0x5000
 	osBlock           = osConfBlock + config.MaxLength/expectedBlockSize
 	batchSize         = 2048
 )
@@ -116,15 +116,18 @@ func read(card Card) (fw *firmware.Bundle, err error) {
 	return
 }
 
-// flash writes a buffer to internal storage
+// flash writes a buffer to internal storage.
+//
+// Since this function is writing blocks to MMC, it will pad the passed in
+// buf with zeros to ensure full MMC blocks are written.
 func flash(card Card, buf []byte, lba int) (err error) {
 	blockSize := card.Info().BlockSize
 	if blockSize != expectedBlockSize {
 		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
 	}
 
-	if blockSize == 0 {
-		return errors.New("invalid block size")
+	if rem := len(buf) % blockSize; rem > 0 {
+		buf = append(buf, make([]byte, blockSize-rem)...)
 	}
 
 	blocks := len(buf) / blockSize
@@ -139,13 +142,11 @@ func flash(card Card, buf []byte, lba int) (err error) {
 		start := i * blockSize
 		end := start + blockSize*batch
 
-		if i%batch == 0 {
-			log.Printf("flashed %d/%d applet blocks", i, blocks)
-		}
-
 		if err = card.WriteBlocks(lba+i, buf[start:end]); err != nil {
 			return
 		}
+
+		log.Printf("flashed %d/%d blocks", i+batch, blocks)
 	}
 
 	return
@@ -178,21 +179,37 @@ func blinkenLights() (func(), func()) {
 }
 
 // updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(taELF []byte, taSig []byte, pb config.ProofBundle) (err error) {
-	// TODO: OS applet verification
+func updateApplet(storage Card, taELF []byte, pb config.ProofBundle) (err error) {
+	// First, verify everything is correct and that, as far as we can tell,
+	// we would succeed in loadering and launching this applet upon next boot.
+	bundle := firmware.Bundle{
+		Checkpoint:     pb.Checkpoint,
+		Index:          pb.LogIndex,
+		InclusionProof: pb.InclusionProof,
+		Manifest:       pb.Manifest,
+		Firmware:       taELF,
+	}
+	if _, err := AppletBundleVerifier.Verify(bundle); err != nil {
+		return err
+	}
+	log.Printf("SM verified applet bundle for update")
 
-	return flashFirmware(Firmware_Applet, taELF, [][]byte{taSig}, pb)
+	return flashFirmware(storage, Firmware_Applet, taELF, pb)
 }
 
 // updateOS verifies an OS update and flashes it to internal storage
-func updateOS(osELF []byte, osSigs [][]byte, pb config.ProofBundle) (err error) {
-	// TODO: OS signature verification
+func updateOS(storage Card, osELF []byte, pb config.ProofBundle) (err error) {
+	// TODO: OS proof bundle verification
 
-	return flashFirmware(Firmware_OS, osELF, osSigs, pb)
+	return flashFirmware(storage, Firmware_OS, osELF, pb)
 }
 
 // flashFirmware writes config & elf bytes to the MMC in the correct region for the specificed type of firmware.
-func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBundle) error {
+func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBundle) error {
+	if storage == nil {
+		return fmt.Errorf("Flashing %s error: missing Storage", t)
+	}
+
 	blink, cancel := blinkenLights()
 	defer cancel()
 	go blink()
@@ -213,10 +230,9 @@ func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBun
 	// Convert the signature to an armory-witness-boot format to serialize
 	// all required information for applet loading.
 	conf := &config.Config{
-		Size:       int64(len(elf)),
-		Signatures: sigs,
-		Bundle:     pb,
-		Offset:     int64(elfBlock) * expectedBlockSize,
+		Size:   int64(len(elf)),
+		Bundle: pb,
+		Offset: int64(elfBlock) * expectedBlockSize,
 	}
 
 	confEnc, err := conf.Encode()
@@ -224,19 +240,15 @@ func flashFirmware(t FirmwareType, elf []byte, sigs [][]byte, pb config.ProofBun
 		return err
 	}
 
-	if Storage == nil {
-		return fmt.Errorf("Flashing %s error: missing Storage", t)
-	}
+	log.Printf("SM flashing %s config (%d bytes) @ 0x%x", t, len(confEnc), confBlock)
 
-	log.Printf("SM flashing %s config", t)
-
-	if err = flash(Storage, confEnc, confBlock); err != nil {
+	if err = flash(storage, confEnc, confBlock); err != nil {
 		return fmt.Errorf("%s signature flashing error: %v", t, err)
 	}
 
-	log.Printf("SM flashing %s", t)
+	log.Printf("SM flashing %s (%d bytes) @ 0x%x", t, len(elf), elfBlock)
 
-	if err = flash(Storage, elf, elfBlock); err != nil {
+	if err = flash(storage, elf, elfBlock); err != nil {
 		return fmt.Errorf("%s flashing error: %v", t, err)
 	}
 
@@ -316,11 +328,11 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 	if ctl.ota.seq == ctl.ota.total {
 		log.Printf("received all %d firmware update chunks", ctl.ota.total)
 
-		go func(buf []byte, sig []byte, pb config.ProofBundle) {
+		go func(buf []byte, pb config.ProofBundle) {
 			// avoid USB control interface timeout
 			time.Sleep(500 * time.Millisecond)
 
-			if err = updateApplet(buf, sig, pb); err != nil {
+			if err = updateApplet(ctl.RPC.Storage, buf, pb); err != nil {
 				log.Printf("firmware update error, %v", err)
 			}
 
@@ -335,7 +347,7 @@ func (ctl *controlInterface) Update(req []byte) (res []byte) {
 			if _, err = loadApplet(taELF, ctl); err != nil {
 				log.Printf("SM applet execution error, %v", err)
 			}
-		}(ctl.ota.buf, ctl.ota.sig, *ctl.ota.bundle)
+		}(ctl.ota.buf, *ctl.ota.bundle)
 
 		ctl.ota = nil
 	}

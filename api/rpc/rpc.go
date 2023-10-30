@@ -56,9 +56,6 @@ type FirmwareUpdate struct {
 	// Image is the firmware image to be applied.
 	Image []byte
 
-	// Signatures contains authentication signatures for the firmware.
-	Signatures [][]byte
-
 	//  Proof contains firmware transparency artefacts for the new firmware image.
 	Proof config.ProofBundle
 }
