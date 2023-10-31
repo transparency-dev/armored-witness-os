@@ -58,8 +58,6 @@ github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/transparency-dev/armored-witness-applet v0.0.0-20230918140527-29dcafed830b h1:d8bLTgqLrvH1VJyNUTAzLyY/Ux13s7QHb19vEcTum7E=
 github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7 h1:3xrmiN4hwWi3nxvDo9asUWrNCjaPYBhF+rHpW97Fde0=
 github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7/go.mod h1:GTj2zM9nwFe7G7gaXzIbkKJ/PkZfvVq4TdNiA6CBsdo=
-github.com/transparency-dev/armored-witness-common v0.0.0-20231027110430-3802c9e3e15d h1:76yBTOSuqGXpKe7qjF1Yjzf4MOhXYryeVObzUkpKHf0=
-github.com/transparency-dev/armored-witness-common v0.0.0-20231027110430-3802c9e3e15d/go.mod h1:6M39UQVYzzFdzXGrJFjRC+G9D5f0icxOVkcX/yaWZss=
 github.com/transparency-dev/armored-witness-common v0.0.0-20231031160117-eefcf9dd7f27 h1:p8mmHwCvTYbuB52ph9knjwWkQmGNZ+3BZJgsw9xIQq0=
 github.com/transparency-dev/armored-witness-common v0.0.0-20231031160117-eefcf9dd7f27/go.mod h1:6M39UQVYzzFdzXGrJFjRC+G9D5f0icxOVkcX/yaWZss=
 github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 h1:PHklaeYyhPsbhWt+MnKpBvJrsJGkPEaU1JutMj4wNqM=
