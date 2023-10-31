@@ -99,7 +99,8 @@ log_initialise:
 
 ## log_os adds the trusted_os_manifest file created during the build to the dev FT log.
 log_os: LOG_STORAGE_DIR=$(DEV_LOG_DIR)/log
-log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/trusted-os/$(GIT_SEMVER_TAG)
+log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)
+log_os: ARTEFACT_HASH=$(shell sha256sum ${CURDIR}/bin/trusted_os.elf | cut -f1 -d" ")
 log_os:
 	@if [ "${LOG_PRIVATE_KEY}" == "" -o "${LOG_PUBLIC_KEY}" == "" ]; then \
 		@echo "You need to set LOG_PRIVATE_KEY and LOG_PUBLIC_KEY variables"; \
@@ -124,7 +125,7 @@ log_os:
 		--private_key=${LOG_PRIVATE_KEY} \
 		--public_key=${LOG_PUBLIC_KEY}
 	@mkdir -p ${LOG_ARTEFACT_DIR}
-	cp ${CURDIR}/bin/trusted_os.* ${LOG_ARTEFACT_DIR}
+	cp ${CURDIR}/bin/trusted_os.elf ${LOG_ARTEFACT_DIR}/${ARTEFACT_HASH}
 
 
 #### ARM targets ####
