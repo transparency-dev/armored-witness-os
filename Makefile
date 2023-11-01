@@ -99,7 +99,7 @@ log_initialise:
 
 ## log_os adds the trusted_os_manifest file created during the build to the dev FT log.
 log_os: LOG_STORAGE_DIR=$(DEV_LOG_DIR)/log
-log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)
+log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/artefacts
 log_os: ARTEFACT_HASH=$(shell sha256sum ${CURDIR}/bin/trusted_os.elf | cut -f1 -d" ")
 log_os:
 	@if [ "${LOG_PRIVATE_KEY}" == "" -o "${LOG_PUBLIC_KEY}" == "" ]; then \
