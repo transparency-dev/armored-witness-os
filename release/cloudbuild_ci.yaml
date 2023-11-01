@@ -69,8 +69,8 @@ steps:
       - run
       - github.com/transparency-dev/armored-witness/cmd/sign
       - --project_name=${PROJECT_ID}
-      - --release="ci"
-      - --artefact="os1"
+      - --release=ci
+      - --artefact=os1
       - --manifest_file=output/trusted_os_manifest_unsigned.json
       - --output_file=output/trusted_os_manifest_transparency_dev
   # Print the content of the signed manifest.
