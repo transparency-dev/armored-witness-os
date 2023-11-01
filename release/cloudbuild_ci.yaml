@@ -57,6 +57,7 @@ steps:
       - --raw
       - --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
+  # TODO: sign the manifest twice to mimic the WithSecure 2nd signature flow.
   - name: golang
     args:
       - go
@@ -68,10 +69,8 @@ steps:
       - run
       - github.com/transparency-dev/armored-witness/cmd/sign
       - --project_name=${PROJECT_ID}
-      - --key_ring=${_KMS_KEYRING}
-      - --key_name=${_KMS_KEY}
-      - --key_version=${_KMS_KEY_VERSION}
-      - --key_location=${_REGION}
+      - --release="ci"
+      - --artefact="os1"
       - --manifest_file=output/trusted_os_manifest_unsigned.json
       - --output_file=output/trusted_os_manifest_transparency_dev
   # Print the content of the signed manifest.
@@ -92,8 +91,3 @@ substitutions:
   _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
   _TEST_TAG_NAME: '0.1.2'
-  # Signing-related.
-  _REGION: global
-  _KMS_KEY: trusted-os-1-ci
-  _KMS_KEYRING: firmware-release-ci
-  _KMS_KEY_VERSION: '1'
