@@ -123,9 +123,7 @@ steps:
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
-  _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
-  _TEST_TAG_NAME: '0.1.2'
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
   _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
