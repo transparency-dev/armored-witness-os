@@ -30,11 +30,13 @@ steps:
       - output
   # Copy the artifacts from the Cloud Build VM to GCS.
   - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
     args:
+      - gcloud
       - storage
       - cp
       - output/trusted_os.elf
-      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os.elf
+      - gs://${_FIRMWARE_BUCKET}/$(sha256sum output/trusted_os.elf | cut -f1 -d" ")
   ### Construct log entry / Claimant Model statement.
   - name: golang
     args:
@@ -55,6 +57,7 @@ steps:
       - --raw
       - --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
+  # TODO: sign the manifest twice to mimic the WithSecure 2nd signature flow.
   - name: golang
     args:
       - go
@@ -66,10 +69,8 @@ steps:
       - run
       - github.com/transparency-dev/armored-witness/cmd/sign
       - --project_name=${PROJECT_ID}
-      - --key_ring=${_KMS_KEYRING}
-      - --key_name=${_KMS_KEY}
-      - --key_version=${_KMS_KEY_VERSION}
-      - --key_location=${_REGION}
+      - --release="ci"
+      - --artefact="os1"
       - --manifest_file=output/trusted_os_manifest_unsigned.json
       - --output_file=output/trusted_os_manifest_transparency_dev
   # Print the content of the signed manifest.
@@ -77,21 +78,37 @@ steps:
     args:
       - cat
       - output/trusted_os_manifest_transparency_dev
-  # Copy manifest JSON to the release bucket so that WithSecure may read it.
+  ### Write the firmware release to the CI transparency log.
+  # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
       - output/trusted_os_manifest_transparency_dev
-      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_manifest_transparency_dev
+      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
+  # Sequence log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - sequence
+      - '--data'
+      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+  # Integrate log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - integrate
+      - '--data'
+      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
   _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
   _TEST_TAG_NAME: '0.1.2'
-  # Signing-related.
-  _REGION: global
-  _KMS_KEY: trusted-os-1-ci
-  _KMS_KEYRING: firmware-release-ci
-  _KMS_KEY_VERSION: '1'
+  # Log-related.
+  _ENTRIES_DIR: firmware-log-sequence
+  _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
+  _LOG_NAME: armored-witness-firmware-log-ci
