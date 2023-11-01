@@ -78,16 +78,37 @@ steps:
     args:
       - cat
       - output/trusted_os_manifest_transparency_dev
-  # Copy manifest JSON to the release bucket so that WithSecure may read it.
+  ### Write the firmware release to the CI transparency log.
+  # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
       - output/trusted_os_manifest_transparency_dev
-      - gs://${_FIRMWARE_BUCKET}/${_FIRMWARE_COMPONENT}/${_TEST_TAG_NAME}/trusted_os_manifest_transparency_dev
+      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
+  # Sequence log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - sequence
+      - '--data'
+      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+  # Integrate log entry.
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - functions
+      - call
+      - integrate
+      - '--data'
+      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
   _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
   _TEST_TAG_NAME: '0.1.2'
+  # Log-related.
+  _ENTRIES_DIR: firmware-log-sequence
+  _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
+  _LOG_NAME: armored-witness-firmware-log-ci
