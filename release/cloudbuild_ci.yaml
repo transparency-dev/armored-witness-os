@@ -46,11 +46,11 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
     args:
-      - gcloud
-      - storage
-      - cp
-      - output/trusted_os.elf
-      - gs://${_FIRMWARE_BUCKET}/$(sha256sum output/trusted_os.elf | cut -f1 -d" ")
+      - -c
+      - |
+        gcloud storage cp \
+          output/trusted_os.elf \
+          gs://${_FIRMWARE_BUCKET}/$(sha256sum output/trusted_os.elf | cut -f1 -d" ")
   ### Construct log entry / Claimant Model statement.
   # Create the manifest.
   # This step needs to be a bash script in order to substitute the fake take
