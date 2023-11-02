@@ -1,15 +1,29 @@
 steps:
+  # First create a fake tag we'll use throughout the CI build process below.
+  # Unfortunately, GCB has no concept of dynamically creating substitutions or
+  # passing ENV vars between steps, so the best we can do is to create a file
+  # containing our tag in the share workspace which other steps can inspect.
+  - name: bash
+    script: |
+      date +'0.2.%s-incompatible' > /workspace/fake_tag
+      cat /workspace/fake_tag
   ### Build the Trusted OS, create a detached signature for it, and upload both to GCS.
   # Build an image containing the Trusted OS artifacts with the Dockerfile.
+  # This step needs to be a bash script in order to substitute fake tag into a
+  # build arg.
   - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     args:
-      - build
-      - --build-arg
-      - TAMAGO_VERSION=${_TAMAGO_VERSION}
-      - -t
-      - builder-image
-      # Path is relative to the root of the repo.
-      - .
+      - -c
+      - |
+        docker build \
+          --build-arg=TAMAGO_VERSION=${_TAMAGO_VERSION} \
+          --build-arg=FT_LOG_ORIGIN=${_ORIGIN} \
+          --build-arg=LOG_PUBLIC_KEY=${_LOG_PUBLIC_KEY} \
+          --build-arg=APPLET_PUBLIC_KEY=${_APPLET_PUBLIC_KEY} \
+          --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
+          -t builder-image \
+          .
   # Prepare a container with a copy of the artifacts.
   - name: gcr.io/cloud-builders/docker
     args:
@@ -32,45 +46,39 @@ steps:
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
     args:
-      - gcloud
-      - storage
-      - cp
-      - output/trusted_os.elf
-      - gs://${_FIRMWARE_BUCKET}/$(sha256sum output/trusted_os.elf | cut -f1 -d" ")
+      - -c
+      - |
+        gcloud storage cp \
+          output/trusted_os.elf \
+          gs://${_FIRMWARE_BUCKET}/$(sha256sum output/trusted_os.elf | cut -f1 -d" ")
   ### Construct log entry / Claimant Model statement.
+  # Create the manifest.
+  # This step needs to be a bash script in order to substitute the fake take
+  # in the command args.
   - name: golang
+    entrypoint: bash
     args:
-      - go
-      - get
-      - github.com/transparency-dev/armored-witness/cmd/manifest
-  - name: golang
-    args:
-      - go
-      - run
-      - github.com/transparency-dev/armored-witness/cmd/manifest
-      - create
-      - --git_tag=${_TEST_TAG_NAME}
-      - --git_commit_fingerprint=${COMMIT_SHA}
-      - --firmware_file=output/trusted_os.elf
-      - --firmware_type=TRUSTED_OS
-      - --tamago_version=${_TAMAGO_VERSION}
-      - --raw
-      - --output_file=output/trusted_os_manifest_unsigned.json
+      - -c
+      - |
+        go run github.com/transparency-dev/armored-witness/cmd/manifest@${_ARMORED_WITNESS_REPO_VERSION} \
+          create \
+          --git_tag=$(cat /workspace/fake_tag) \
+          --git_commit_fingerprint=${COMMIT_SHA} \
+          --firmware_file=output/trusted_os.elf \
+          --firmware_type=TRUSTED_OS \
+          --tamago_version=${_TAMAGO_VERSION} \
+          --raw \
+          --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
   # TODO: sign the manifest twice to mimic the WithSecure 2nd signature flow.
   - name: golang
     args:
       - go
-      - get
-      - github.com/transparency-dev/armored-witness/cmd/sign
-  - name: golang
-    args:
-      - go
       - run
-      - github.com/transparency-dev/armored-witness/cmd/sign
+      - github.com/transparency-dev/armored-witness/cmd/sign@${_ARMORED_WITNESS_REPO_VERSION}
       - --project_name=${PROJECT_ID}
-      - --release="ci"
-      - --artefact="os1"
+      - --release=ci
+      - --artefact=os1
       - --manifest_file=output/trusted_os_manifest_unsigned.json
       - --output_file=output/trusted_os_manifest_transparency_dev
   # Print the content of the signed manifest.
@@ -105,10 +113,11 @@ steps:
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
-  _FIRMWARE_COMPONENT: trusted-os
   _TAMAGO_VERSION: '1.20.6'
-  _TEST_TAG_NAME: '0.1.2'
+  _ARMORED_WITNESS_REPO_VERSION: d37d6b19ec4dbd1cad3586ae8ba3ec913829d718
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
   _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
   _LOG_NAME: armored-witness-firmware-log-ci
+  _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+f5479c1e+AR6gW0mycDtL17iM2uvQUThJsoiuSRirstEj9a5AdCCu
+  _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
