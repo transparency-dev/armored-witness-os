@@ -70,7 +70,6 @@ steps:
           --raw \
           --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
-  # TODO: sign the manifest twice to mimic the WithSecure 2nd signature flow.
   - name: golang
     args:
       - go
@@ -81,18 +80,30 @@ steps:
       - --artefact=os1
       - --manifest_file=output/trusted_os_manifest_unsigned.json
       - --output_file=output/trusted_os_manifest_transparency_dev
+  # Countersign the log entry to fake a WS signature for CI
+  - name: golang
+    args:
+      - go
+      - run
+      - github.com/transparency-dev/armored-witness/cmd/sign@${_ARMORED_WITNESS_REPO_VERSION}
+      - --project_name=${PROJECT_ID}
+      - --release=ci
+      - --artefact=os2
+      - --note_file=output/trusted_os_manifest_transparency_dev
+      - --note_verifier=${_OS_PUBLIC_KEY1}
+      - --output_file=output/trusted_os_manifest_both
   # Print the content of the signed manifest.
   - name: bash
     args:
       - cat
-      - output/trusted_os_manifest_transparency_dev
+      - output/trusted_os_manifest_both
   ### Write the firmware release to the CI transparency log.
   # Copy the signed note to the sequence bucket, preparing to write to log.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - storage
       - cp
-      - output/trusted_os_manifest_transparency_dev
+      - output/trusted_os_manifest_both
       - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
   # Sequence log entry.
   - name: gcr.io/cloud-builders/gcloud
@@ -114,10 +125,11 @@ substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
   _TAMAGO_VERSION: '1.20.6'
-  _ARMORED_WITNESS_REPO_VERSION: d37d6b19ec4dbd1cad3586ae8ba3ec913829d718
+  _ARMORED_WITNESS_REPO_VERSION: e7141b6db638c3a2cb23e354cedd2d2980d0fb3a
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
   _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/0
   _LOG_NAME: armored-witness-firmware-log-ci
   _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+f5479c1e+AR6gW0mycDtL17iM2uvQUThJsoiuSRirstEj9a5AdCCu
   _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
+  _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+7a0eaef3+AcsqvmrcKIbs21H2Bm2fWb6oFWn/9MmLGNc6NLJty2eQ
