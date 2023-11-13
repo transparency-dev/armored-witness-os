@@ -45,21 +45,23 @@ steps:
       - ${_WITHSECURE_DIR}/${_TEST_TAG_NAME}
       - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
   # Sequence log entry.
+  # TODO(jayhou): switch the KMS args to prod.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - functions
       - call
       - sequence
-      - '--data'
-      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+      - --data
+      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": 1, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
   # Integrate log entry.
+  # TODO(jayhou): switch the KMS args to prod.
   - name: gcr.io/cloud-builders/gcloud
     args:
       - functions
       - call
       - integrate
-      - '--data'
-      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+      - --data
+      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": 1, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
