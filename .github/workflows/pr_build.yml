@@ -12,6 +12,9 @@ jobs:
       TAMAGO: /usr/local/tamago-go/bin/go
       APPLET_PRIVATE_KEY: /tmp/applet.sec
       APPLET_PUBLIC_KEY: /tmp/applet.pub
+      LOG_ORIGIN: TEST-LOG
+      LOG_PRIVATE_KEY: /tmp/log.sec
+      LOG_PUBLIC_KEY: /tmp/log.pub
       OS_PRIVATE_KEY1: /tmp/os1.sec
       OS_PUBLIC_KEY1: /tmp/os1.pub
       OS_PRIVATE_KEY2: /tmp/os2.sec
@@ -31,6 +34,7 @@ jobs:
     - name: Create throwaway keys & fake embed
       run: |
         go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-APPLET" --out_priv=${APPLET_PRIVATE_KEY} --out_pub=${APPLET_PUBLIC_KEY}
+        go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-LOG" --out_priv=${LOG_PRIVATE_KEY} --out_pub=${LOG_PUBLIC_KEY}
         go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-OS-1" --out_priv=${OS_PRIVATE_KEY1} --out_pub=${OS_PUBLIC_KEY1}
         go run github.com/transparency-dev/serverless-log/cmd/generate_keys@14ed652b57527bb17e065e921eb0fcce3cbc8a49 --key_name="TEST-OS-2" --out_priv=${OS_PRIVATE_KEY2} --out_pub=${OS_PUBLIC_KEY2}
     - name: Make
