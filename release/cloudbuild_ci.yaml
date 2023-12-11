@@ -18,7 +18,7 @@ steps:
       - |
         docker build \
           --build-arg=TAMAGO_VERSION=${_TAMAGO_VERSION} \
-          --build-arg=FT_LOG_ORIGIN=${_ORIGIN} \
+          --build-arg=LOG_ORIGIN=${_ORIGIN} \
           --build-arg=LOG_PUBLIC_KEY=${_LOG_PUBLIC_KEY} \
           --build-arg=APPLET_PUBLIC_KEY=${_APPLET_PUBLIC_KEY} \
           --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
