@@ -12,7 +12,7 @@ jobs:
       TAMAGO: /usr/local/tamago-go/bin/go
       APPLET_PRIVATE_KEY: /tmp/applet.sec
       APPLET_PUBLIC_KEY: /tmp/applet.pub
-      LOG_ORIGIN: TEST-LOG
+      LOG_ORIGIN: throwaway.transparency.dev/armored-witness-os/pr-build/0
       LOG_PRIVATE_KEY: /tmp/log.sec
       LOG_PUBLIC_KEY: /tmp/log.pub
       OS_PRIVATE_KEY1: /tmp/os1.sec
