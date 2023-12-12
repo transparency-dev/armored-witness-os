@@ -19,7 +19,6 @@ BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 BUILD = ${BUILD_USER}@${BUILD_HOST} on ${BUILD_DATE}
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
-LOG_ORIGIN ?= "DEV.armoredwitness.transparency.dev/${USER}"
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
 
 PROTOC ?= /usr/bin/protoc
@@ -69,11 +68,11 @@ all: trusted_os_embedded_applet witnessctl
 # change in development and require re-compilation of protos.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: create_dummy_applet proto elf manifest
+trusted_os: check_embed_env create_dummy_applet proto elf manifest
 
 trusted_os_embedded_applet: APP=trusted_os
 trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_os_env copy_applet proto elf manifest imx
+trusted_os_embedded_applet: check_embed_env copy_applet proto elf manifest imx
 trusted_os_embedded_applet:
 
 witnessctl: check_tamago
@@ -86,7 +85,7 @@ witnessctl: check_tamago
 # used by the GCP build process and signed there.
 trusted_os_release: APP=trusted_os
 trusted_os_release: DIR=$(CURDIR)/trusted_os
-trusted_os_release: create_dummy_applet elf 
+trusted_os_release: check_embed_env create_dummy_applet elf
 
 ## Targets for managing a local serverless log instance for dev/testing FT related bits.
 
@@ -106,11 +105,11 @@ log_os: LOG_ARTEFACT_DIR=$(DEV_LOG_DIR)/artefacts
 log_os: ARTEFACT_HASH=$(shell sha256sum ${CURDIR}/bin/trusted_os.elf | cut -f1 -d" ")
 log_os:
 	@if [ "${LOG_PRIVATE_KEY}" == "" -o "${LOG_PUBLIC_KEY}" == "" ]; then \
-		@echo "You need to set LOG_PRIVATE_KEY and LOG_PUBLIC_KEY variables"; \
+		echo "You need to set LOG_PRIVATE_KEY and LOG_PUBLIC_KEY variables"; \
 		exit 1; \
 	fi
 	@if [ "${DEV_LOG_DIR}" == "" ]; then \
-		@echo "You need to set the DEV_LOG_DIR variable"; \
+		echo "You need to set the DEV_LOG_DIR variable"; \
 		exit 1; \
 	fi
 
@@ -165,26 +164,27 @@ $(APP).dcd: dcd
 
 #### utilities ####
 
-check_os_env:
-	@if [ "${OS_PRIVATE_KEY1}" == "" ] || [ ! -f "${OS_PRIVATE_KEY1}" ]; then \
-		echo 'You need to set the OS_PRIVATE_KEY1 variable to a valid signing key path'; \
+# Various strings need to be embedded into the binary, keys, log info, etc. check they are present.
+check_embed_env:
+	@if [ "${LOG_ORIGIN}" == "" ]; then \
+		echo 'You need to set the LOG_ORIGIN variable'; \
 		exit 1; \
 	fi
-	@if [ "${OS_PRIVATE_KEY2}" == "" ] || [ ! -f "${OS_PRIVATE_KEY2}" ]; then \
-		echo 'You need to set the OS_PRIVATE_KEY2 variable to a valid signing key path'; \
+	@if [ "${LOG_PUBLIC_KEY}" == "" ] || [ ! -f "${LOG_PUBLIC_KEY}" ]; then \
+		echo 'You need to set the LOG_PUBLIC_KEY variable to a valid note verifier key path'; \
 		exit 1; \
 	fi
 	@if [ "${APPLET_PUBLIC_KEY}" == "" ] || [ ! -f "${APPLET_PUBLIC_KEY}" ]; then \
-		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid authentication key path'; \
-		exit 1; \
-	fi
-	@if [ "${APPLET_PATH}" == "" ]; then \
-		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and proof bundle files (e.g. path to armored-witness-applet/bin)'; \
+		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid note verifier key path'; \
 		exit 1; \
 	fi
 
 copy_applet: LOG_URL=file://$(DEV_LOG_DIR)/log/
 copy_applet:
+	@if [ "${APPLET_PATH}" == "" ]; then \
+		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and proof bundle files (e.g. path to armored-witness-applet/bin)'; \
+		exit 1; \
+	fi
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
 	cp ${APPLET_PATH}/trusted_applet_manifest ${CURDIR}/trusted_os/assets/
@@ -232,6 +232,14 @@ $(APP).elf: check_tamago
 	cd $(DIR) && $(GOENV) $(TAMAGO) build -tags ${BUILD_TAGS} $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
 
 $(APP)_manifest:
+	@if [ "${OS_PRIVATE_KEY1}" == "" ] || [ ! -f "${OS_PRIVATE_KEY1}" ]; then \
+		echo 'You need to set the OS_PRIVATE_KEY1 variable to a valid note signing key path'; \
+		exit 1; \
+	fi
+	@if [ "${OS_PRIVATE_KEY2}" == "" ] || [ ! -f "${OS_PRIVATE_KEY2}" ]; then \
+		echo 'You need to set the OS_PRIVATE_KEY2 variable to a valid note signing key path'; \
+		exit 1; \
+	fi
 	# Create manifest
 	@echo ---------- Manifest --------------
 	go run github.com/transparency-dev/armored-witness/cmd/manifest@228f2f6432babe1f1657e150ce0ca4a96ab394da \
