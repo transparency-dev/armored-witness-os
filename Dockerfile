@@ -20,8 +20,10 @@ COPY . .
 
 # Firmware transparency parameters for output binary.
 ENV LOG_ORIGIN=${LOG_ORIGIN} \
-    LOG_PUBLIC_KEY=${LOG_PUBLIC_KEY} \
-    APPLET_PUBLIC_KEY=${APPLET_PUBLIC_KEY} \
+    APPLET_PUBLIC_KEY="/tmp/applet.pub" \
+    LOG_PUBLIC_KEY="/tmp/log.pub" \
     GIT_SEMVER_TAG=${GIT_SEMVER_TAG}
 
+RUN echo "${APPLET_PUBLIC_KEY}" > /tmp/applet.pub
+RUN echo "${LOG_PUBLIC_KEY}" > /tmp/log.pub
 RUN make trusted_os_release
