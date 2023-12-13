@@ -45,7 +45,7 @@ QEMU ?= qemu-system-arm -machine mcimx6ul-evk -cpu cortex-a7 -m 512M \
 
 ARCH = "arm"
 
-GOFLAGS = -tags ${BUILD_TAGS} -trimpath \
+GOFLAGS = -tags ${BUILD_TAGS} -trimpath -buildvcs=false -buildmode=exe \
 	-ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
 		-X 'main.Revision=${REV}' \
 		-X 'main.Version=${GIT_SEMVER_TAG}' \
