@@ -90,7 +90,8 @@ steps:
       - --release=ci
       - --artefact=os2
       - --note_file=output/trusted_os_manifest_transparency_dev
-      - --note_verifier=${_OS_PUBLIC_KEY2}
+      # Use the OS1 pubkey here to open the note we just signed in the build step above.
+      - --note_verifier=${_OS_PUBLIC_KEY1} 
       - --output_file=output/trusted_os_manifest_both
   # Print the content of the signed manifest.
   - name: bash
