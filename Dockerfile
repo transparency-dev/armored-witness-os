@@ -18,12 +18,14 @@ WORKDIR /build
 
 COPY . .
 
+# The Makefile expects the verifiers to be in files, so make it so.
+RUN echo "${APPLET_PUBLIC_KEY}" > /tmp/applet.pub
+RUN echo "${LOG_PUBLIC_KEY}" > /tmp/log.pub
+
 # Firmware transparency parameters for output binary.
 ENV LOG_ORIGIN=${LOG_ORIGIN} \
     APPLET_PUBLIC_KEY="/tmp/applet.pub" \
     LOG_PUBLIC_KEY="/tmp/log.pub" \
     GIT_SEMVER_TAG=${GIT_SEMVER_TAG}
 
-RUN echo "${APPLET_PUBLIC_KEY}" > /tmp/applet.pub
-RUN echo "${LOG_PUBLIC_KEY}" > /tmp/log.pub
 RUN make trusted_os_release
