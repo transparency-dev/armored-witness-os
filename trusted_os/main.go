@@ -37,9 +37,12 @@ import (
 	_ "github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
+const (
+	Build = ""
+)
+
 // initialized at compile time (see Makefile)
 var (
-	Build                  string
 	Revision               string
 	Version                string
 	AppletLogVerifier      string

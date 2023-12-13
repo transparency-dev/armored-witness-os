@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BUILD_USER ?= $(shell whoami)
-BUILD_HOST ?= $(shell hostname)
-BUILD_DATE ?= $(shell /bin/date -u "+%Y-%m-%d %H:%M:%S")
 BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
-BUILD = ${BUILD_USER}@${BUILD_HOST} on ${BUILD_DATE}
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
 
@@ -51,7 +47,6 @@ ARCH = "arm"
 
 GOFLAGS = -tags ${BUILD_TAGS} -trimpath \
 	-ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
-		-X 'main.Build=${BUILD}' \
 		-X 'main.Revision=${REV}' \
 		-X 'main.Version=${GIT_SEMVER_TAG}' \
 		-X 'main.AppletLogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
@@ -78,7 +73,7 @@ trusted_os_embedded_applet:
 witnessctl: check_tamago
 	@echo "building armored-witness control tool"
 	@cd $(CURDIR)/cmd/witnessctl && GOPATH="${BUILD_GOPATH}" ${TAMAGO} build -v \
-		-ldflags "-s -w -X 'main.Build=${BUILD}' -X 'main.Revision=${REV}'" \
+		-ldflags "-s -w -X 'main.Revision=${REV}'" \
 		-o $(CURDIR)/bin/witnessctl
 
 # This target builds the Trusted OS without signing it as it is intended to be

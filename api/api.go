@@ -95,7 +95,6 @@ func (p *Status) Print() string {
 	status.WriteString(fmt.Sprintf("Serial number ..........: %s\n", p.Serial))
 	status.WriteString(fmt.Sprintf("Secure Boot ............: %v\n", p.HAB))
 	status.WriteString(fmt.Sprintf("Revision ...............: %s\n", p.Revision))
-	status.WriteString(fmt.Sprintf("Build ..................: %s\n", p.Build))
 	status.WriteString(fmt.Sprintf("Version ................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
 	status.WriteString(fmt.Sprintf("Runtime ................: %s\n", p.Runtime))
 	status.WriteString(fmt.Sprintf("Link ...................: %v\n", p.Link))
