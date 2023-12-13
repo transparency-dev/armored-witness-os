@@ -224,7 +224,7 @@ qemu-gdb: trusted_os_embedded_applet
 #### application target ####
 
 $(APP).elf: check_tamago
-	cd $(DIR) && $(GOENV) $(TAMAGO) build -tags ${BUILD_TAGS} $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
+	cd $(DIR) && $(GOENV) $(TAMAGO) build $(GOFLAGS) -o $(CURDIR)/bin/$(APP).elf
 
 $(APP)_manifest:
 	@if [ "${OS_PRIVATE_KEY1}" == "" ] || [ ! -f "${OS_PRIVATE_KEY1}" ]; then \
