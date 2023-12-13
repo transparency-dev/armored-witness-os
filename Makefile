@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BUILD_USER ?= $(shell whoami)
-BUILD_HOST ?= $(shell hostname)
-BUILD_DATE ?= $(shell /bin/date -u "+%Y-%m-%d %H:%M:%S")
 BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
