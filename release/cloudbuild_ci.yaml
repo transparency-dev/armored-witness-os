@@ -112,7 +112,7 @@ steps:
       - call
       - sequence
       - '--data'
-      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": 1, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
   # Integrate log entry.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -120,7 +120,7 @@ steps:
       - call
       - integrate
       - '--data'
-      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}"}'
+      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": 1, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci
