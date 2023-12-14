@@ -76,4 +76,4 @@ substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _LOG_NAME: armored-witness-firmware-log-ci-1
   # This must correspond with the trailing number on the _FIRMWARE_BUCKET, _ORIGIN, _LOG_NAME values.
-  _KEY_VERSION: 1
+  _KEY_VERSION: '1'
