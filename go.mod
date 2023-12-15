@@ -11,7 +11,7 @@ require (
 	github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7
 	github.com/transparency-dev/armored-witness-common v0.0.0-20231031160117-eefcf9dd7f27
 	github.com/transparency-dev/merkle v0.0.2
-	github.com/transparency-dev/serverless-log v0.0.0-20230922115421-a56a93b5681e
+	github.com/transparency-dev/serverless-log v0.0.0-20231215122707-66f68a7705f5
 	github.com/usbarmory/GoTEE v0.0.0-20230914094934-f4f769daa5a9
 	github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c
 	github.com/usbarmory/crucible v0.0.0-20230721112227-63d5e1f2db77
@@ -39,7 +39,7 @@ require (
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
