@@ -112,7 +112,18 @@ steps:
       - call
       - sequence
       - '--data'
-      - '{"entriesDir": "${_ENTRIES_DIR}", "origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": ${_KEY_VERSION}, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
+      - >-
+        '{
+          "entriesDir": "${_ENTRIES_DIR}",
+          "origin": "${_ORIGIN}",
+          "bucket": "${_LOG_NAME}",
+          "kmsKeyName": "ft-log-ci",
+          "kmsKeyRing": "firmware-release-ci",
+          "kmsKeyVersion": ${_KEY_VERSION},
+          "kmsKeyLocation": "global",
+          "noteKeyName": "transparency.dev-aw-ftlog-ci",
+          "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
+        }'
   # Integrate log entry.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -120,7 +131,17 @@ steps:
       - call
       - integrate
       - '--data'
-      - '{"origin": "${_ORIGIN}", "bucket": "${_LOG_NAME}", "kmsKeyName": "ft-log-ci", "kmsKeyRing": "firmware-release-ci", "kmsKeyVersion": ${_KEY_VERSION}, "kmsKeyLocation": "global", "noteKeyName": "transparency.dev-aw-ftlog-ci"}'
+      - >-
+        '{
+          "origin": "${_ORIGIN}",
+          "bucket": "${_LOG_NAME}",
+          "kmsKeyName": "ft-log-ci",
+          "kmsKeyRing": "firmware-release-ci",
+          "kmsKeyVersion": ${_KEY_VERSION},
+          "kmsKeyLocation": "global",
+          "noteKeyName": "transparency.dev-aw-ftlog-ci",
+          "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
+        }'
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci-1
@@ -135,3 +156,4 @@ substitutions:
   _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+f5479c1e+AR6gW0mycDtL17iM2uvQUThJsoiuSRirstEj9a5AdCCu
   _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
   _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+7a0eaef3+AcsqvmrcKIbs21H2Bm2fWb6oFWn/9MmLGNc6NLJty2eQ
+  _CHECKPOINT_CACHE: 'public, max-age=30'
