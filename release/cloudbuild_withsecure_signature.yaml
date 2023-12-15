@@ -53,7 +53,7 @@ steps:
       - sequence
       - --data
       - >-
-        '{
+        {
           "entriesDir": "${_ENTRIES_DIR}",
           "origin": "${_ORIGIN}",
           "bucket": "${_LOG_NAME}",
@@ -63,7 +63,7 @@ steps:
           "kmsKeyLocation": "global",
           "noteKeyName": "transparency.dev-aw-ftlog-ci",
           "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
-        }'
+        }
   # Integrate log entry.
   # TODO(jayhou): switch the KMS args to prod.
   - name: gcr.io/cloud-builders/gcloud
@@ -73,7 +73,7 @@ steps:
       - integrate
       - --data
       - >-
-        '{
+        {
           "origin": "${_ORIGIN}",
           "bucket": "${_LOG_NAME}",
           "kmsKeyName": "ft-log-ci",
@@ -82,7 +82,7 @@ steps:
           "kmsKeyLocation": "global",
           "noteKeyName": "transparency.dev-aw-ftlog-ci",
           "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
-        }'
+        }
 substitutions:
   # TODO(jayhou): do not use CI bucket when we flip this trigger to prod.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci-1
