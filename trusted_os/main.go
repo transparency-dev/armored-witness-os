@@ -198,18 +198,26 @@ func main() {
 	}
 
 	if ta != nil {
-		manifest, err := AppletBundleVerifier.Verify(*ta)
-		if err != nil {
-			log.Printf("SM applet verification error, %v", err)
-		}
-		loadedAppletVersion = manifest.GitTagName
-		log.Printf("Loaded applet version %s", loadedAppletVersion.String())
+		go func() {
+			for {
+				log.Print("SM Verifying applet bundle")
+				manifest, err := AppletBundleVerifier.Verify(*ta)
+				if err != nil {
+					log.Printf("SM applet verification error, %v", err)
+				}
+				loadedAppletVersion = manifest.GitTagName
+				log.Printf("SM Loaded applet version %s", loadedAppletVersion.String())
 
-		usbarmory.LED("white", true)
+				usbarmory.LED("white", true)
 
-		if _, err = loadApplet(ta.Firmware, ctl); err != nil {
-			log.Printf("SM applet execution error, %v", err)
-		}
+				ta, err := loadApplet(ta.Firmware, ctl)
+				if err != nil {
+					log.Printf("SM applet execution error, %v", err)
+				}
+
+				<-ta.Done()
+			}
+		}()
 	}
 
 	go func() {
