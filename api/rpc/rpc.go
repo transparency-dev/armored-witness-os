@@ -51,8 +51,11 @@ type WitnessStatus struct {
 	IP string
 }
 
-// FirmwareUpdate represents a firmware update
+// FirmwareUpdate represents a firmware update.
 type FirmwareUpdate struct {
+	// Sequence is a counter used to ensure correct ordering of chunks of firmware.
+	Sequence uint
+
 	// Image is the firmware image to be applied.
 	Image []byte
 

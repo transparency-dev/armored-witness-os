@@ -227,10 +227,32 @@ func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
 }
 
 // InstallOS updates the OS to the version contained in the firmware bundle.
-// If the update is successful, this func will not return and the device will
-// immediately reboot.
+//
+// This RPC supports sending the (potentially large) firmware image either:
+// - In one RPC call, or
+// - Spread over multiple RPC calls, breaking the firmware image it into multiple "chunks" of arbitrary size
+//
+// For a given install attempt:
+//   - An RPC call with the Sequence field set to zero indicates a fresh attempt to install firmware.
+//   - If firmware is being sent in chunks via multiple RPC calls, each subsequent RPC call should:
+//     1. increment the Sequence field by 1 each time.
+//     2. Pass a chunk of firmware image which is contiguous with the previous chunk.
+//   - An RPC call with the Proof set to a non-zero value indicates that all firmware chunks have been sent.
+//     This will cause the firmware update to be finalised, and if successful, this RPC will not
+//     return and the device will reboot.
 func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
-	if err := updateOS(r.Storage, b.Image, b.Proof); err != nil {
+	if b.Sequence == 0 {
+		// Dump previous partial attempts
+		osFirmwareBuffer = make([]byte, 0, len(b.Image))
+	}
+	// Extend our firmware buffer
+	osFirmwareBuffer = append(osFirmwareBuffer, b.Image...)
+	// Return early if we're don't yet have the full image.
+	if len(b.Proof.Checkpoint) == 0 {
+		return nil
+	}
+
+	if err := updateOS(r.Storage, osFirmwareBuffer, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()
@@ -238,12 +260,34 @@ func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 
 	return r.Reboot(nil, nil)
 }
+
+var osFirmwareBuffer []byte
 
 // InstallApplet updates the Applet to the version contained in the firmware bundle.
-// If the update is successful, this func will not return and the device will
-// immediately reboot.
+// This RPC supports sending the (potentially large) firmware image either:
+// - In one RPC call, or
+// - Spread over multiple RPC calls, breaking the firmware image it into multiple "chunks" of arbitrary size
+//
+// For a given install attempt:
+//   - An RPC call with the Sequence field set to zero indicates a fresh attempt to install firmware.
+//   - If firmware is being sent in chunks via multiple RPC calls, each subsequent RPC call should:
+//     1. increment the Sequence field by 1 each time.
+//     2. Pass a chunk of firmware image which is contiguous with the previous chunk.
+//   - An RPC call with the Proof set to a non-zero value indicates that all firmware chunks have been sent.
+//     This will cause the firmware update to be finalised, and if successful, this RPC will not
+//     return and the device will reboot.
 func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
-	if err := updateApplet(r.Storage, b.Image, b.Proof); err != nil {
+	if b.Sequence == 0 {
+		// Dump previous partial attempts
+		appletFirmwareBuffer = make([]byte, 0, len(b.Image))
+	}
+	// Extend our firmware buffer
+	appletFirmwareBuffer = append(appletFirmwareBuffer, b.Image...)
+	// Return early if we're don't yet have the full image.
+	if len(b.Proof.Checkpoint) == 0 {
+		return nil
+	}
+	if err := updateApplet(r.Storage, appletFirmwareBuffer, b.Proof); err != nil {
 		return err
 	}
 	r.Ctx.Stop()
@@ -251,6 +295,8 @@ func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
 
 	return r.Reboot(nil, nil)
 }
+
+var appletFirmwareBuffer []byte
 
 // Reboot resets the system.
 func (r *RPC) Reboot(_ *any, _ *bool) error {
