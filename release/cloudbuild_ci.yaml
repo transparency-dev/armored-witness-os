@@ -99,12 +99,16 @@ steps:
       - output/trusted_os_manifest_both
   ### Write the firmware release to the CI transparency log.
   # Copy the signed note to the sequence bucket, preparing to write to log.
+  #
+  # Use the SHA256 of the manifest as the name of the manifest. This allows
+  # multiple triggers to run without colliding.
   - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
     args:
-      - storage
-      - cp
-      - output/trusted_os_manifest_both
-      - gs://${_LOG_NAME}/${_ENTRIES_DIR}/trusted_os_manifest
+      - -c
+      - |
+        gcloud storage cp output/trusted_os_manifest_both \
+        gs://${_LOG_NAME}/${_ENTRIES_DIR}/$(sha256sum output/trusted_os_manifest_both | cut -f1 -d" ")
   # Sequence log entry.
   - name: gcr.io/cloud-builders/gcloud
     args:
@@ -142,6 +146,15 @@ steps:
           "noteKeyName": "transparency.dev-aw-ftlog-ci",
           "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
         }
+  # Clean up the file we added to the _ENTRIES_DIR bucket now that it's been
+  # integrated to the log.
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud storage rm \
+        gs://${_LOG_NAME}/${_ENTRIES_DIR}/$(sha256sum output/trusted_os_manifest_both | cut -f1 -d" ")
 substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci-1
