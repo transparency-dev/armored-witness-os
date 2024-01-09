@@ -122,6 +122,14 @@ func determineLoadedOSBlock(card Card) error {
 	}
 
 	osLoadedFromBlock = conf.Offset / expectedBlockSize
+	switch osLoadedFromBlock {
+	case osBlockA:
+		log.Print("Loaded OS from slot A")
+	case osBlockB:
+		log.Print("Loaded OS from slot B")
+	default:
+		log.Printf("Loaded OS from unexpected block %d", osLoadedFromBlock)
+	}
 	return nil
 }
 
@@ -151,6 +159,14 @@ func read(card Card) (fw *firmware.Bundle, err error) {
 	}
 
 	appletLoadedFromBlock = conf.Offset / expectedBlockSize
+	switch appletLoadedFromBlock {
+	case taBlockA:
+		log.Print("Loaded applet from slot A")
+	case taBlockB:
+		log.Print("Loaded applet from slot B")
+	default:
+		log.Printf("Loaded applet from unexpected block %d", appletLoadedFromBlock)
+	}
 
 	return
 }
