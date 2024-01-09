@@ -20,7 +20,7 @@ GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>
 PROTOC ?= /usr/bin/protoc
 
 TAMAGO_SEMVER = $(shell [ -n "${TAMAGO}" -a -x "${TAMAGO}" ] && ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
-MINIMUM_TAMAGO_VERSION=1.21.3
+MINIMUM_TAMAGO_VERSION=1.21.5
 
 SHELL = /bin/bash
 
