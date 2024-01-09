@@ -309,16 +309,16 @@ func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBund
 		return err
 	}
 
-	log.Printf("SM flashing %s config (%d bytes) @ 0x%x", t, len(confEnc), confBlock)
-
-	if err = flash(storage, confEnc, confBlock); err != nil {
-		return fmt.Errorf("%s signature flashing error: %v", t, err)
-	}
-
+	// Log firmware bytes first before updating config so that in case of any error the unit
+	// will still boot the previous working firmware.
 	log.Printf("SM flashing %s (%d bytes) @ 0x%x", t, len(elf), elfBlock)
-
 	if err = flash(storage, elf, elfBlock); err != nil {
 		return fmt.Errorf("%s flashing error: %v", t, err)
+	}
+
+	log.Printf("SM flashing %s config (%d bytes) @ 0x%x", t, len(confEnc), confBlock)
+	if err = flash(storage, confEnc, confBlock); err != nil {
+		return fmt.Errorf("%s signature flashing error: %v", t, err)
 	}
 
 	log.Printf("SM %s update complete", t)
