@@ -160,6 +160,10 @@ func main() {
 		}
 	}
 
+	if err := determineLoadedOSBlock(Storage); err != nil {
+		log.Printf("Failed to determine OS MMC block (no OS installed?): %v", err)
+	}
+
 	log.Printf("SM log verification pub: %s", AppletLogVerifier)
 	logVerifier, err := note.NewVerifier(AppletLogVerifier)
 	if err != nil {
