@@ -108,8 +108,8 @@ func readConfig(card Card, configBlock int64) (*config.Config, error) {
 	return conf, nil
 }
 
-// determineLoadedOSBlock reads the currently stored OS config, and stores the
-// MMC block index where the corresponding firmware image can be found in osLoadedFromBlock.
+// determineLoadedOSBlock reads the current OS config, and updates osLoadedFromBlock with the
+// MMC block index where the corresponding firmware image can be found.
 func determineLoadedOSBlock(card Card) error {
 	blockSize := card.Info().BlockSize
 	if blockSize != expectedBlockSize {
@@ -135,6 +135,9 @@ func determineLoadedOSBlock(card Card) error {
 
 // read reads the trusted applet bundle from internal storage, the
 // applet and FT proofs are *not* verified by this function.
+//
+// This function will update appletLoadedFromBlock with the MMC block index
+// the applet firmware image was loaded from.
 func read(card Card) (fw *firmware.Bundle, err error) {
 	blockSize := card.Info().BlockSize
 	if blockSize != expectedBlockSize {
@@ -311,7 +314,7 @@ func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBund
 
 	// Log firmware bytes first before updating config so that in case of any error the unit
 	// will still boot the previous working firmware.
-	log.Printf("SM flashing %s (%d bytes) @ 0x%x", t, len(elf), elfBlock)
+	log.Printf("!SM flashing %s (%d bytes) @ 0x%x", t, len(elf), elfBlock)
 	if err = flash(storage, elf, elfBlock); err != nil {
 		return fmt.Errorf("%s flashing error: %v", t, err)
 	}
