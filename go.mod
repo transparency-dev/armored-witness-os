@@ -1,6 +1,6 @@
 module github.com/transparency-dev/armored-witness-os
 
-go 1.19
+go 1.21.5
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.4
