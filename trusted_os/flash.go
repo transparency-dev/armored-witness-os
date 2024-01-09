@@ -257,7 +257,19 @@ func updateApplet(storage Card, taELF []byte, pb config.ProofBundle) (err error)
 
 // updateOS verifies an OS update and flashes it to internal storage
 func updateOS(storage Card, osELF []byte, pb config.ProofBundle) (err error) {
-	// TODO: OS proof bundle verification
+	// First, verify everything is correct and that, as far as we can tell,
+	// we would succeed in loadering and launching this applet upon next boot.
+	bundle := firmware.Bundle{
+		Checkpoint:     pb.Checkpoint,
+		Index:          pb.LogIndex,
+		InclusionProof: pb.InclusionProof,
+		Manifest:       pb.Manifest,
+		Firmware:       osELF,
+	}
+	if _, err := OSBundleVerifier.Verify(bundle); err != nil {
+		return err
+	}
+	log.Printf("SM verified applet bundle for update")
 
 	return flashFirmware(storage, Firmware_OS, osELF, pb)
 }

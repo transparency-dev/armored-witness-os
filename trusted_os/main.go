@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	_ "embed"
 	"encoding/gob"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -45,9 +46,11 @@ const (
 var (
 	Revision               string
 	Version                string
-	AppletLogVerifier      string
-	AppletLogOrigin        string
+	LogVerifier            string
+	LogOrigin              string
 	AppletManifestVerifier string
+	OSManifestVerifier1    string
+	OSManifestVerifier2    string
 )
 
 var (
@@ -67,6 +70,7 @@ var (
 	loadedAppletVersion semver.Version
 
 	AppletBundleVerifier firmware.BundleVerifier
+	OSBundleVerifier     firmware.BundleVerifier
 )
 
 // A Trusted Applet can be embedded for testing purposes with QEMU.
@@ -164,20 +168,19 @@ func main() {
 		log.Printf("Failed to determine OS MMC block (no OS installed?): %v", err)
 	}
 
-	log.Printf("SM log verification pub: %s", AppletLogVerifier)
-	logVerifier, err := note.NewVerifier(AppletLogVerifier)
+	log.Printf("SM log verification pub: %s", LogVerifier)
+	logVerifier, err := note.NewVerifier(LogVerifier)
 	if err != nil {
 		log.Fatalf("SM invalid AppletLogVerifier: %v", err)
 	}
 	log.Printf("SM applet verification pub: %s", AppletManifestVerifier)
-	appletVerifier, err := note.NewVerifier(AppletManifestVerifier)
+	AppletBundleVerifier, err = createBundleVerifier(LogOrigin, logVerifier, []string{AppletManifestVerifier})
 	if err != nil {
-		log.Fatalf("SM invalid AppletlManifestogVerifier: %v", err)
+		log.Fatalf("SM failed to create applet bundle verifier: %v", err)
 	}
-	AppletBundleVerifier = firmware.BundleVerifier{
-		LogOrigin:         AppletLogOrigin,
-		LogVerifer:        logVerifier,
-		ManifestVerifiers: []note.Verifier{appletVerifier},
+	OSBundleVerifier, err = createBundleVerifier(LogOrigin, logVerifier, []string{OSManifestVerifier1, OSManifestVerifier2})
+	if err != nil {
+		log.Fatalf("SM failed to create OS bundle verifier: %v", err)
 	}
 
 	if v, err := semver.NewVersion(Version); err != nil {
@@ -238,4 +241,21 @@ func main() {
 
 	// never returns
 	handleInterrupts()
+}
+
+func createBundleVerifier(logOrigin string, logVerifier note.Verifier, manifestVerifiers []string) (firmware.BundleVerifier, error) {
+	vs := []note.Verifier{}
+	for _, v := range manifestVerifiers {
+		nv, err := note.NewVerifier(v)
+		if err != nil {
+			return firmware.BundleVerifier{}, fmt.Errorf("invalid manifest verifier %q: %v", v, err)
+		}
+		vs = append(vs, nv)
+	}
+	bv := firmware.BundleVerifier{
+		LogOrigin:         logOrigin,
+		LogVerifer:        logVerifier,
+		ManifestVerifiers: vs,
+	}
+	return bv, nil
 }
