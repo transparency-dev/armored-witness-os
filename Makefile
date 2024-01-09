@@ -49,9 +49,11 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -buildvcs=false -buildmode=exe \
 	-ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
 		-X 'main.Revision=${REV}' \
 		-X 'main.Version=${GIT_SEMVER_TAG}' \
-		-X 'main.AppletLogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
-		-X 'main.AppletLogOrigin=${LOG_ORIGIN}' \
-		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})'"
+		-X 'main.LogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
+		-X 'main.LogOrigin=${LOG_ORIGIN}' \
+		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})' \
+		-X 'main.OSManifestVerifier1=$(shell test ${OS_PUBLIC_KEY1} && cat ${OS_PUBLIC_KEY1})' \
+		-X 'main.OSManifestVerifier2=$(shell test ${OS_PUBLIC_KEY2} && cat ${OS_PUBLIC_KEY2})'"
 
 .PHONY: clean qemu qemu-gdb
 
@@ -171,6 +173,14 @@ check_embed_env:
 	fi
 	@if [ "${APPLET_PUBLIC_KEY}" == "" ] || [ ! -f "${APPLET_PUBLIC_KEY}" ]; then \
 		echo 'You need to set the APPLET_PUBLIC_KEY variable to a valid note verifier key path'; \
+		exit 1; \
+	fi
+	@if [ "${OS_PUBLIC_KEY1}" == "" ] || [ ! -f "${OS_PUBLIC_KEY1}" ]; then \
+		echo 'You need to set the OS_PUBLIC_KEY1 variable to a valid note verifier key path'; \
+		exit 1; \
+	fi
+	@if [ "${OS_PUBLIC_KEY2}" == "" ] || [ ! -f "${OS_PUBLIC_KEY2}" ]; then \
+		echo 'You need to set the OS_PUBLIC_KEY2 variable to a valid note verifier key path'; \
 		exit 1; \
 	fi
 
