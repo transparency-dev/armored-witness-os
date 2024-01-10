@@ -60,7 +60,7 @@ steps:
     args:
       - -c
       - |
-        go run github.com/transparency-dev/armored-witness/cmd/manifest@${_ARMORED_WITNESS_REPO_VERSION} \
+        go run github.com/transparency-dev/armored-witness/cmd/manifest@main \
           create \
           --git_tag=$(cat /workspace/fake_tag) \
           --git_commit_fingerprint=${COMMIT_SHA} \
@@ -74,7 +74,7 @@ steps:
     args:
       - go
       - run
-      - github.com/transparency-dev/armored-witness/cmd/sign@${_ARMORED_WITNESS_REPO_VERSION}
+      - github.com/transparency-dev/armored-witness/cmd/sign@main
       - --project_name=${PROJECT_ID}
       - --release=ci
       - --artefact=os1
@@ -85,7 +85,7 @@ steps:
     args:
       - go
       - run
-      - github.com/transparency-dev/armored-witness/cmd/sign@${_ARMORED_WITNESS_REPO_VERSION}
+      - github.com/transparency-dev/armored-witness/cmd/sign@main
       - --project_name=${PROJECT_ID}
       - --release=ci
       - --artefact=os2
@@ -159,7 +159,6 @@ substitutions:
   # Build-related.
   _FIRMWARE_BUCKET: armored-witness-firmware-ci-1
   _TAMAGO_VERSION: '1.21.5'
-  _ARMORED_WITNESS_REPO_VERSION: e7141b6db638c3a2cb23e354cedd2d2980d0fb3a
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
   # This must correspond with the trailing number on the _FIRMWARE_BUCKET, _ORIGIN, _LOG_NAME values.
