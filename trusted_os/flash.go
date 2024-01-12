@@ -184,27 +184,29 @@ func flash(card Card, buf []byte, lba int) (err error) {
 		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
 	}
 
-	if rem := len(buf) % blockSize; rem > 0 {
-		buf = append(buf, make([]byte, blockSize-rem)...)
-	}
-
-	blocks := len(buf) / blockSize
-	batch := batchSize
-
-	// write in batch to limit DMA requirements
-	for i := 0; i < blocks; i += batch {
-		if i+batch > blocks {
-			batch = blocks - i
+	// write in chunks to limit DMA requirements
+	bytesPerChunk := blockSize * batchSize
+	for blocks := 0; len(buf) > 0; {
+		var chunk []byte
+		if len(buf) >= bytesPerChunk {
+			chunk = buf[:bytesPerChunk]
+			buf = buf[bytesPerChunk:]
+		} else {
+			// The final chunk could end with a partial MMC block, so it may need padding with zeroes to make up
+			// a whole MMC block size. We'll do this with a separate buffer rather than trying to extend the
+			// passed-in buf as doing so will potentially cause a re-alloc & copy which would temporarily use double
+			// the amount of RAM.
+			roundedUpSize := ((len(buf) / blockSize) + 1) * blockSize
+			chunk = make([]byte, roundedUpSize)
+			copy(chunk, buf)
+			buf = []byte{}
 		}
-
-		start := i * blockSize
-		end := start + blockSize*batch
-
-		if err = card.WriteBlocks(lba+i, buf[start:end]); err != nil {
+		if err = card.WriteBlocks(lba+blocks, chunk); err != nil {
 			return
 		}
+		blocks += len(chunk) / blockSize
 
-		log.Printf("flashed %d/%d blocks", i+batch, blocks)
+		log.Printf("flashed %d blocks", blocks)
 	}
 
 	return
