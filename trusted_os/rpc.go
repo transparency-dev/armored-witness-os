@@ -247,6 +247,8 @@ func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 	}
 	// Extend our firmware buffer
 	osFirmwareBuffer = append(osFirmwareBuffer, b.Image...)
+	b.Image = nil
+
 	// Return early if we're don't yet have the full image.
 	if len(b.Proof.Checkpoint) == 0 {
 		return nil
@@ -283,6 +285,8 @@ func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
 	}
 	// Extend our firmware buffer
 	appletFirmwareBuffer = append(appletFirmwareBuffer, b.Image...)
+	b.Image = nil
+
 	// Return early if we're don't yet have the full image.
 	if len(b.Proof.Checkpoint) == 0 {
 		return nil
