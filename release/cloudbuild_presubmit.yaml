@@ -21,6 +21,8 @@ steps:
           --build-arg=LOG_ORIGIN=${_ORIGIN} \
           --build-arg=LOG_PUBLIC_KEY=${_LOG_PUBLIC_KEY} \
           --build-arg=APPLET_PUBLIC_KEY=${_APPLET_PUBLIC_KEY} \
+          --build-arg=OS_PUBLIC_KEY1=${_OS_PUBLIC_KEY1} \
+          --build-arg=OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2} \
           --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
           -t builder-image \
           .
@@ -87,3 +89,4 @@ substitutions:
   _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+f5479c1e+AR6gW0mycDtL17iM2uvQUThJsoiuSRirstEj9a5AdCCu
   _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
   _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+7a0eaef3+AcsqvmrcKIbs21H2Bm2fWb6oFWn/9MmLGNc6NLJty2eQ
+  _OS_PUBLIC_KEY2: transparency.dev-aw-os2-ci+af8e4114+AbBJk5MgxRB+68KhGojhUdSt1ts5GAdRIT1Eq9zEkgQh
