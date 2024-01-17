@@ -7,6 +7,7 @@ ARG APPLET_PUBLIC_KEY
 ARG OS_PUBLIC_KEY1
 ARG OS_PUBLIC_KEY2
 ARG GIT_SEMVER_TAG
+ARG DEBUG
 
 # Install dependencies.
 RUN apt-get update && apt-get install -y make wget u-boot-tools binutils-arm-none-eabi
@@ -32,6 +33,7 @@ ENV LOG_ORIGIN=${LOG_ORIGIN} \
     LOG_PUBLIC_KEY="/tmp/log.pub" \
     OS_PUBLIC_KEY1="/tmp/os1.pub" \
     OS_PUBLIC_KEY2="/tmp/os2.pub" \
-    GIT_SEMVER_TAG=${GIT_SEMVER_TAG}
+    GIT_SEMVER_TAG=${GIT_SEMVER_TAG} \
+    DEBUG=${DEBUG}
 
 RUN make trusted_os_release
