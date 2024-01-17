@@ -142,6 +142,16 @@ the `imx_boot` tool, or similar.
 Note that since this OS image is not being loaded via the bootloader, it does not need
 to be added to the FT log.
 
+#### Optional development environment variables
+
+The following environment variables may be set when compiling the Trusted OS image in order
+to add extra debugging support to the resulting image:
+
+| Variable         | Description
+|------------------|------------
+| `DEBUG`          | When set to `1`, enables output of logging, stdout, etc. See #debugging section below for more details
+| `FAKE_STORAGE`   | When set to `1`, provides a storage card implementation which passes-through to SDCard on native hardware, but uses RAM to emulate an SDCard otherwise.
+
 ### Encrypted RAM support
 
 Only on i.MX6UL P/Ns, the `BEE` environment variable must be set to match
@@ -180,6 +190,13 @@ The Trusted OS image can be executed under emulation as follows:
 
 ```bash
 make qemu
+```
+
+Note that emulated MMC storage is not currently supported, so the Trusted OS should
+be built with the `FAKE_STORAGE` environment variable set to `1`:
+
+```bash
+make DEBUG=1 FAKE_STORAGE=1 trusted_os
 ```
 
 The emulation run network connectivity should be configured as follows (Linux
