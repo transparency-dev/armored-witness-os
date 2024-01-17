@@ -27,6 +27,9 @@ SHELL = /bin/bash
 ifeq ("${DEBUG}","1")
 	BUILD_TAGS := ${BUILD_TAGS},debug
 endif
+ifeq ("${FAKE_STORAGE}", "1")
+	BUILD_TAGS := ${BUILD_TAGS},fake_storage
+endif
 
 APP := ""
 TEXT_START = 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000
