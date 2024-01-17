@@ -40,18 +40,25 @@ import (
 const (
 	// RPMB sector for CVE-2020-13799 mitigation
 	dummySector = 0
+
 	// version epoch length
 	versionLength = 4
 	// RPMB sector for OS rollback protection
 	osVersionSector = 1
 	// RPMB sector for TA rollback protection
 	taVersionSector = 2
+
 	// RPMB sector for TA use
 	taUserSector = 3
 	// RPMB OTP flag bank
 	rpmbFuseBank = 4
 	// RPMB OTP flag word
 	rpmbFuseWord = 6
+
+	// witness identity counter length - uint32
+	witnessIdentityCounterLength = 4
+	// RPMB witness identity counter
+	rpmbWitnessIdentityCounter = 7
 
 	diversifierMAC = "ArmoryWitnessMAC"
 	iter           = 4096
@@ -193,6 +200,30 @@ func (r *RPMB) checkVersion(offset uint16, s string) (err error) {
 	}
 
 	return
+}
+
+// incrementWitnessIdentity increments the counter in the RPMB area to
+// differentiate a new witness identity.
+func (r *RPMB) incrementWitnessIdentity() (err error) {
+	if r.partition == nil {
+		return errors.New("RPMB has not been initialized")
+	}
+
+	// Read
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err = r.partition.Read(rpmbWitnessIdentityCounter, rBuf); err != nil {
+		return err
+	}
+	counter := binary.BigEndian.Uint32(rBuf)
+
+	// Increment
+	counter++
+
+	// Write
+	wBuf := make([]byte, witnessIdentityCounterLength)
+	binary.BigEndian.PutUint32(wBuf, counter)
+
+	return r.partition.Write(rpmbWitnessIdentityCounter, wBuf)
 }
 
 // transfer performs an authenticated data transfer to the card RPMB partition,

@@ -160,7 +160,7 @@ func newWitnessIdentity(card Card) (bool, error) {
 
 	buf := bytes.NewReader(b)
 	var newIdentity bool
-	if err := binary.Read(buf, binary.LittleEndian, &newIdentity); err != nil {
+	if err := binary.Read(buf, binary.BigEndian, &newIdentity); err != nil {
 		return false, err
 	}
 
@@ -181,8 +181,8 @@ func incrementWitnessIdentityMMC(card Card) error {
 	}
 
 	rBuf := bytes.NewReader(b)
-	var counter uint64
-	if err := binary.Read(rBuf, binary.LittleEndian, &counter); err != nil {
+	var counter uint32
+	if err := binary.Read(rBuf, binary.BigEndian, &counter); err != nil {
 		return err
 	}
 
@@ -191,7 +191,7 @@ func incrementWitnessIdentityMMC(card Card) error {
 
 	// Write
 	wBuf := new(bytes.Buffer)
-	if err := binary.Write(wBuf, binary.LittleEndian, counter); err != nil {
+	if err := binary.Write(wBuf, binary.BigEndian, counter); err != nil {
 		return err
 	}
 
