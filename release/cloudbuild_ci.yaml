@@ -24,6 +24,7 @@ steps:
           --build-arg=OS_PUBLIC_KEY1=${_OS_PUBLIC_KEY1} \
           --build-arg=OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2} \
           --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
+          --build-arg=DEBUG="1" \
           -t builder-image \
           .
   # Prepare a container with a copy of the artifacts.
