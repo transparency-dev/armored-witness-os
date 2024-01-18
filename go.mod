@@ -17,7 +17,7 @@ require (
 	github.com/usbarmory/crucible v0.0.0-20230721112227-63d5e1f2db77
 	github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20230922151120-1f76695abebe
+	github.com/usbarmory/tamago v0.0.0-20240118094434-dfe6a899d3a7
 	golang.org/x/crypto v0.18.0
 	golang.org/x/mod v0.14.0
 	google.golang.org/protobuf v1.32.0
