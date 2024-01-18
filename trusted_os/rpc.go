@@ -15,8 +15,10 @@
 package main
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"log"
 	"net"
@@ -156,6 +158,26 @@ func (r *RPC) Read(xfer rpc.Read, out *[]byte) (err error) {
 	return
 }
 
+// ReadIdentityCounterStorage reads data from the storage media sector
+// containing the witness identity counter.
+func (r *RPC) ReadIdentityCounterStorage(_ any, counter *uint32) error {
+	if r.Storage == nil {
+		return errors.New("missing Storage")
+	}
+
+	b, err := r.Storage.Read(mmcIdentityCounter, 1)
+	if err != nil {
+		return err
+	}
+
+	buf := bytes.NewReader(b)
+	if err := binary.Read(buf, binary.BigEndian, *counter); err != nil {
+		return err
+	}
+
+	return err
+}
+
 // WriteRPMB performs an authenticated data transfer to the card RPMB partition
 // sector allocated to the Trusted Applet. The input buffer can contain up to
 // 256 bytes of data, n can be passed to retrieve the partition write counter.
@@ -169,6 +191,19 @@ func (r *RPC) WriteRPMB(buf []byte, n *uint32) (err error) {
 // write counter.
 func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 	return r.RPMB.transfer(taUserSector, buf, n, false)
+}
+
+// ReadIdentityCounterRPMB performs an authenticated data transfer from the card RPMB
+// partition sector allocated to the witness identity counter. It returns the
+// value stored in this area.
+func (r *RPC) ReadIdentityCounterRPMB(_ any, counter *uint32) error {
+	buf := make([]byte, witnessIdentityCounterLength)
+	if err := r.RPMB.transfer(rpmbWitnessIdentityCounter, buf, nil, false); err != nil {
+		return err
+	}
+
+	*counter = binary.BigEndian.Uint32(buf)
+	return nil
 }
 
 // DeriveKey derives a hardware unique key in a manner equivalent to PKCS#11
