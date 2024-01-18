@@ -6,3 +6,6 @@ armored-witness-os-2.sec
 bin/
 trusted_os/assets/
 
+witnessctl
+proofbundle
+
