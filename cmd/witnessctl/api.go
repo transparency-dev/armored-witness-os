@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
+	flynn_hid "github.com/flynn/hid"
+	"github.com/flynn/u2f/u2fhid"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/transparency-dev/armored-witness-os/api"
@@ -43,12 +45,13 @@ func confirm(msg string) bool {
 	return res == "y"
 }
 
-func status() (s *api.Status, err error) {
-	if err = detect(); err != nil {
-		return
-	}
+type Device struct {
+	u2f *u2fhid.Device
+	usb *flynn_hid.DeviceInfo
+}
 
-	res, err := conf.dev.Command(api.U2FHID_ARMORY_INF, nil)
+func (d Device) status() (s *api.Status, err error) {
+	res, err := d.u2f.Command(api.U2FHID_ARMORY_INF, nil)
 
 	if err != nil {
 		return
@@ -60,7 +63,7 @@ func status() (s *api.Status, err error) {
 	return
 }
 
-func sendUpdateHeader(signature []byte, total int) (err error) {
+func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
 	update := &api.AppletUpdate{
 		Total: uint32(total),
 		Seq:   uint32(0), // MUST be 0
@@ -72,7 +75,7 @@ func sendUpdateHeader(signature []byte, total int) (err error) {
 		},
 	}
 
-	buf, err := conf.dev.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
 
 	if err != nil {
 		return err
@@ -91,7 +94,7 @@ func sendUpdateHeader(signature []byte, total int) (err error) {
 	return
 }
 
-func sendUpdateChunk(data []byte, seq int, total int) (err error) {
+func (d Device) sendUpdateChunk(data []byte, seq int, total int) (err error) {
 	if seq <= 0 {
 		return fmt.Errorf("seq is %d, it must be >= 0 to send update chunks", seq)
 	}
@@ -103,7 +106,7 @@ func sendUpdateChunk(data []byte, seq int, total int) (err error) {
 		},
 	}
 
-	buf, err := conf.dev.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
 
 	if err != nil {
 		return err
@@ -122,19 +125,13 @@ func sendUpdateChunk(data []byte, seq int, total int) (err error) {
 	return
 }
 
-func ota(taELFPath string, taSigPath string) (err error) {
+func (d Device) ota(taELFPath string, taSigPath string) (err error) {
 	if len(taELFPath) == 0 {
 		return errors.New("trusted applet payload path must be specified (-o)")
 	}
 
 	if len(taSigPath) == 0 {
 		return errors.New("trusted applet signature path must be specified (-O)")
-	}
-
-	// TODO: replace with status() after fixing
-	// https://github.com/gsora/fidati/issues/5
-	if err := detect(); err != nil {
-		return err
 	}
 
 	taELF, err := os.ReadFile(taELFPath)
@@ -167,7 +164,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 
 	log.Printf("sending trusted applet signature to armored witness")
 
-	if err = sendUpdateHeader(taSig, total); err != nil {
+	if err = d.sendUpdateHeader(taSig, total); err != nil {
 		return
 	}
 
@@ -191,7 +188,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 			chunkSize = totalSize - i
 		}
 
-		if err = sendUpdateChunk(taELF[i:i+chunkSize], seq, total); err != nil {
+		if err = d.sendUpdateChunk(taELF[i:i+chunkSize], seq, total); err != nil {
 			return
 		}
 
@@ -201,7 +198,7 @@ func ota(taELFPath string, taSigPath string) (err error) {
 	return
 }
 
-func cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) error {
+func (d Device) cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) error {
 	if len(ip) == 0 || len(gw) == 0 || len(dns) == 0 {
 		return errors.New("trusted applet IP, gatewy and DNS addresses must all be specified for configuration change (flags: -a -g -r)")
 	}
@@ -231,15 +228,9 @@ func cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) e
 		NTPServer: ntp,
 	}
 
-	// TODO: replace with status() after fixing
-	// https://github.com/gsora/fidati/issues/5
-	if err := detect(); err != nil {
-		return err
-	}
-
 	log.Printf("sending configuration update to armored witness")
 
-	buf, err := conf.dev.Command(api.U2FHID_ARMORY_CFG, c.Bytes())
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CFG, c.Bytes())
 
 	if err != nil {
 		return err

@@ -18,7 +18,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	flynn_hid "github.com/flynn/hid"
 	"github.com/flynn/u2f/u2fhid"
@@ -26,27 +26,27 @@ import (
 	"github.com/transparency-dev/armored-witness-os/api"
 )
 
-func detectU2F() (dev *u2fhid.Device, err error) {
+// detect looks for connected witness devices
+func detect() ([]Device, error) {
 	devices, err := flynn_hid.Devices()
-
 	if err != nil {
 		return nil, err
 	}
 
+	devs := []Device{}
 	for _, d := range devices {
 		if d.UsagePage == api.HIDUsagePage &&
 			d.VendorID == api.VendorID &&
 			d.ProductID == api.ProductID {
 
-			dev, err = u2fhid.Open(d)
-
+			dev, err := u2fhid.Open(d)
 			if err != nil {
-				log.Fatal(err)
+				return nil, fmt.Errorf("u2fhid.Open(%q): %v", d.Path, err)
 			}
 
-			return
+			devs = append(devs, Device{usb: d, u2f: dev})
 		}
 	}
 
-	return
+	return devs, nil
 }
