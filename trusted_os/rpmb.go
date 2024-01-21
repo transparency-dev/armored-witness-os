@@ -55,11 +55,10 @@ const (
 )
 
 type RPMB struct {
-	storage   *usdhc.USDHC
 	partition *rpmb.RPMB
 }
 
-func (r *RPMB) init() (err error) {
+func newRPMB(storage Card) (r *RPMB, err error) {
 	// derived key for RPBM MAC generation
 	var dk []byte
 
@@ -73,23 +72,32 @@ func (r *RPMB) init() (err error) {
 	}
 
 	if err != nil {
-		return fmt.Errorf("could not derive RPMB key (%v)", err)
+		return nil, fmt.Errorf("could not derive RPMB key (%v)", err)
 	}
 
 	uid := imx6ul.UniqueID()
 
-	// setup RPMB partition
+	card, ok := storage.(*usdhc.USDHC)
+	if !ok {
+		return nil, errors.New("could not assert type *usdhc.USDHC from Card")
+	}
+
+	// setup RPMB
+	r = &RPMB{}
 	r.partition, err = rpmb.Init(
-		r.storage,
+		card,
 		pbkdf2.Key(dk, uid[:], iter, sha256.Size, sha256.New),
 		dummySector,
 	)
+	if err != nil {
+		return nil, errors.New("could not init RPMB TODO")
+	}
 
 	var e *rpmb.OperationError
 	_, err = r.partition.Counter(false)
 
 	if !(errors.As(err, &e) && e.Result == rpmb.AuthenticationKeyNotYetProgrammed) {
-		return
+		return nil, fmt.Errorf("RPMB could not be initialized: %v", err)
 	}
 
 	// Fuse a bit to indicate previous key programming to prevent malicious
@@ -97,20 +105,20 @@ func (r *RPMB) init() (err error) {
 	//
 	// If already fused refuse to do any programming and bail.
 	if res, err := otp.ReadOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1); err != nil || bytes.Equal(res, []byte{1}) {
-		return fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
+		return nil, fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
 	}
 
 	if err = otp.BlowOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1, []byte{1}); err != nil {
-		return fmt.Errorf("could not fuse RPMB program key flag (%v)", err)
+		return nil, fmt.Errorf("could not fuse RPMB program key flag (%v)", err)
 	}
 
 	log.Print("RPMB authentication key not yet programmed, programming")
 
 	if err = r.partition.ProgramKey(); err != nil {
-		return fmt.Errorf("could not program RPMB key")
+		return nil, fmt.Errorf("could not program RPMB key")
 	}
 
-	return
+	return r, nil
 }
 
 func parseVersion(s string) (version uint32, err error) {
