@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	frameLength = 512
+	FrameLength = 512
 	macOffset   = 284
 )
 
@@ -112,7 +112,7 @@ func (p *RPMB) op(req *DataFrame, cfg *Config) (res *DataFrame, err error) {
 	mac := hmac.New(sha256.New, p.key[:])
 
 	if cfg.RequestMAC {
-		mac.Write(req.Bytes()[frameLength-macOffset:])
+		mac.Write(req.Bytes()[FrameLength-macOffset:])
 		copy(req.KeyMAC[:], mac.Sum(nil))
 		mac.Reset()
 	}
@@ -145,7 +145,7 @@ func (p *RPMB) op(req *DataFrame, cfg *Config) (res *DataFrame, err error) {
 		}
 	}
 
-	buf := make([]byte, frameLength)
+	buf := make([]byte, FrameLength)
 	res = &DataFrame{}
 
 	// read response
@@ -161,7 +161,7 @@ func (p *RPMB) op(req *DataFrame, cfg *Config) (res *DataFrame, err error) {
 	// validate response
 
 	if cfg.ResponseMAC {
-		mac.Write(buf[frameLength-macOffset:])
+		mac.Write(buf[FrameLength-macOffset:])
 
 		if !hmac.Equal(res.KeyMAC[:], mac.Sum(nil)) {
 			return nil, errors.New("invalid response MAC")
@@ -186,7 +186,7 @@ func (p *RPMB) op(req *DataFrame, cfg *Config) (res *DataFrame, err error) {
 }
 
 func (p *RPMB) transfer(kind byte, offset uint16, buf []byte) (err error) {
-	if len(buf) > frameLength/2 {
+	if len(buf) > FrameLength/2 {
 		return errors.New("transfer size must not exceed 256 bytes")
 	}
 

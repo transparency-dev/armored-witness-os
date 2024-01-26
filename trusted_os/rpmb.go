@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !fake_rpmb
+// +build !fake_rpmb
+
 package main
 
 import (
@@ -90,7 +93,7 @@ func newRPMB(storage Card) (r *RPMB, err error) {
 		dummySector,
 	)
 	if err != nil {
-		return nil, errors.New("could not init RPMB TODO")
+		return nil, fmt.Errorf("RPMB could not be initialized: %v", err)
 	}
 
 	var e *rpmb.OperationError
