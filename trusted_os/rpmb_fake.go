@@ -125,6 +125,8 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 		copy(buf, r.mem[sector*sectorLength:])
 	}
 
-	*n = r.counter
+	if n != nil {
+		*n = r.counter
+	}
 	return
 }
