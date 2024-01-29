@@ -37,11 +37,11 @@ const (
 	taUserSector = 3
 
 	sectorLength = 256
-	memoryLength = 1024
+	numSectors   = 16
 )
 
 type RPMB struct {
-	mem     [memoryLength]byte
+	mem     [numSectors][sectorLength]byte
 	counter uint32
 }
 
@@ -62,7 +62,7 @@ func parseVersion(s string) (version uint32, err error) {
 // expectedVersion returns the version epoch stored in a fake RPMB area.
 func (r *RPMB) expectedVersion(sector uint16) (version uint32, err error) {
 	buf := make([]byte, versionLength)
-	copy(buf, r.mem[sector*sectorLength:])
+	copy(buf, r.mem[sector])
 
 	return binary.BigEndian.Uint32(buf), nil
 }
@@ -72,7 +72,7 @@ func (r *RPMB) updateVersion(sector uint16, version uint32) (err error) {
 	buf := make([]byte, versionLength)
 	binary.BigEndian.PutUint32(buf, version)
 
-	copy(r.mem[sector*sectorLength:], buf)
+	copy(r.mem[sector], buf)
 	r.counter++
 
 	return nil
@@ -119,10 +119,10 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 	}
 
 	if write {
-		copy(r.mem[sector*sectorLength:], buf)
+		copy(r.mem[sector], buf)
 		r.counter++
 	} else {
-		copy(buf, r.mem[sector*sectorLength:])
+		copy(buf, r.mem[sector])
 	}
 
 	if n != nil {
