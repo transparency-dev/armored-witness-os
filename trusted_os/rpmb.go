@@ -58,7 +58,7 @@ const (
 	// witness identity counter length - uint32
 	witnessIdentityCounterLength = 4
 	// RPMB witness identity counter
-	rpmbWitnessIdentityCounter = 7
+	witnessIdentityCounter = 7
 
 	diversifierMAC = "ArmoryWitnessMAC"
 	iter           = 4096
@@ -202,30 +202,6 @@ func (r *RPMB) checkVersion(offset uint16, s string) (err error) {
 	return
 }
 
-// incrementWitnessIdentity increments the counter in the RPMB area to
-// differentiate a new witness identity.
-func (r *RPMB) incrementWitnessIdentity() (err error) {
-	if r.partition == nil {
-		return errors.New("RPMB has not been initialized")
-	}
-
-	// Read
-	rBuf := make([]byte, witnessIdentityCounterLength)
-	if err = r.partition.Read(rpmbWitnessIdentityCounter, rBuf); err != nil {
-		return err
-	}
-	counter := binary.BigEndian.Uint32(rBuf)
-
-	// Increment
-	counter++
-
-	// Write
-	wBuf := make([]byte, witnessIdentityCounterLength)
-	binary.BigEndian.PutUint32(wBuf, counter)
-
-	return r.partition.Write(rpmbWitnessIdentityCounter, wBuf)
-}
-
 // transfer performs an authenticated data transfer to the card RPMB partition,
 // the input buffer can contain up to 256 bytes of data, n can be passed to
 // retrieve the partition write counter.
@@ -241,4 +217,27 @@ func (r *RPMB) transfer(offset uint16, buf []byte, n *uint32, write bool) (err e
 	}
 
 	return
+}
+
+// incrementWitnessIdentity increments the counter in the RPMB area to
+// differentiate a new witness identity.
+func (r *RPMB) incrementWitnessIdentity() (err error) {
+	if r.partition == nil {
+		return errors.New("RPMB has not been initialized")
+	}
+
+	// Read
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err = r.partition.Read(witnessIdentityCounter, rBuf); err != nil {
+		return err
+	}
+	counter := binary.BigEndian.Uint32(rBuf)
+
+	// Increment
+	counter++
+
+	// Write
+	wBuf := make([]byte, witnessIdentityCounterLength)
+	binary.BigEndian.PutUint32(wBuf, counter)
+	return r.partition.Write(witnessIdentityCounter, wBuf)
 }

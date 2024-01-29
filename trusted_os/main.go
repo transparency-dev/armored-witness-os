@@ -169,19 +169,6 @@ func main() {
 		log.Printf("Failed to determine OS MMC block (no OS installed?): %v", err)
 	}
 
-	newIdentity, err := newWitnessIdentity(Storage)
-	if err != nil {
-		log.Printf("Failed to read new witness identity MMC block: %v", err)
-	}
-	if newIdentity {
-		// TODO: disable for now
-		if false && imx6ul.SNVS.Available() {
-			rpmb.incrementWitnessIdentity()
-		} else {
-			incrementWitnessIdentityMMC(Storage)
-		}
-	}
-
 	log.Printf("SM log verification pub: %s", LogVerifier)
 	logVerifier, err := note.NewVerifier(LogVerifier)
 	if err != nil {

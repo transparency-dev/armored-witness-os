@@ -36,6 +36,10 @@ const (
 	// RPMB sector for TA use
 	taUserSector = 3
 
+	witnessIdentityCounterLength = 4
+	// RPMB sector for witness identity counter
+	witnessIdentityCounterSector = 4
+
 	sectorLength = 256
 	numSectors   = 16
 )
@@ -129,4 +133,23 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 		*n = r.counter
 	}
 	return
+}
+
+// incrementWitnessIdentity increments the counter in the RPMB area to
+// differentiate a new witness identity.
+func (r *RPMB) incrementWitnessIdentity() error {
+	// Read
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err := r.transfer(witnessIdentityCounterSector, rBuf, nil, false); err != nil {
+		return err
+	}
+	counter := binary.BigEndian.Uint32(rBuf)
+
+	// Increment
+	counter++
+
+	// Write
+	wBuf := make([]byte, witnessIdentityCounterLength)
+	binary.BigEndian.PutUint32(wBuf, counter)
+	return r.transfer(witnessIdentityCounterSector, wBuf, nil, true)
 }

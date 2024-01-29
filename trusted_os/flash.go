@@ -15,8 +15,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"log"
@@ -46,13 +44,6 @@ const (
 	osConfBlock = 0x5000
 	osBlockA    = 0x5050
 	osBlockB    = 0x102828
-	// This sector is interpreted as whether the device should wipe its previous
-	// data and boot as a new witness identity.
-	newIdentityBlock = 0x1FFF00
-	// This sector contains a counter to differentiate between witness
-	// identities. For production devices, this counter should live in RPMB,
-	// so that it is secure, read-only, and overflow protected.
-	mmcIdentityCounter = 0x1FFF01
 
 	batchSize = 2048
 )
@@ -142,61 +133,6 @@ func determineLoadedOSBlock(card Card) error {
 		log.Print("Loaded OS from slot B")
 	default:
 		log.Printf("Loaded OS from unexpected block %d", osLoadedFromBlock)
-	}
-	return nil
-}
-
-// newWitnessIdentity reads the newIdentityBlock from MMC.
-func newWitnessIdentity(card Card) (bool, error) {
-	blockSize := card.Info().BlockSize
-	if blockSize != expectedBlockSize {
-		return false, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
-	}
-
-	b, err := card.Read(newIdentityBlock*expectedBlockSize, 1)
-	if err != nil {
-		return false, err
-	}
-
-	buf := bytes.NewReader(b)
-	var newIdentity bool
-	if err := binary.Read(buf, binary.BigEndian, &newIdentity); err != nil {
-		return false, err
-	}
-
-	return newIdentity, nil
-}
-
-// incrementWitnessIdentityMMC increments the mmcIdentityCounter in the MMC block.
-func incrementWitnessIdentityMMC(card Card) error {
-	blockSize := card.Info().BlockSize
-	if blockSize != expectedBlockSize {
-		return fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
-	}
-
-	// Read
-	b, err := card.Read(mmcIdentityCounter*expectedBlockSize, 1)
-	if err != nil {
-		return err
-	}
-
-	rBuf := bytes.NewReader(b)
-	var counter uint32
-	if err := binary.Read(rBuf, binary.BigEndian, &counter); err != nil {
-		return err
-	}
-
-	// Increment
-	counter++
-
-	// Write
-	wBuf := new(bytes.Buffer)
-	if err := binary.Write(wBuf, binary.BigEndian, counter); err != nil {
-		return err
-	}
-
-	if err := card.WriteBlocks(mmcIdentityCounter*expectedBlockSize, wBuf.Bytes()); err != nil {
-		return err
 	}
 	return nil
 }
