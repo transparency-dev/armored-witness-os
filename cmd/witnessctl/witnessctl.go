@@ -22,14 +22,12 @@ import (
 	"flag"
 	"log"
 	"os"
-
-	"github.com/flynn/u2f/u2fhid"
-
-	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 type Config struct {
-	dev *u2fhid.Device
+	devs []Device
+
+	hidPath string
 
 	status bool
 
@@ -52,6 +50,7 @@ func init() {
 
 	conf = &Config{}
 
+	flag.StringVar(&conf.hidPath, "d", "", "HID path of witness device to act upon (use -s to list devices)")
 	flag.BoolVar(&conf.status, "s", false, "get witness status")
 	flag.StringVar(&conf.otaELF, "o", "", "trusted applet payload")
 	flag.StringVar(&conf.otaSig, "O", "", "trusted applet signature")
@@ -63,22 +62,26 @@ func init() {
 	flag.StringVar(&conf.ntp, "n", "time.google.com", "set NTP server")
 }
 
-func detect() (err error) {
-	if conf.dev != nil {
-		return
-	}
-
-	conf.dev, err = detectU2F()
-
+func (c *Config) detect() error {
+	devs, err := detect()
 	if err != nil {
-		return
+		return err
 	}
-
-	if conf.dev == nil {
-		return errors.New("no device found")
+	if len(devs) == 0 {
+		return errors.New("no devices found")
 	}
+	// If the user specified a device in particular, limit to just that one:
+	if len(c.hidPath) > 0 {
+		for _, d := range devs {
+			if d.usb.Path == conf.hidPath {
+				c.devs = []Device{d}
+				return nil
+			}
+		}
 
-	return
+	}
+	c.devs = devs
+	return nil
 }
 
 func main() {
@@ -96,18 +99,29 @@ func main() {
 
 	flag.Parse()
 
+	if err := conf.detect(); err != nil {
+		log.Fatalf("detect(): %v", err)
+	}
+
 	switch {
 	case conf.status:
-		var s *api.Status
-
-		s, err = status()
-
-		if err == nil {
-			log.Print(s.Print())
+		for _, d := range conf.devs {
+			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
+			s, err := d.status()
+			if err != nil {
+				log.Printf("Failed to get status on %q: %c", d.usb.Path, err)
+			}
+			log.Printf("%s\n\n", s.Print())
 		}
 	case len(conf.otaELF) > 0 || len(conf.otaSig) > 0:
-		err = ota(conf.otaELF, conf.otaSig)
+		if len(conf.devs) != 1 {
+			log.Fatal("Please specify which device to OTA using -d")
+		}
+		err = conf.devs[0].ota(conf.otaELF, conf.otaSig)
 	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0 || len(conf.ntp) > 0:
-		err = cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp)
+		if len(conf.devs) != 1 {
+			log.Fatal("Please specify which device to configure using -d")
+		}
+		err = conf.devs[0].cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp)
 	}
 }

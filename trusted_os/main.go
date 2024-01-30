@@ -242,6 +242,11 @@ func main() {
 
 	// never returns
 	handleInterrupts()
+
+	// We never hit this due to handleInterrupts not returning, but having this line here
+	// forces the linker to keep the symbol present which is necessary for the inspect()
+	// function to work for debug builds.
+	runtime.CallOnG0()
 }
 
 func createBundleVerifier(logOrigin string, logVerifier note.Verifier, manifestVerifiers []string) (firmware.BundleVerifier, error) {
