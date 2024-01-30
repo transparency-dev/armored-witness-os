@@ -16,9 +16,9 @@
 
 syntax = "proto3";
 
-option go_package = "./;api";
-
 package api;
+
+option go_package = "./;api";
 
 /*
 
@@ -79,14 +79,13 @@ The `TotalChunks` value indicates the total number of chunks for the update,
 
 */
 message AppletUpdate {
-	uint32 Total = 1;
-	uint32 Seq   = 2;
-	oneof Payload {
-		bytes  Data  = 3;
-		AppletUpdateHeader Header = 4;
-	};
+  uint32 Total = 1;
+  uint32 Seq = 2;
+  oneof Payload {
+    bytes Data = 3;
+    AppletUpdateHeader Header = 4;
+  }
 }
-
 
 /*
 
@@ -99,16 +98,18 @@ It's sent in the zero-th `AppletUpdate` message during an OTA.
 */
 
 message AppletUpdateHeader {
-	// Signature holds the signature over the applet.
-	bytes  Signature  = 1;
-	// Checkpoint contains a note-formatted Log Checkpoint.
-	bytes  Checkpoint = 2;
-	// Manifest is metadata about the applet, which has been logged to a firmware transparency log.
-	bytes  Manifest = 3;
-	// InclusionProof is a log inclusion proof for Manifest committed to by Checkpoint.
-	repeated bytes InclusionProof = 4;
-	// LogIndex is the index of Manifest in the firmware transparency log.
-	uint64	LogIndex = 5; 
+  // Signature holds the signature over the applet.
+  bytes Signature = 1;
+  // Checkpoint contains a note-formatted Log Checkpoint.
+  bytes Checkpoint = 2;
+  // Manifest is metadata about the applet, which has been logged to a firmware
+  // transparency log.
+  bytes Manifest = 3;
+  // InclusionProof is a log inclusion proof for Manifest committed to by
+  // Checkpoint.
+  repeated bytes InclusionProof = 4;
+  // LogIndex is the index of Manifest in the firmware transparency log.
+  uint64 LogIndex = 5;
 }
 
 /*
@@ -120,14 +121,14 @@ The status information format is returned on any message sent with the
 
 */
 message Status {
-	string Serial         = 1;
-	bool   HAB            = 2;
-	string Revision       = 3;
-	string Build          = 4;
-	uint32 Version        = 5;
-	string Runtime        = 6;
-	bool   Link           = 7;
-	WitnessStatus Witness = 8;
+  string Serial = 1;
+  bool HAB = 2;
+  string Revision = 3;
+  string Build = 4;
+  uint32 Version = 5;
+  string Runtime = 6;
+  bool Link = 7;
+  WitnessStatus Witness = 8;
 }
 
 /*
@@ -139,11 +140,14 @@ this information to the OS.
 
 */
 message WitnessStatus {
-	// Identity is the note-formatted public key which can be used to verify
-	// checkpoints cosigned by this witness.
-	string Identity  = 1;
-	// IP is a string representation of the witness applet's current IP address.
-	string IP        = 2;
+  // Identity is the note-formatted public key which can be used to verify
+  // checkpoints cosigned by this witness.
+  string Identity = 1;
+  // IP is a string representation of the witness applet's current IP address.
+  string IP = 2;
+  // IdentityCounter is incremented when the device is recovered and the device
+  // needs a new witness identity.
+  uint32 IdentityCounter = 3;
 }
 
 /*
@@ -159,23 +163,23 @@ command.
 */
 
 message Configuration {
-	bool   DHCP      = 1;
-	string IP        = 2;
-	string Netmask   = 3;
-	string Gateway   = 4;
-	string Resolver  = 5;
-	string NTPServer = 6;
+  bool DHCP = 1;
+  string IP = 2;
+  string Netmask = 3;
+  string Gateway = 4;
+  string Resolver = 5;
+  string NTPServer = 6;
 }
 
 message Response {
-	ErrorCode Error   = 1;
-	bytes     Payload = 2;
+  ErrorCode Error = 1;
+  bytes Payload = 2;
 }
 
 enum ErrorCode {
-	NONE = 0;
+  NONE = 0;
 
-	// GENERIC_ERROR is returned in case of a generic error, in this case
-	// Payload might contain the error string.
-	GENERIC_ERROR = 1;
+  // GENERIC_ERROR is returned in case of a generic error, in this case
+  // Payload might contain the error string.
+  GENERIC_ERROR = 1;
 }

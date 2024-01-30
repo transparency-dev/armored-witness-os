@@ -49,6 +49,9 @@ type WitnessStatus struct {
 	Identity string
 	// IP is the currently-assigned IP address of the witness applet.
 	IP string
+	// IdentityCounter is incremented when the device is recovered and the device
+	// needs a new witness identity.
+	IdentityCounter uint32
 }
 
 // FirmwareUpdate represents a firmware update.
