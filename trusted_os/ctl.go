@@ -46,13 +46,12 @@ type controlInterface struct {
 	sync.Mutex
 
 	Device *usb.Device
-	rpmb   *RPMB
 	RPC    *RPC
 
 	ota *otaBuffer
 }
 
-func getStatus() (s *api.Status) {
+func (ctl *controlInterface) getStatus(rpmb *RPMB) (s *api.Status) {
 	version, _ := parseVersion(Version)
 
 	s = &api.Status{
@@ -63,11 +62,15 @@ func getStatus() (s *api.Status) {
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 	}
-	count, err := rpmb.witnessIdentity()
-	if err != nil {
-		log.Errorf("cannot get witness identity counter: %v", err)
+	if rpmb == nil {
+		log.Printf("cannot get witness identity counter because no RPMB passed in to controlInterface")
 	} else {
-		s.WitnessIdentity = count
+		count, err := rpmb.witnessIdentity()
+		if err != nil {
+			log.Printf("cannot get witness identity counter: %v", err)
+		} else {
+			s.IdentityCounter = count
+		}
 	}
 	if witnessStatus != nil {
 		s.Witness = &api.WitnessStatus{
@@ -93,7 +96,7 @@ func (ctl *controlInterface) HandleMessage(_ []byte) (_ []byte) {
 }
 
 func (ctl *controlInterface) Status(_ []byte) (res []byte) {
-	res, _ = proto.Marshal(getStatus())
+	res, _ = proto.Marshal(ctl.getStatus(nil))
 	return
 }
 

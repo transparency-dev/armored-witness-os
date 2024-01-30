@@ -153,8 +153,7 @@ func main() {
 	}
 
 	ctl := &controlInterface{
-		RPC:  rpc,
-		RPMB: rpmb,
+		RPC: rpc,
 	}
 
 	// TODO: disable for now

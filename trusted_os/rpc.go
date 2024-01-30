@@ -41,6 +41,7 @@ type RPC struct {
 	Storage     Card
 	Ctx         *monitor.ExecCtx
 	Cfg         []byte
+	Ctl         controlInterface
 	Diversifier [32]byte
 }
 
@@ -105,7 +106,7 @@ func (r *RPC) Status(_ any, status *api.Status) error {
 		return errors.New("invalid argument")
 	}
 
-	s := getStatus()
+	s := r.Ctl.getStatus(r.RPMB)
 	*status = *s
 
 	return nil
