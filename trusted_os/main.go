@@ -134,11 +134,16 @@ func main() {
 	usbarmory.LED("blue", false)
 	usbarmory.LED("white", false)
 
-	Storage, rpmb := storage()
+	Storage := storage()
 	if Storage != nil {
 		if err = Storage.Detect(); err != nil {
 			log.Fatalf("SM failed to detect storage, %v", err)
 		}
+	}
+
+	rpmb, err := newRPMB(Storage)
+	if err != nil {
+		log.Fatalf("SM could not initialize rollback protection, %v", err)
 	}
 
 	rpc := &RPC{
@@ -154,10 +159,6 @@ func main() {
 	// TODO: disable for now
 	if false && imx6ul.SNVS.Available() {
 		log.Printf("SM version verification (%s)", Version)
-
-		if err = rpmb.init(); err != nil {
-			log.Fatalf("SM could not initialize rollback protection, %v", err)
-		}
 
 		if err = rpmb.checkVersion(osVersionSector, Version); err != nil {
 			log.Fatalf("SM firmware rollback check failure, %v", err)

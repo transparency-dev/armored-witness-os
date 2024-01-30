@@ -21,7 +21,6 @@ import (
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 )
 
-func storage() (Card, *RPMB) {
-	s := usbarmory.MMC
-	return s, &RPMB{storage: s}
+func storage() Card {
+	return usbarmory.MMC
 }

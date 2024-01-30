@@ -30,6 +30,9 @@ endif
 ifeq ("${FAKE_STORAGE}", "1")
 	BUILD_TAGS := ${BUILD_TAGS},fake_storage
 endif
+ifeq ("${FAKE_RPMB}", "1")
+	BUILD_TAGS := ${BUILD_TAGS},fake_rpmb
+endif
 
 APP := ""
 TEXT_START = 0x80010000 # ramStart (defined in mem.go under relevant tamago/soc package) + 0x10000

@@ -35,12 +35,11 @@ const (
 
 // storage will return MMC backed storage if running on real hardware, or
 // a fake in-memory storage device otherwise.
-func storage() (Card, *RPMB) {
+func storage() Card {
 	if imx6ul.Native {
-		s := usbarmory.MMC
-		return s, &RPMB{storage: s}
+		return usbarmory.MMC
 	}
-	return newFakeCard(fakeCardNumBlocks), &RPMB{}
+	return newFakeCard(fakeCardNumBlocks)
 }
 
 // fakeCard is an implementation of an in-memory storage device.
