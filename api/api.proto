@@ -129,6 +129,9 @@ message Status {
   string Runtime = 6;
   bool Link = 7;
   WitnessStatus Witness = 8;
+  // IdentityCounter is incremented when the device is recovered and the device
+  // needs a new witness identity.
+  uint32 IdentityCounter = 9;
 }
 
 /*
@@ -145,9 +148,6 @@ message WitnessStatus {
   string Identity = 1;
   // IP is a string representation of the witness applet's current IP address.
   string IP = 2;
-  // IdentityCounter is incremented when the device is recovered and the device
-  // needs a new witness identity.
-  uint32 IdentityCounter = 3;
 }
 
 /*
