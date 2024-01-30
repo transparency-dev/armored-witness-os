@@ -135,6 +135,15 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 	return
 }
 
+// witnessIdentity gets the witness identity counter from the RPMB area.
+func (r *RPMB) witnessIdentity() (counter uint32, err error) {
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err := r.transfer(witnessIdentityCounterSector, rBuf, nil, false); err != nil {
+		return err
+	}
+	return binary.BigEndian.Uint32(rBuf)
+}
+
 // incrementWitnessIdentity increments the counter in the RPMB area to
 // differentiate a new witness identity.
 func (r *RPMB) incrementWitnessIdentity() error {

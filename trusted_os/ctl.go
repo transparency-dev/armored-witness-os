@@ -46,6 +46,7 @@ type controlInterface struct {
 	sync.Mutex
 
 	Device *usb.Device
+	rpmb   *RPMB
 	RPC    *RPC
 
 	ota *otaBuffer
@@ -61,7 +62,12 @@ func getStatus() (s *api.Status) {
 		Build:    Build,
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
-		// TODO(jayhou): set IdentityCounter here.
+	}
+	count, err := rpmb.witnessIdentity()
+	if err != nil {
+		log.Errorf("cannot get witness identity counter: %v", err)
+	} else {
+		s.WitnessIdentity = count
 	}
 	if witnessStatus != nil {
 		s.Witness = &api.WitnessStatus{

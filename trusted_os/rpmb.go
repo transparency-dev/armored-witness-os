@@ -219,6 +219,19 @@ func (r *RPMB) transfer(offset uint16, buf []byte, n *uint32, write bool) (err e
 	return
 }
 
+// witnessIdentity gets the witness identity counter from the RPMB area.
+func (r *RPMB) witnessIdentity() (counter uint32, err error) {
+	if r.partition == nil {
+		return 0, errors.New("RPMB has not been initialized")
+	}
+
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err = r.partition.Read(witnessIdentityCounter, rBuf); err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint32(rBuf), nil
+}
+
 // incrementWitnessIdentity increments the counter in the RPMB area to
 // differentiate a new witness identity.
 func (r *RPMB) incrementWitnessIdentity() (err error) {
