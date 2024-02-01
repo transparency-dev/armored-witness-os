@@ -106,7 +106,7 @@ func (r *RPC) Status(_ any, status *api.Status) error {
 		return errors.New("invalid argument")
 	}
 
-	s := r.Ctl.getStatus(r.RPMB)
+	s := r.Ctl.getStatus()
 	*status = *s
 
 	return nil
