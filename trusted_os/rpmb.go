@@ -57,8 +57,8 @@ const (
 
 	// witness identity counter length - uint32
 	witnessIdentityCounterLength = 4
-	// RPMB witness identity counter
-	witnessIdentityCounter = 7
+	// RPMB sector for witness identity counter
+	witnessIdentityCounterSector = 7
 
 	diversifierMAC = "ArmoryWitnessMAC"
 	iter           = 4096
@@ -219,29 +219,29 @@ func (r *RPMB) transfer(offset uint16, buf []byte, n *uint32, write bool) (err e
 	return
 }
 
-// witnessIdentity gets the witness identity counter from the RPMB area.
-func (r *RPMB) witnessIdentity() (counter uint32, err error) {
+// witnessIdentityCounter gets the witness identity counter from the RPMB area.
+func (r *RPMB) witnessIdentityCounter() (counter uint32, err error) {
 	if r.partition == nil {
 		return 0, errors.New("RPMB has not been initialized")
 	}
 
 	rBuf := make([]byte, witnessIdentityCounterLength)
-	if err = r.partition.Read(witnessIdentityCounter, rBuf); err != nil {
+	if err = r.partition.Read(witnessIdentityCounterSector, rBuf); err != nil {
 		return 0, err
 	}
 	return binary.BigEndian.Uint32(rBuf), nil
 }
 
-// incrementWitnessIdentity increments the counter in the RPMB area to
+// incrementWitnessIdentityCounter increments the counter in the RPMB area to
 // differentiate a new witness identity.
-func (r *RPMB) incrementWitnessIdentity() (err error) {
+func (r *RPMB) incrementWitnessIdentityCounter() (err error) {
 	if r.partition == nil {
 		return errors.New("RPMB has not been initialized")
 	}
 
 	// Read
 	rBuf := make([]byte, witnessIdentityCounterLength)
-	if err = r.partition.Read(witnessIdentityCounter, rBuf); err != nil {
+	if err = r.partition.Read(witnessIdentityCounterSector, rBuf); err != nil {
 		return err
 	}
 	counter := binary.BigEndian.Uint32(rBuf)
@@ -252,5 +252,5 @@ func (r *RPMB) incrementWitnessIdentity() (err error) {
 	// Write
 	wBuf := make([]byte, witnessIdentityCounterLength)
 	binary.BigEndian.PutUint32(wBuf, counter)
-	return r.partition.Write(witnessIdentityCounter, wBuf)
+	return r.partition.Write(witnessIdentityCounterSector, wBuf)
 }

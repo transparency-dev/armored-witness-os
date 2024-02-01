@@ -63,10 +63,11 @@ func (ctl *controlInterface) getStatus() (s *api.Status) {
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 	}
 
-	if rpmb := ctl.RPC.RPMB; rpmb == nil {
+	rpmb := ctl.RPC.RPMB
+	if rpmb == nil {
 		log.Printf("cannot get witness identity counter because RPMB is nil")
 	} else {
-		count, err := rpmb.witnessIdentity()
+		count, err := rpmb.witnessIdentityCounter()
 		if err != nil {
 			log.Printf("cannot get witness identity counter: %v", err)
 		} else {

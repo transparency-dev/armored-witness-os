@@ -178,7 +178,7 @@ func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 // value stored in this area.
 func (r *RPC) ReadIdentityCounterRPMB(_ any, counter *uint32) error {
 	buf := make([]byte, witnessIdentityCounterLength)
-	if err := r.RPMB.transfer(witnessIdentityCounter, buf, nil, false); err != nil {
+	if err := r.RPMB.transfer(witnessIdentityCounterSector, buf, nil, false); err != nil {
 		return err
 	}
 
