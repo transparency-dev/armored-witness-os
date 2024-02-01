@@ -61,6 +61,7 @@ func getStatus() (s *api.Status) {
 		Build:    Build,
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		// TODO(jayhou): set IdentityCounter here.
 	}
 	if witnessStatus != nil {
 		s.Witness = &api.WitnessStatus{

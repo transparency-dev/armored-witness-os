@@ -92,17 +92,18 @@ func (p *Status) Print() string {
 	var status bytes.Buffer
 
 	status.WriteString("----------------------------------------------------------- Trusted OS ----\n")
-	status.WriteString(fmt.Sprintf("Serial number ..........: %s\n", p.Serial))
-	status.WriteString(fmt.Sprintf("Secure Boot ............: %v\n", p.HAB))
-	status.WriteString(fmt.Sprintf("Revision ...............: %s\n", p.Revision))
-	status.WriteString(fmt.Sprintf("Version ................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
-	status.WriteString(fmt.Sprintf("Runtime ................: %s\n", p.Runtime))
-	status.WriteString(fmt.Sprintf("Link ...................: %v\n", p.Link))
+	status.WriteString(fmt.Sprintf("Serial number ..............: %s\n", p.Serial))
+	status.WriteString(fmt.Sprintf("Secure Boot ................: %v\n", p.HAB))
+	status.WriteString(fmt.Sprintf("Revision ...................: %s\n", p.Revision))
+	status.WriteString(fmt.Sprintf("Version ....................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
+	status.WriteString(fmt.Sprintf("Runtime ....................: %s\n", p.Runtime))
+	status.WriteString(fmt.Sprintf("Link .......................: %v\n", p.Link))
+	status.WriteString(fmt.Sprintf("IdentityCounter ............: %d", p.IdentityCounter))
 	if p.Witness != nil {
-		status.WriteString(fmt.Sprintf("Witness/Identity .......: %v\n", p.Witness.Identity))
-		status.WriteString(fmt.Sprintf("Witness/IP .............: %v", p.Witness.IP))
+		status.WriteString(fmt.Sprintf("Witness/Identity ...........: %v\n", p.Witness.Identity))
+		status.WriteString(fmt.Sprintf("Witness/IP .................: %v", p.Witness.IP))
 	} else {
-		status.WriteString(fmt.Sprint("Witness ................: <no status>"))
+		status.WriteString(fmt.Sprint("Witness ....................: <no status>"))
 	}
 
 	return status.String()
