@@ -61,6 +61,7 @@ func (ctl *controlInterface) getStatus(rpmb *RPMB) (s *api.Status) {
 		Build:    Build,
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		// TODO(jayhou): set IdentityCounter here.
 	}
 	if rpmb == nil {
 		log.Printf("cannot get witness identity counter because no RPMB passed in to controlInterface")
