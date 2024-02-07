@@ -46,12 +46,17 @@ type RPMB struct {
 }
 
 func newRPMB(_ Card) (*RPMB, error) {
-	return &RPMB{}, nil
+	return &RPMB{
+		mem: make(map[numSectors][sectorLength]byte),
+	}, nil
+}
+
+func r (*RPMB) init() error {
+	return nil
 }
 
 func parseVersion(s string) (version uint32, err error) {
 	v, err := strconv.Atoi(s)
-
 	if err != nil {
 		return
 	}

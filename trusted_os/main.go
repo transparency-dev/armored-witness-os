@@ -160,6 +160,10 @@ func main() {
 	if false && imx6ul.SNVS.Available() {
 		log.Printf("SM version verification (%s)", Version)
 
+		if err = rpmb.init(); err != nil {
+			log.Fatalf("SM could not initialize rollback protection, %v", err)
+		}
+
 		if err = rpmb.checkVersion(osVersionSector, Version); err != nil {
 			log.Fatalf("SM firmware rollback check failure, %v", err)
 		}
