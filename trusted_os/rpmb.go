@@ -65,49 +65,54 @@ const (
 )
 
 type RPMB struct {
+	storage   Card
 	partition *rpmb.RPMB
 }
 
 func newRPMB(storage Card) (r *RPMB, err error) {
+	return &RPMB{storage: storage}, nil
+}
+
+func (r *RPMB) init() error {
 	// derived key for RPBM MAC generation
 	var dk []byte
+	var err error
 
 	switch {
 	case imx6ul.CAAM != nil:
+		dk = make([]byte, sha256.Size) // dk needs to be correctly sized to receive the key.
 		err = imx6ul.CAAM.DeriveKey([]byte(diversifierMAC), dk)
 	case imx6ul.DCP != nil:
 		dk, err = imx6ul.DCP.DeriveKey([]byte(diversifierMAC), make([]byte, aes.BlockSize), -1)
 	default:
 		err = errors.New("unsupported hardware")
 	}
-
 	if err != nil {
-		return nil, fmt.Errorf("could not derive RPMB key (%v)", err)
+		return fmt.Errorf("could not derive RPMB key (%v)", err)
 	}
 
 	uid := imx6ul.UniqueID()
 
-	card, ok := storage.(*usdhc.USDHC)
+	card, ok := r.storage.(*usdhc.USDHC)
 	if !ok {
-		return nil, errors.New("could not assert type *usdhc.USDHC from Card")
+		return errors.New("could not assert type *usdhc.USDHC from Card")
 	}
 
 	// setup RPMB
-	r = &RPMB{}
 	r.partition, err = rpmb.Init(
 		card,
 		pbkdf2.Key(dk, uid[:], iter, sha256.Size, sha256.New),
 		dummySector,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("RPMB could not be initialized: %v", err)
+		return fmt.Errorf("RPMB could not be initialized: %v", err)
 	}
 
 	var e *rpmb.OperationError
 	_, err = r.partition.Counter(false)
 
 	if !(errors.As(err, &e) && e.Result == rpmb.AuthenticationKeyNotYetProgrammed) {
-		return nil, fmt.Errorf("RPMB could not be initialized: %v", err)
+		return fmt.Errorf("RPMB could not be initialized: %v", err)
 	}
 
 	// Fuse a bit to indicate previous key programming to prevent malicious
@@ -115,20 +120,20 @@ func newRPMB(storage Card) (r *RPMB, err error) {
 	//
 	// If already fused refuse to do any programming and bail.
 	if res, err := otp.ReadOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1); err != nil || bytes.Equal(res, []byte{1}) {
-		return nil, fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
+		return fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
 	}
 
 	if err = otp.BlowOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1, []byte{1}); err != nil {
-		return nil, fmt.Errorf("could not fuse RPMB program key flag (%v)", err)
+		return fmt.Errorf("could not fuse RPMB program key flag (%v)", err)
 	}
 
 	log.Print("RPMB authentication key not yet programmed, programming")
 
 	if err = r.partition.ProgramKey(); err != nil {
-		return nil, fmt.Errorf("could not program RPMB key")
+		return fmt.Errorf("could not program RPMB key")
 	}
 
-	return r, nil
+	return nil
 }
 
 func parseVersion(s string) (version uint32, err error) {

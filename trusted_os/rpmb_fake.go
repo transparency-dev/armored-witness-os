@@ -60,7 +60,6 @@ func newRPMB(_ Card) (*RPMB, error) {
 
 func parseVersion(s string) (version uint32, err error) {
 	v, err := strconv.Atoi(s)
-
 	if err != nil {
 		return
 	}
