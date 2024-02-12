@@ -17,6 +17,7 @@ package main
 import (
 	"crypto/aes"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"log"
 	"net"
@@ -40,6 +41,7 @@ type RPC struct {
 	Storage     Card
 	Ctx         *monitor.ExecCtx
 	Cfg         []byte
+	Ctl         controlInterface
 	Diversifier [32]byte
 }
 
@@ -104,7 +106,7 @@ func (r *RPC) Status(_ any, status *api.Status) error {
 		return errors.New("invalid argument")
 	}
 
-	s := getStatus()
+	s := r.Ctl.getStatus()
 	*status = *s
 
 	return nil
@@ -169,6 +171,19 @@ func (r *RPC) WriteRPMB(buf []byte, n *uint32) (err error) {
 // write counter.
 func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 	return r.RPMB.transfer(taUserSector, buf, n, false)
+}
+
+// ReadIdentityCounterRPMB performs an authenticated data transfer from the card RPMB
+// partition sector allocated to the witness identity counter. It returns the
+// value stored in this area.
+func (r *RPC) ReadIdentityCounterRPMB(_ any, counter *uint32) error {
+	buf := make([]byte, witnessIdentityCounterLength)
+	if err := r.RPMB.transfer(witnessIdentityCounterSector, buf, nil, false); err != nil {
+		return err
+	}
+
+	*counter = binary.BigEndian.Uint32(buf)
+	return nil
 }
 
 // DeriveKey derives a hardware unique key in a manner equivalent to PKCS#11

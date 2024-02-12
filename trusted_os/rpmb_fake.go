@@ -36,22 +36,29 @@ const (
 	// RPMB sector for TA use
 	taUserSector = 3
 
+	// witness identity counter length - uint32
+	witnessIdentityCounterLength = 4
+	// RPMB sector for witness identity counter
+	witnessIdentityCounterSector = 4
+
 	sectorLength = 256
 	numSectors   = 16
 )
 
 type RPMB struct {
-	mem     [numSectors][sectorLength]byte
+	mem     [numSectors][]byte
 	counter uint32
 }
 
 func newRPMB(_ Card) (*RPMB, error) {
-	return &RPMB{
-		mem: make(map[numSectors][sectorLength]byte),
-	}, nil
+	r := &RPMB{}
+	for i := 0; i < numSectors; i++ {
+		r.mem[i] = make([]byte, sectorLength)
+	}
+	return r, nil
 }
 
-func r (*RPMB) init() error {
+func (r *RPMB) init() error {
 	return nil
 }
 
@@ -134,4 +141,32 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 		*n = r.counter
 	}
 	return
+}
+
+// witnessIdentityCounter gets the witness identity counter from the RPMB area.
+func (r *RPMB) witnessIdentityCounter() (counter uint32, err error) {
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err := r.transfer(witnessIdentityCounterSector, rBuf, nil, false); err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint32(rBuf), nil
+}
+
+// incrementWitnessIdentityCounter increments the counter in the RPMB area to
+// differentiate a new witness identity.
+func (r *RPMB) incrementWitnessIdentityCounter() error {
+	// Read
+	rBuf := make([]byte, witnessIdentityCounterLength)
+	if err := r.transfer(witnessIdentityCounterSector, rBuf, nil, false); err != nil {
+		return err
+	}
+	counter := binary.BigEndian.Uint32(rBuf)
+
+	// Increment
+	counter++
+
+	// Write
+	wBuf := make([]byte, witnessIdentityCounterLength)
+	binary.BigEndian.PutUint32(wBuf, counter)
+	return r.transfer(witnessIdentityCounterSector, wBuf, nil, true)
 }

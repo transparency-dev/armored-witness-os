@@ -9,6 +9,8 @@ ARG OS_PUBLIC_KEY2
 ARG GIT_SEMVER_TAG
 ARG BEE
 ARG DEBUG
+ARG FAKE_RPMB=1
+ARG FAKE_STORAGE=0
 
 # Install dependencies.
 RUN apt-get update && apt-get install -y make wget u-boot-tools binutils-arm-none-eabi
@@ -35,6 +37,8 @@ ENV LOG_ORIGIN=${LOG_ORIGIN} \
     OS_PUBLIC_KEY1="/tmp/os1.pub" \
     OS_PUBLIC_KEY2="/tmp/os2.pub" \
     GIT_SEMVER_TAG=${GIT_SEMVER_TAG} \
+    FAKE_RPMB=${FAKE_RPMB} \
+    FAKE_STORAGE=${FAKE_STORAGE} \
     BEE=${BEE} \
     DEBUG=${DEBUG}
 
