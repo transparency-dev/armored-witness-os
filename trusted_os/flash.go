@@ -34,18 +34,14 @@ import (
 
 const (
 	expectedBlockSize = 512 // Expected size of MMC block in bytes
-
-	otaLimit = 31457280
-
-	taConfBlock = 0x200000
-	taBlockA    = 0x200050
-	taBlockB    = 0x2FD050
-
-	osConfBlock = 0x5000
-	osBlockA    = 0x5050
-	osBlockB    = 0x102828
-
-	batchSize = 2048
+	otaLimit          = 31457280
+	taConfBlock       = 0x200000
+	taBlockA          = 0x200050
+	taBlockB          = 0x2FD050
+	osConfBlock       = 0x5000
+	osBlockA          = 0x5050
+	osBlockB          = 0x102828
+	batchSize         = 2048
 )
 
 const (
