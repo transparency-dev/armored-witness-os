@@ -51,7 +51,7 @@ type controlInterface struct {
 	ota *otaBuffer
 }
 
-func (ctl *controlInterface) getStatus() (s *api.Status) {
+func getStatus() (s *api.Status) {
 	version, _ := parseVersion(Version)
 
 	s = &api.Status{
@@ -61,20 +61,8 @@ func (ctl *controlInterface) getStatus() (s *api.Status) {
 		Build:    Build,
 		Version:  version,
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
+		// TODO(jayhou): set IdentityCounter here.
 	}
-
-	rpmb := ctl.RPC.RPMB
-	if rpmb == nil {
-		log.Printf("cannot get witness identity counter because RPMB is nil")
-	} else {
-		count, err := rpmb.witnessIdentityCounter()
-		if err != nil {
-			log.Printf("cannot get witness identity counter: %v", err)
-		} else {
-			s.IdentityCounter = count
-		}
-	}
-
 	if witnessStatus != nil {
 		s.Witness = &api.WitnessStatus{
 			Identity: witnessStatus.Identity,
@@ -99,7 +87,7 @@ func (ctl *controlInterface) HandleMessage(_ []byte) (_ []byte) {
 }
 
 func (ctl *controlInterface) Status(_ []byte) (res []byte) {
-	res, _ = proto.Marshal(ctl.getStatus())
+	res, _ = proto.Marshal(getStatus())
 	return
 }
 
