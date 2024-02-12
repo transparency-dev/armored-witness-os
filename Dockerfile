@@ -7,6 +7,8 @@ ARG APPLET_PUBLIC_KEY
 ARG OS_PUBLIC_KEY1
 ARG OS_PUBLIC_KEY2
 ARG GIT_SEMVER_TAG
+# Build environment variables. In addition to routing these through to the make
+# command, they MUST also be committed to in the manifest.
 ARG BEE
 ARG DEBUG
 
