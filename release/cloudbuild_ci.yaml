@@ -177,6 +177,4 @@ substitutions:
   _OS_PUBLIC_KEY2: transparency.dev-aw-os2-ci+af8e4114+AbBJk5MgxRB+68KhGojhUdSt1ts5GAdRIT1Eq9zEkgQh
   _BEE: '1'
   _DEBUG: '1'
-  _FAKE_RPMB: '1'
-  _FAKE_STORAGE: '0'
   _CHECKPOINT_CACHE: 'public, max-age=30'
