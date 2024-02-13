@@ -71,6 +71,8 @@ steps:
           --firmware_file=output/trusted_os.elf \
           --firmware_type=TRUSTED_OS \
           --tamago_version=${_TAMAGO_VERSION} \
+          --build_env="BEE=${_BEE}" \
+          --build_env="DEBUG=${_DEBUG}" \
           --raw \
           --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
