@@ -18,12 +18,12 @@ steps:
       - |
         docker build \
           --build-arg=TAMAGO_VERSION=${_TAMAGO_VERSION} \
+          --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
           --build-arg=LOG_ORIGIN=${_ORIGIN} \
           --build-arg=LOG_PUBLIC_KEY=${_LOG_PUBLIC_KEY} \
           --build-arg=APPLET_PUBLIC_KEY=${_APPLET_PUBLIC_KEY} \
           --build-arg=OS_PUBLIC_KEY1=${_OS_PUBLIC_KEY1} \
           --build-arg=OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2} \
-          --build-arg=GIT_SEMVER_TAG=$(cat /workspace/fake_tag) \
           --build-arg=BEE=${_BEE} \
           --build-arg=DEBUG=${_DEBUG} \
           -t builder-image \
@@ -71,6 +71,11 @@ steps:
           --firmware_file=output/trusted_os.elf \
           --firmware_type=TRUSTED_OS \
           --tamago_version=${_TAMAGO_VERSION} \
+          --build_env="LOG_ORIGIN=${_ORIGIN}" \
+          --build_env="LOG_PUBLIC_KEY=${_LOG_PUBLIC_KEY}" \
+          --build_env="APPLET_PUBLIC_KEY=${_APPLET_PUBLIC_KEY}" \
+          --build_env="OS_PUBLIC_KEY1=${_OS_PUBLIC_KEY1}" \
+          --build_env="OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2}" \
           --build_env="BEE=${_BEE}" \
           --build_env="DEBUG=${_DEBUG}" \
           --raw \
