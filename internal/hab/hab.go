@@ -81,49 +81,56 @@ func hab(srk []byte) (err error) {
 		return
 	}
 
-	// set device in Closed Configuration (IMX6ULRM Table 8-2, p245)
-	if err = fuse("SEC_CONFIG", 0, 6, 0, 2, []byte{0b11}); err != nil {
-		return
-	}
+	// For now, disable all the rest of the HAB security.
+	// Once we're confident the build pipelines, HAB PKI, SRK hash are settled and working
+	// we'll reinstate it.
+	/*
 
-	// disable NXP reserved mode (IMX6ULRM 8.2.6, p244)
-	if err = fuse("DIR_BT_DIS", 0, 6, 3, 1, []byte{1}); err != nil {
-		return
-	}
+		// set device in Closed Configuration (IMX6ULRM Table 8-2, p245)
+		if err = fuse("SEC_CONFIG", 0, 6, 0, 2, []byte{0b11}); err != nil {
+			return
+		}
 
-	// Disable debugging features (IMX6ULRM Table 5-9, p216)
+		// disable NXP reserved mode (IMX6ULRM 8.2.6, p244)
+		if err = fuse("DIR_BT_DIS", 0, 6, 3, 1, []byte{1}); err != nil {
+			return
+		}
 
-	// disable Secure JTAG controller
-	if err = fuse("SJC_DISABLE", 0, 6, 20, 1, []byte{1}); err != nil {
-		return
-	}
+		// Disable debugging features (IMX6ULRM Table 5-9, p216)
 
-	// disable JTAG debug mode
-	if err = fuse("JTAG_SMODE", 0, 6, 22, 2, []byte{0b11}); err != nil {
-		return
-	}
+		// disable Secure JTAG controller
+		if err = fuse("SJC_DISABLE", 0, 6, 20, 1, []byte{1}); err != nil {
+			return
+		}
 
-	// disable HAB ability to enable JTAG
-	if err = fuse("JTAG_HEO", 0, 6, 27, 1, []byte{1}); err != nil {
-		return
-	}
+		// disable JTAG debug mode
+		if err = fuse("JTAG_SMODE", 0, 6, 22, 2, []byte{0b11}); err != nil {
+			return
+		}
 
-	// disable tracing
-	if err = fuse("KTE", 0, 6, 26, 1, []byte{1}); err != nil {
-		return
-	}
+		// disable HAB ability to enable JTAG
+		if err = fuse("JTAG_HEO", 0, 6, 27, 1, []byte{1}); err != nil {
+			return
+		}
 
-	// Further reduce the attack surface
+		// disable tracing
+		if err = fuse("KTE", 0, 6, 26, 1, []byte{1}); err != nil {
+			return
+		}
 
-	// disable Serial Download Protocol (SDP) READ_REGISTER command (IMX6ULRM 8.9.3, p310)
-	if err = fuse("SDP_READ_DISABLE", 0, 6, 18, 1, []byte{1}); err != nil {
-		return
-	}
+		// Further reduce the attack surface
 
-	// disable SDP over UART (IMX6ULRM 8.9, p305)
-	if err = fuse("UART_SERIAL_DOWNLOAD_DISABLE", 0, 7, 4, 1, []byte{1}); err != nil {
-		return
-	}
+		// disable Serial Download Protocol (SDP) READ_REGISTER command (IMX6ULRM 8.9.3, p310)
+		if err = fuse("SDP_READ_DISABLE", 0, 6, 18, 1, []byte{1}); err != nil {
+			return
+		}
+
+		// disable SDP over UART (IMX6ULRM 8.9, p305)
+		if err = fuse("UART_SERIAL_DOWNLOAD_DISABLE", 0, 7, 4, 1, []byte{1}); err != nil {
+			return
+		}
+
+	*/
 
 	return
 }
