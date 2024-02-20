@@ -26,7 +26,7 @@ steps:
           --build-arg=OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2} \
           --build-arg=BEE=${_BEE} \
           --build-arg=DEBUG=${_DEBUG} \
-          --build-arg="SRK_HASH=${_CI_SRK_HASH}" \
+          --build-arg=SRK_HASH=${_CI_SRK_HASH} \
           -t builder-image \
           .
   # Prepare a container with a copy of the artifacts.
