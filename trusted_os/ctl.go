@@ -61,6 +61,7 @@ func getStatus() (s *api.Status) {
 	s = &api.Status{
 		Serial:   fmt.Sprintf("%X", imx6ul.UniqueID()),
 		HAB:      imx6ul.SNVS.Available(),
+		SRKHash:  SRKHash,
 		Revision: Revision,
 		Build:    Build,
 		Version:  version,
