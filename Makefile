@@ -253,7 +253,7 @@ $(APP)_manifest:
 	fi
 	# Create manifest
 	@echo ---------- Manifest --------------
-	go run github.com/transparency-dev/armored-witness/cmd/manifest@2035e0372794bad33016cb8dbd6f43784ae1d9ca \
+	go run github.com/transparency-dev/armored-witness/cmd/manifest@561c0b09a2cc48877a8c9e59c3fbf7ffc81cdd4d \
 		create \
 		--git_tag=${GIT_SEMVER_TAG} \
 		--git_commit_fingerprint="${REV}" \
@@ -264,7 +264,7 @@ $(APP)_manifest:
 		--output_file=${CURDIR}/bin/${APP}_manifest
 	@echo ----------------------------------
 	# Now counter sign with OS_PRIVATE_KEY2
-	go run github.com/transparency-dev/armored-witness/cmd/manifest@2035e0372794bad33016cb8dbd6f43784ae1d9ca \
+	go run github.com/transparency-dev/armored-witness/cmd/manifest@561c0b09a2cc48877a8c9e59c3fbf7ffc81cdd4d \
 		create \
 		--git_tag=${GIT_SEMVER_TAG} \
 		--git_commit_fingerprint="${REV}" \
