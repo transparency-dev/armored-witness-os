@@ -30,7 +30,7 @@ const warning = `
                                 **  WARNING  **
 
 Enabling NXP HABv4 secure boot is an irreversible action that permanently fuses
-verification keys hashes on the device.
+verification key hashes on the device.
 
 Any errors in the process or loss of the signing PKI will result in a bricked
 device incapable of executing unsigned code. This is a security feature, not a

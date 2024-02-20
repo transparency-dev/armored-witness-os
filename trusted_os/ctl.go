@@ -129,7 +129,7 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 	}
 
 	log.Printf("Would burn SRK hash %x", srkh)
-	return api.EmptyResponse()
+	return api.ErrorResponse(fmt.Errorf("not implemented"))
 }
 
 func (ctl *controlInterface) Start() {

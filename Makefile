@@ -61,7 +61,7 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -buildvcs=false -buildmode=exe \
 		-X 'main.LogOrigin=${LOG_ORIGIN}' \
 		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})' \
 		-X 'main.OSManifestVerifier1=$(shell test ${OS_PUBLIC_KEY1} && cat ${OS_PUBLIC_KEY1})' \
-		-X 'main.OSManifestVerifier2=$(shell test ${OS_PUBLIC_KEY2} && cat ${OS_PUBLIC_KEY2})'" 
+		-X 'main.OSManifestVerifier2=$(shell test ${OS_PUBLIC_KEY2} && cat ${OS_PUBLIC_KEY2})'"
 
 .PHONY: clean qemu qemu-gdb
 
