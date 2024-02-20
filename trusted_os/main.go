@@ -217,7 +217,7 @@ func main() {
 				if err != nil {
 					log.Printf("SM applet verification error, %v", err)
 				}
-				loadedAppletVersion = manifest.GitTagName
+				loadedAppletVersion = manifest.Git.TagName
 				log.Printf("SM Loaded applet version %s", loadedAppletVersion.String())
 
 				usbarmory.LED("white", true)
