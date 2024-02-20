@@ -24,12 +24,30 @@ import (
 	"os"
 )
 
+const warning = `
+████████████████████████████████████████████████████████████████████████████████
+
+                                **  WARNING  **
+
+Enabling NXP HABv4 secure boot is an irreversible action that permanently fuses
+verification key hashes on the device.
+
+Any errors in the process or loss of the signing PKI will result in a bricked
+device incapable of executing unsigned code. This is a security feature, not a
+bug.
+
+The use of this tool is therefore **at your own risk**.
+
+████████████████████████████████████████████████████████████████████████████████
+`
+
 type Config struct {
 	devs []Device
 
 	hidPath string
 
 	status bool
+	hab    bool
 
 	otaELF string
 	otaSig string
@@ -52,6 +70,7 @@ func init() {
 
 	flag.StringVar(&conf.hidPath, "d", "", "HID path of witness device to act upon (use -s to list devices)")
 	flag.BoolVar(&conf.status, "s", false, "get witness status")
+	flag.BoolVar(&conf.hab, "H", false, "set HAB fuses")
 	flag.StringVar(&conf.otaELF, "o", "", "trusted applet payload")
 	flag.StringVar(&conf.otaSig, "O", "", "trusted applet signature")
 	flag.BoolVar(&conf.dhcp, "A", true, "enable DHCP")
@@ -104,6 +123,14 @@ func main() {
 	}
 
 	switch {
+	case conf.hab:
+		log.Print(warning)
+		if confirm("Proceed?") {
+			log.Print("Asking device to fuse itself...")
+			err = conf.devs[0].hab()
+		} else {
+			err = errors.New("User cancelled")
+		}
 	case conf.status:
 		for _, d := range conf.devs {
 			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
@@ -123,5 +150,8 @@ func main() {
 			log.Fatal("Please specify which device to configure using -d")
 		}
 		err = conf.devs[0].cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp)
+	}
+	if err != nil {
+		log.Fatalf("%v", err)
 	}
 }

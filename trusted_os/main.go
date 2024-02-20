@@ -46,6 +46,7 @@ const (
 var (
 	Revision               string
 	Version                string
+	SRKHash                string
 	LogVerifier            string
 	LogOrigin              string
 	AppletManifestVerifier string
@@ -153,7 +154,8 @@ func main() {
 	}
 
 	ctl := &controlInterface{
-		RPC: rpc,
+		RPC:     rpc,
+		SRKHash: SRKHash,
 	}
 
 	// TODO: disable for now

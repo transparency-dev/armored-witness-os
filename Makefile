@@ -16,6 +16,7 @@ BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
+SRK_HASH ?= ""
 
 PROTOC ?= /usr/bin/protoc
 
@@ -55,6 +56,7 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -buildvcs=false -buildmode=exe \
 	-ldflags "-T ${TEXT_START} -E ${ENTRY_POINT} -R 0x1000 \
 		-X 'main.Revision=${REV}' \
 		-X 'main.Version=${GIT_SEMVER_TAG}' \
+		-X 'main.SRKHash=${SRK_HASH}' \
 		-X 'main.LogVerifier=$(shell test ${LOG_PUBLIC_KEY} && cat ${LOG_PUBLIC_KEY})' \
 		-X 'main.LogOrigin=${LOG_ORIGIN}' \
 		-X 'main.AppletManifestVerifier=$(shell test ${APPLET_PUBLIC_KEY} && cat ${APPLET_PUBLIC_KEY})' \
