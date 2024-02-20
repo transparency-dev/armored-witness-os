@@ -63,6 +63,21 @@ func (d Device) status() (s *api.Status, err error) {
 	return
 }
 
+func (d Device) hab() error {
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_HAB, nil)
+	if err != nil {
+		return err
+	}
+	res := &api.Response{}
+	if err := proto.Unmarshal(buf, res); err != nil {
+		return err
+	}
+	if res.Error != api.ErrorCode_NONE {
+		return fmt.Errorf("%v: %s", res.Error, res.Payload)
+	}
+	return nil
+}
+
 func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
 	update := &api.AppletUpdate{
 		Total: uint32(total),

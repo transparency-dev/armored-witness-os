@@ -44,6 +44,8 @@ const (
 	U2FHID_ARMORY_CFG
 	// Trusted Applet update
 	U2FHID_ARMORY_OTA
+	// Set HAB fuse to built-in SRK hash
+	U2FHID_ARMORY_HAB
 )
 
 var emptyResponse []byte

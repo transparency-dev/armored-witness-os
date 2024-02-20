@@ -15,6 +15,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -47,6 +49,8 @@ type controlInterface struct {
 
 	Device *usb.Device
 	RPC    *RPC
+	// SRKHash, if set, is the hex encoded SHA256 which may be fused into the device to enable HAB.
+	SRKHash string
 
 	ota *otaBuffer
 }
@@ -112,6 +116,19 @@ func (ctl *controlInterface) Config(req []byte) (res []byte) {
 		log.Printf("SM received configuration update w/o applet running")
 	}
 
+	return api.EmptyResponse()
+}
+
+func (ctl *controlInterface) HAB(_ []byte) []byte {
+	srkh, err := hex.DecodeString(ctl.SRKHash)
+	if err != nil {
+		return api.ErrorResponse(fmt.Errorf("built-in SRK hash is invalid: %v", err))
+	}
+	if len(srkh) != sha256.Size {
+		return api.ErrorResponse(errors.New("built-in SRK hash is wrong size"))
+	}
+
+	log.Printf("Would burn SRK hash %x", srkh)
 	return api.EmptyResponse()
 }
 
