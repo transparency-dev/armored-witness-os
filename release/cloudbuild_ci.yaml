@@ -26,6 +26,7 @@ steps:
           --build-arg=OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2} \
           --build-arg=BEE=${_BEE} \
           --build-arg=DEBUG=${_DEBUG} \
+          --build-arg="SRK_HASH=${_CI_SRK_HASH}" \
           -t builder-image \
           .
   # Prepare a container with a copy of the artifacts.
@@ -78,6 +79,7 @@ steps:
           --build_env="OS_PUBLIC_KEY2=${_OS_PUBLIC_KEY2}" \
           --build_env="BEE=${_BEE}" \
           --build_env="DEBUG=${_DEBUG}" \
+          --build_env="SRK_HASH=${_CI_SRK_HASH}" \
           --raw \
           --output_file=output/trusted_os_manifest_unsigned.json
   # Sign the log entry.
@@ -183,3 +185,5 @@ substitutions:
   _BEE: '1'
   _DEBUG: '1'
   _CHECKPOINT_CACHE: 'public, max-age=30'
+  # Pinned CI SRK hash
+  _CI_SRK_HASH: 'b8ba457320663bf006accd3c57e06720e63b21ce5351cb91b4650690bb08d85a'
