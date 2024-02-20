@@ -41,6 +41,15 @@ The use of this tool is therefore **at your own risk**.
 ████████████████████████████████████████████████████████████████████████████████
 `
 
+var (
+	// knownSRKHashes maps known SRK hash values to the release environment they came from.
+	// These values MUST NOT be changed unless you really know what you're doing!
+	knownSRKHashes = map[string]string{
+		// CI: From https://github.com/transparency-dev/armored-witness-os/blob/main/release/cloudbuild_ci.yaml#L188-L191C18
+		"b8ba457320663bf006accd3c57e06720e63b21ce5351cb91b4650690bb08d85a": "CI",
+	}
+)
+
 type Config struct {
 	devs []Device
 
@@ -124,7 +133,20 @@ func main() {
 
 	switch {
 	case conf.hab:
+		s, err := conf.devs[0].status()
+		if err != nil {
+			log.Printf("Failed to get status on %q: %c", conf.devs[0].usb.Path, err)
+		}
 		log.Print(warning)
+		log.Print()
+
+		env, ok := knownSRKHashes[s.SRKHash]
+		if !ok {
+			log.Printf("WARNING: SRK hash '%x' is UNKNOWN!", s.SRKHash)
+		} else {
+			log.Printf("Will fuse to %s release environment (SRK Hash: %x)", env, s.SRKHash)
+		}
+
 		if confirm("Proceed?") {
 			log.Print("Asking device to fuse itself...")
 			err = conf.devs[0].hab()
