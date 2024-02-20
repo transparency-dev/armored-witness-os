@@ -16,7 +16,7 @@ BUILD_EPOCH := $(shell /bin/date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
-SRK_HASH ?= ""
+SRK_HASH ?= 
 
 PROTOC ?= /usr/bin/protoc
 
