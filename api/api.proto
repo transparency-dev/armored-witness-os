@@ -132,6 +132,7 @@ message Status {
   // IdentityCounter is incremented when the device is recovered and the device
   // needs a new witness identity.
   uint32 IdentityCounter = 9;
+  string SRKHash = 10;
 }
 
 /*

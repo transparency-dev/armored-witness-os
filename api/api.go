@@ -96,11 +96,12 @@ func (p *Status) Print() string {
 	status.WriteString("----------------------------------------------------------- Trusted OS ----\n")
 	status.WriteString(fmt.Sprintf("Serial number ..............: %s\n", p.Serial))
 	status.WriteString(fmt.Sprintf("Secure Boot ................: %v\n", p.HAB))
+	status.WriteString(fmt.Sprintf("SRK hash ...................: %x\n", p.SRKHash))
 	status.WriteString(fmt.Sprintf("Revision ...................: %s\n", p.Revision))
 	status.WriteString(fmt.Sprintf("Version ....................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
 	status.WriteString(fmt.Sprintf("Runtime ....................: %s\n", p.Runtime))
 	status.WriteString(fmt.Sprintf("Link .......................: %v\n", p.Link))
-	status.WriteString(fmt.Sprintf("IdentityCounter ............: %d", p.IdentityCounter))
+	status.WriteString(fmt.Sprintf("IdentityCounter ............: %d\n", p.IdentityCounter))
 	if p.Witness != nil {
 		status.WriteString(fmt.Sprintf("Witness/Identity ...........: %v\n", p.Witness.Identity))
 		status.WriteString(fmt.Sprintf("Witness/IP .................: %v", p.Witness.IP))
