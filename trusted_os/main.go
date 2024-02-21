@@ -130,6 +130,11 @@ func init() {
 }
 
 func main() {
+	// Increase default fuse-blowing timeout
+	if imx6ul.Native && imx6ul.OCOTP != nil {
+		imx6ul.OCOTP.Timeout = 100 * time.Millisecond
+	}
+
 	var err error
 
 	usbarmory.LED("blue", false)
