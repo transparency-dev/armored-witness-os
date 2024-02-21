@@ -94,6 +94,10 @@ func init() {
 			imx6ul.DCP.Init()
 		}
 
+		if imx6ul.OCOTP != nil {
+			imx6ul.OCOTP.Timeout = 100 * time.Millisecond
+		}
+
 		model, _ := usbarmory.Model()
 
 		switch model {
