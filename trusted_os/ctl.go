@@ -32,6 +32,7 @@ import (
 
 	"github.com/transparency-dev/armored-witness-os/api"
 	"github.com/transparency-dev/armored-witness-os/api/rpc"
+	"github.com/transparency-dev/armored-witness-os/internal/hab"
 )
 
 const (
@@ -131,14 +132,17 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 	}
 
 	sv := imx6ul.SNVS.Monitor()
-	log.Printf("SNVS Monitor:\n%+v", sv)
-
+	log.Printf("SNVS Monitor state:\n%+v", sv)
 	if sv.State != snvs.SSM_STATE_TRUSTED && sv.State != snvs.SSM_STATE_SECURE {
 		return api.ErrorResponse(fmt.Errorf("SNVS State is invalid (0b%04b)", sv.State))
 	}
 
-	log.Printf("Would burn SRK hash %x", srkh)
-	return api.ErrorResponse(fmt.Errorf("not implemented"))
+	log.Printf("SM activating HAB with SRK hash %x", srkh)
+	if err := hab.Activate(srkh); err != nil {
+		return api.ErrorResponse(err)
+	}
+
+	return api.EmptyResponse()
 }
 
 func (ctl *controlInterface) Start() {
