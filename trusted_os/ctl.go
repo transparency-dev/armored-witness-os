@@ -27,7 +27,6 @@ import (
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
-	"github.com/usbarmory/tamago/soc/nxp/snvs"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/transparency-dev/armored-witness-os/api"
@@ -133,9 +132,11 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 
 	sv := imx6ul.SNVS.Monitor()
 	log.Printf("SNVS Monitor state:\n%+v", sv)
-	if sv.State != snvs.SSM_STATE_TRUSTED && sv.State != snvs.SSM_STATE_SECURE {
-		return api.ErrorResponse(fmt.Errorf("SNVS State is invalid (0b%04b)", sv.State))
-	}
+	/*
+		if sv.State != snvs.SSM_STATE_TRUSTED && sv.State != snvs.SSM_STATE_SECURE {
+			return api.ErrorResponse(fmt.Errorf("SNVS State is invalid (0b%04b)", sv.State))
+		}
+	*/
 
 	log.Printf("SM activating HAB with SRK hash %x", srkh)
 	if err := hab.Activate(srkh); err != nil {
