@@ -142,9 +142,9 @@ func main() {
 
 		env, ok := knownSRKHashes[s.SRKHash]
 		if !ok {
-			log.Printf("WARNING: SRK hash '%x' is UNKNOWN!", s.SRKHash)
+			log.Printf("WARNING: SRK hash '%s' is UNKNOWN!", s.SRKHash)
 		} else {
-			log.Printf("Will fuse to %s release environment (SRK Hash: %x)", env, s.SRKHash)
+			log.Printf("Will fuse to %s release environment (SRK Hash: %s)", env, s.SRKHash)
 		}
 
 		if confirm("Proceed?") {
