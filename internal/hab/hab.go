@@ -55,6 +55,12 @@ func Activate(srk []byte) (err error) {
 func fuse(name string, bank int, word int, off int, size int, val []byte) error {
 	log.Printf("fusing %s bank:%d word:%d off:%d size:%d val:%x", name, bank, word, off, size, val)
 
+	if res, err := otp.ReadOCOTP(bank, word, off, size); err != nil {
+		return fmt.Errorf("read error for %s, res:%x err:%v\n", name, res, err)
+	} else {
+		log.Printf("  pre-read val: %x", res)
+	}
+
 	if err := otp.BlowOCOTP(bank, word, off, size, val); err != nil {
 		return err
 	}
