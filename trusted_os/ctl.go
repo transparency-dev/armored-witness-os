@@ -27,6 +27,7 @@ import (
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
+	"github.com/usbarmory/tamago/soc/nxp/snvs"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/transparency-dev/armored-witness-os/api"
@@ -127,6 +128,13 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 	}
 	if len(srkh) != sha256.Size {
 		return api.ErrorResponse(errors.New("built-in SRK hash is wrong size"))
+	}
+
+	sv := imx6ul.SNVS.Monitor()
+	log.Printf("SNVS Monitor:\n%+v", sv)
+
+	if sv.State != snvs.SSM_STATE_TRUSTED && sv.State != snvs.SSM_STATE_SECURE {
+		return api.ErrorResponse(fmt.Errorf("SNVS State is invalid (0b%04b)", sv.State))
 	}
 
 	log.Printf("Would burn SRK hash %x", srkh)
