@@ -113,15 +113,9 @@ func (c *Config) detect() error {
 }
 
 func main() {
-	var err error
-
 	defer func() {
 		if flag.NFlag() == 0 {
 			flag.PrintDefaults()
-		}
-
-		if err != nil {
-			log.Fatalf("fatal error, %s", err)
 		}
 	}()
 
@@ -149,9 +143,13 @@ func main() {
 
 		if confirm("Proceed?") {
 			log.Print("Asking device to fuse itself...")
-			err = conf.devs[0].hab()
+			if err := conf.devs[0].hab(); err != nil {
+				log.Fatalf("%v", err)
+			}
 		} else {
-			err = errors.New("User cancelled")
+			if err := errors.New("User cancelled"); err != nil {
+				log.Fatalf("%v", err)
+			}
 		}
 	case conf.status:
 		for _, d := range conf.devs {
@@ -166,14 +164,15 @@ func main() {
 		if len(conf.devs) != 1 {
 			log.Fatal("Please specify which device to OTA using -d")
 		}
-		err = conf.devs[0].ota(conf.otaELF, conf.otaSig)
+		if err := conf.devs[0].ota(conf.otaELF, conf.otaSig); err != nil {
+			log.Fatalf("%v", err)
+		}
 	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0 || len(conf.ntp) > 0:
 		if len(conf.devs) != 1 {
 			log.Fatal("Please specify which device to configure using -d")
 		}
-		err = conf.devs[0].cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp)
-	}
-	if err != nil {
-		log.Fatalf("%v", err)
+		if err := conf.devs[0].cfg(conf.dhcp, conf.ip, conf.mask, conf.gw, conf.dns, conf.ntp); err != nil {
+			log.Fatalf("%v", err)
+		}
 	}
 }
