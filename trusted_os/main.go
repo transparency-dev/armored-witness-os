@@ -163,8 +163,7 @@ func main() {
 		SRKHash: SRKHash,
 	}
 
-	// TODO: disable for now
-	if false && imx6ul.SNVS.Available() {
+	if imx6ul.SNVS.Available() {
 		log.Printf("SM version verification (%s)", Version)
 
 		if err = rpmb.init(); err != nil {
