@@ -28,7 +28,6 @@ import (
 
 	"github.com/usbarmory/tamago/arm"
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
-	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
 	"github.com/usbarmory/imx-usbserial"
@@ -41,9 +40,12 @@ const debug = true
 var serial *usbserial.UART
 
 func init() {
-	if imx6ul.SNVS.Available() {
-		panic("fatal error, debug firmware not allowed on secure booted units")
-	}
+	// TODO(al): Probably want to reinstate this check after wave0!
+	/*
+			if imx6ul.SNVS.Available() {
+			panic("fatal error, debug firmware not allowed on secure booted units")
+		}
+	*/
 }
 
 //go:linkname printk runtime.printk
@@ -135,6 +137,7 @@ func lookupSym(buf []byte, name string) (*elf.Symbol, error) {
 // Example of required applet main statements:
 //
 // ```
+//
 //	func init() {
 //		runtime.Exit = applet.Exit
 //		...
