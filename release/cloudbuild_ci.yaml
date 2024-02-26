@@ -170,14 +170,14 @@ steps:
         gs://${_LOG_NAME}/${_ENTRIES_DIR}/$(sha256sum output/trusted_os_manifest_both | cut -f1 -d" ")/trusted_os_manifest_both
 substitutions:
   # Build-related.
-  _FIRMWARE_BUCKET: armored-witness-firmware-ci-1
+  _FIRMWARE_BUCKET: armored-witness-firmware-ci-2
   _TAMAGO_VERSION: '1.21.5'
   # Log-related.
   _ENTRIES_DIR: firmware-log-sequence
   # This must correspond with the trailing number on the _FIRMWARE_BUCKET, _ORIGIN, _LOG_NAME values.
-  _KEY_VERSION: '1'
-  _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/1
-  _LOG_NAME: armored-witness-firmware-log-ci-1
+  _KEY_VERSION: '2'
+  _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/2
+  _LOG_NAME: armored-witness-firmware-log-ci-2
   _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+f5479c1e+AR6gW0mycDtL17iM2uvQUThJsoiuSRirstEj9a5AdCCu
   _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
   _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+7a0eaef3+AcsqvmrcKIbs21H2Bm2fWb6oFWn/9MmLGNc6NLJty2eQ
