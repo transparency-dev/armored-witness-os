@@ -125,7 +125,7 @@ message Status {
   bool HAB = 2;
   string Revision = 3;
   string Build = 4;
-  uint32 Version = 5;
+  string Version = 5;
   string Runtime = 6;
   bool Link = 7;
   WitnessStatus Witness = 8;
