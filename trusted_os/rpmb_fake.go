@@ -18,16 +18,15 @@
 package main
 
 import (
-	"encoding/binary"
 	"errors"
-	"strconv"
 
+	"github.com/coreos/go-semver/semver"
 	"github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 const (
 	// version epoch length
-	versionLength = 4
+	versionLength = 32
 	// RPMB sector for OS rollback protection
 	osVersionSector = 1
 	// RPMB sector for TA rollback protection
@@ -55,64 +54,53 @@ func (r *RPMB) init() error {
 	return nil
 }
 
-func parseVersion(s string) (version uint32, err error) {
-	v, err := strconv.Atoi(s)
-	if err != nil {
-		return
-	}
-
-	return uint32(v), nil
+func parseVersion(s string) (version *semver.Version, err error) {
+	return semver.NewVersion(s)
 }
 
 // expectedVersion returns the version epoch stored in a fake RPMB area.
-func (r *RPMB) expectedVersion(sector uint16) (version uint32, err error) {
-	buf := make([]byte, versionLength)
-	copy(buf, r.mem[sector])
+func (r *RPMB) expectedVersion(offset uint16) (*semver.Version, error) {
+	v := string(r.mem[offset][:versionLength])
 
-	return binary.BigEndian.Uint32(buf), nil
+	return semver.NewVersion(v)
 }
 
 // updateVersion writes a new version epoch in a fake RPMB area.
-func (r *RPMB) updateVersion(sector uint16, version uint32) (err error) {
-	buf := make([]byte, versionLength)
-	binary.BigEndian.PutUint32(buf, version)
-
-	copy(r.mem[sector], buf)
+func (r *RPMB) updateVersion(offset uint16, version semver.Version) error {
+	copy(r.mem[offset][:], []byte(version.String()))
 	r.counter++
 
 	return nil
 }
 
-// checkVersion verifies version information against fake RPMB stored data.
+// checkVersion verifies version information against RPMB stored data.
 //
 // If the passed version is older than the RPMB area information of the
 // internal eMMC an error is returned.
 //
 // If the passed version is more recent than the RPMB area information then the
 // internal eMMC is updated with it.
-func (r *RPMB) checkVersion(sector uint16, s string) (err error) {
-	version, err := parseVersion(s)
-
+func (r *RPMB) checkVersion(offset uint16, s string) error {
+	runningVersion, err := parseVersion(s)
 	if err != nil {
-		return
+		return err
 	}
 
-	expectedVersion, err := r.expectedVersion(sector)
-
+	expectedVersion, err := r.expectedVersion(offset)
 	if err != nil {
-		return
+		return err
 	}
 
 	switch {
-	case expectedVersion > version:
+	case runningVersion.LessThan(*expectedVersion):
 		return errors.New("version mismatch")
-	case expectedVersion == version:
-		return
-	case expectedVersion < version:
-		return r.updateVersion(sector, version)
+	case expectedVersion.Equal(*runningVersion):
+		return nil
+	case expectedVersion.LessThan(*runningVersion):
+		return r.updateVersion(offset, *runningVersion)
 	}
 
-	return
+	return nil
 }
 
 // transfer performs a data transfer to the fake RPMB area,
