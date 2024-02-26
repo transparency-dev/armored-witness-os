@@ -47,11 +47,11 @@ type RPMB struct {
 
 func newRPMB(_ Card) (*RPMB, error) {
 	return &RPMB{
-		mem: make(map[numSectors][sectorLength]byte),
+		mem: [numSectors][sectorLength]byte{},
 	}, nil
 }
 
-func r (*RPMB) init() error {
+func (r *RPMB) init() error {
 	return nil
 }
 
@@ -124,10 +124,10 @@ func (r *RPMB) transfer(sector uint16, buf []byte, n *uint32, write bool) (err e
 	}
 
 	if write {
-		copy(r.mem[sector], buf)
+		copy(r.mem[sector][:], buf)
 		r.counter++
 	} else {
-		copy(buf, r.mem[sector])
+		copy(buf, r.mem[sector][:])
 	}
 
 	if n != nil {
