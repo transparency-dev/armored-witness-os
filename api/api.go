@@ -17,7 +17,6 @@ package api
 import (
 	"bytes"
 	"fmt"
-	"time"
 
 	"google.golang.org/protobuf/proto"
 
@@ -98,7 +97,7 @@ func (p *Status) Print() string {
 	status.WriteString(fmt.Sprintf("Secure Boot ................: %v\n", p.HAB))
 	status.WriteString(fmt.Sprintf("SRK hash ...................: %s\n", p.SRKHash))
 	status.WriteString(fmt.Sprintf("Revision ...................: %s\n", p.Revision))
-	status.WriteString(fmt.Sprintf("Version ....................: %d (%s)\n", p.Version, time.Unix(int64(p.Version), 0)))
+	status.WriteString(fmt.Sprintf("Version ....................: %s\n", p.Version))
 	status.WriteString(fmt.Sprintf("Runtime ....................: %s\n", p.Runtime))
 	status.WriteString(fmt.Sprintf("Link .......................: %v\n", p.Link))
 	status.WriteString(fmt.Sprintf("IdentityCounter ............: %d\n", p.IdentityCounter))

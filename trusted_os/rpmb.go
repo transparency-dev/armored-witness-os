@@ -21,17 +21,17 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/sha256"
-	"encoding/binary"
+	"encoding/gob"
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
+	"github.com/coreos/go-semver/semver"
 	"github.com/usbarmory/crucible/otp"
 
 	"github.com/transparency-dev/armored-witness-os/rpmb"
@@ -41,7 +41,7 @@ const (
 	// RPMB sector for CVE-2020-13799 mitigation
 	dummySector = 0
 	// version epoch length
-	versionLength = 4
+	versionLength = 32
 	// RPMB sector for OS rollback protection
 	osVersionSector = 1
 	// RPMB sector for TA rollback protection
@@ -144,43 +144,40 @@ func (r *RPMB) init() error {
 	return nil
 }
 
-func parseVersion(s string) (version uint32, err error) {
-	v, err := strconv.Atoi(s)
-
-	if err != nil {
-		return
-	}
-
-	return uint32(v), nil
+func parseVersion(s string) (version *semver.Version, err error) {
+	return semver.NewVersion(s)
 }
 
 // expectedVersion returns the version epoch stored in an RPMB area of the
 // internal eMMC.
-func (r *RPMB) expectedVersion(offset uint16) (version uint32, err error) {
+func (r *RPMB) expectedVersion(offset uint16) (*semver.Version, error) {
 	if r.partition == nil {
-		return 0, errors.New("RPMB has not been initialized")
+		return nil, errors.New("RPMB has not been initialized")
 	}
 
 	buf := make([]byte, versionLength)
-
-	if err = r.partition.Read(offset, buf); err != nil {
-		return
+	if err := r.partition.Read(offset, buf); err != nil {
+		return nil, err
+	}
+	var v string
+	if err := gob.NewDecoder(bytes.NewBuffer(buf)).Decode(&v); err != nil {
+		return nil, err
 	}
 
-	return binary.BigEndian.Uint32(buf), nil
+	return semver.NewVersion(v)
 }
 
 // updateVersion writes a new version epoch in an RPMB area of the internal
 // eMMC.
-func (r *RPMB) updateVersion(offset uint16, version uint32) (err error) {
+func (r *RPMB) updateVersion(offset uint16, version semver.Version) error {
 	if r.partition == nil {
 		return errors.New("RPMB has not been initialized")
 	}
-
-	buf := make([]byte, versionLength)
-	binary.BigEndian.PutUint32(buf, version)
-
-	return r.partition.Write(offset, buf)
+	buf := &bytes.Buffer{}
+	if err := gob.NewEncoder(buf).Encode(version.String()); err != nil {
+		return err
+	}
+	return r.partition.Write(offset, buf.Bytes())
 }
 
 // checkVersion verifies version information against RPMB stored data.
@@ -190,29 +187,27 @@ func (r *RPMB) updateVersion(offset uint16, version uint32) (err error) {
 //
 // If the passed version is more recent than the RPMB area information then the
 // internal eMMC is updated with it.
-func (r *RPMB) checkVersion(offset uint16, s string) (err error) {
-	version, err := parseVersion(s)
-
+func (r *RPMB) checkVersion(offset uint16, s string) error {
+	runningVersion, err := parseVersion(s)
 	if err != nil {
-		return
+		return err
 	}
 
 	expectedVersion, err := r.expectedVersion(offset)
-
 	if err != nil {
-		return
+		return err
 	}
 
 	switch {
-	case expectedVersion > version:
+	case runningVersion.LessThan(*expectedVersion):
 		return errors.New("version mismatch")
-	case expectedVersion == version:
-		return
-	case expectedVersion < version:
-		return r.updateVersion(offset, version)
+	case expectedVersion.Equal(*runningVersion):
+		return nil
+	case expectedVersion.LessThan(*runningVersion):
+		return r.updateVersion(offset, *runningVersion)
 	}
 
-	return
+	return nil
 }
 
 // transfer performs an authenticated data transfer to the card RPMB partition,
