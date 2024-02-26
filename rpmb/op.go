@@ -39,6 +39,8 @@ const (
 	ResultRead
 	AuthenticatedDeviceConfigurationWrite
 	AuthenticatedDeviceConfigurationRead
+
+	initDummyAuthenticatedDataWrite = 254 // AuthenticatedDataWrite without response MAC verification, for internal init use only.
 )
 
 // p100, Table 20 — RPMB Operation Results, JESD84-B51
@@ -193,6 +195,15 @@ func (p *RPMB) transfer(kind byte, offset uint16, buf []byte) (err error) {
 	cfg := &Config{
 		RequestMAC:  true,
 		ResponseMAC: true,
+	}
+
+	if kind == initDummyAuthenticatedDataWrite {
+		// Special case for rpmb.Init()
+		// We may not have yet programmed the RPMB key, in which case we'll get an invalid
+		// response MAC, so don't check it.
+		cfg.ResponseMAC = false
+		// Otherwise, this is an AuthenticatedDataWrite as far as the rest of the code is concerned.
+		kind = AuthenticatedDataWrite
 	}
 
 	req := &DataFrame{

@@ -67,7 +67,7 @@ func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16) (p *RPMB, err error)
 	copy(p.key[:], key)
 
 	// invalidate uncommitted writes (CVE-2020-13799)
-	if err = p.Write(dummyBlock, nil); err != nil {
+	if err = p.transfer(initDummyAuthenticatedDataWrite, dummyBlock, nil); err != nil {
 		return nil, err
 	}
 
