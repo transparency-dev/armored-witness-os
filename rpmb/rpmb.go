@@ -46,7 +46,7 @@ type RPMB struct {
 // Init returns a new RPMB instance for a specific MMC card and MAC key. The
 // dummyBlock argument is an unused sector, required for CVE-2020-13799
 // mitigation to invalidate uncommitted writes.
-func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16) (p *RPMB, err error) {
+func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16, writeDummy bool) (p *RPMB, err error) {
 	if card == nil {
 		return nil, fmt.Errorf("no MMC card set")
 	}
@@ -66,9 +66,11 @@ func Init(card *usdhc.USDHC, key []byte, dummyBlock uint16) (p *RPMB, err error)
 
 	copy(p.key[:], key)
 
-	// invalidate uncommitted writes (CVE-2020-13799)
-	if err = p.Write(dummyBlock, nil); err != nil {
-		return nil, err
+	// invalidate uncommitted writes (CVE-2020-13799) if the RPMB has previously been programmed
+	if writeDummy {
+		if err = p.Write(dummyBlock, nil); err != nil {
+			return nil, err
+		}
 	}
 
 	return

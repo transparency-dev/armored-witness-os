@@ -66,6 +66,15 @@ func newRPMB(storage Card) (r *RPMB, err error) {
 	return &RPMB{storage: storage}, nil
 }
 
+// isProgrammed returns true if the RPMB key program key flag is set to 1.
+func (p *RPMB) isProgrammed() (bool, error) {
+	res, err := otp.ReadOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1)
+	if err != nil {
+		return false, fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
+	}
+	return bytes.Equal(res, []byte{1}), nil
+}
+
 func (r *RPMB) init() error {
 	// derived key for RPBM MAC generation
 	var dk []byte
@@ -91,11 +100,16 @@ func (r *RPMB) init() error {
 		return errors.New("could not assert type *usdhc.USDHC from Card")
 	}
 
+	isProgrammed, err := r.isProgrammed()
+	if err != nil {
+		return err
+	}
 	// setup RPMB
 	r.partition, err = rpmb.Init(
 		card,
 		pbkdf2.Key(dk, uid[:], iter, sha256.Size, sha256.New),
 		dummySector,
+		isProgrammed,
 	)
 	if err != nil {
 		return fmt.Errorf("RPMB could not be initialized: %v", err)
@@ -112,8 +126,9 @@ func (r *RPMB) init() error {
 	// eMMC replacement to intercept ProgramKey().
 	//
 	// If already fused refuse to do any programming and bail.
-	if res, err := otp.ReadOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1); err != nil || bytes.Equal(res, []byte{1}) {
-		return fmt.Errorf("could not read RPMB program key flag (%x, %v)", res, err)
+	if isProgrammed {
+		log.Printf("RPMB program key flag already fused")
+		return nil
 	}
 
 	if err = otp.BlowOCOTP(rpmbFuseBank, rpmbFuseWord, 0, 1, []byte{1}); err != nil {
