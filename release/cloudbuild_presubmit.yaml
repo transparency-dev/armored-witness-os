@@ -88,7 +88,7 @@ substitutions:
   _KEY_VERSION: '1'
   _ORIGIN: transparency.dev/armored-witness/firmware_transparency/ci/1
   _LOG_PUBLIC_KEY: transparency.dev-aw-ftlog-ci+5ee5545c+AZXqiaARpwF4MoNOxx46kuiIRjrML0PDTm+c7BLaAMt6
-  _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+5cbb3a29+AfYy1B9IXT3ERP06L3k17XV3SutWr3Mt1Xo7EJWV69my
-  _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+79ac97d3+AZtlLPlrXDZtCms1IAImkyZ99QxZkL5Oa4od8Ex4pXgZ
-  _OS_PUBLIC_KEY2: transparency.dev-aw-os2-ci+d187f8fc+ARpFT6v0uKOUkwwp5xtfR7fYOpcJlbYjkfBmLn9OU17H
+  _APPLET_PUBLIC_KEY: transparency.dev-aw-applet-ci+3ff32e2c+AV1fgxtByjXuPjPfi0/7qTbEBlPGGCyxqr6ZlppoLOz3
+  _OS_PUBLIC_KEY1: transparency.dev-aw-os1-ci+7a0eaef3+AcsqvmrcKIbs21H2Bm2fWb6oFWn/9MmLGNc6NLJty2eQ
+  _OS_PUBLIC_KEY2: transparency.dev-aw-os2-ci+af8e4114+AbBJk5MgxRB+68KhGojhUdSt1ts5GAdRIT1Eq9zEkgQh
   _DEBUG: '1'
