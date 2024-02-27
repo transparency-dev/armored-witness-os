@@ -59,7 +59,7 @@ steps:
           "bucket": "${_LOG_NAME}",
           "kmsKeyName": "ft-log-ci",
           "kmsKeyRing": "firmware-release-ci",
-          "kmsKeyVersion": ${_KEY_VERSION},
+          "kmsKeyVersion": "${_KEY_VERSION}",
           "kmsKeyLocation": "global",
           "noteKeyName": "transparency.dev-aw-ftlog-ci",
           "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
@@ -78,7 +78,7 @@ steps:
           "bucket": "${_LOG_NAME}",
           "kmsKeyName": "ft-log-ci",
           "kmsKeyRing": "firmware-release-ci",
-          "kmsKeyVersion": ${_KEY_VERSION},
+          "kmsKeyVersion": "${_KEY_VERSION}",
           "kmsKeyLocation": "global",
           "noteKeyName": "transparency.dev-aw-ftlog-ci",
           "checkpointCacheControl": "${_CHECKPOINT_CACHE}"
