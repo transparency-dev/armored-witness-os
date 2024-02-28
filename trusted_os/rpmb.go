@@ -115,11 +115,15 @@ func (r *RPMB) init() error {
 		return fmt.Errorf("RPMB could not be initialized: %v", err)
 	}
 
-	var e *rpmb.OperationError
 	_, err = r.partition.Counter(false)
-
-	if !(errors.As(err, &e) && e.Result == rpmb.AuthenticationKeyNotYetProgrammed) {
-		return fmt.Errorf("RPMB could not be initialized: %v", err)
+	if err != nil {
+		var e *rpmb.OperationError
+		if !errors.As(err, &e) {
+			return fmt.Errorf("RPMB failed to read counter: %v", err)
+		}
+		if e.Result != rpmb.AuthenticationKeyNotYetProgrammed {
+			return fmt.Errorf("RPMB failed to read counter with operatation error: %v", err)
+		}
 	}
 
 	// Fuse a bit to indicate previous key programming to prevent malicious
