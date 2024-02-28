@@ -24,6 +24,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 
 	"golang.org/x/crypto/pbkdf2"
@@ -165,6 +166,10 @@ func (r *RPMB) expectedVersion(offset uint16) (*semver.Version, error) {
 	}
 	var v string
 	if err := gob.NewDecoder(bytes.NewBuffer(buf)).Decode(&v); err != nil {
+		if err == io.EOF {
+			// We've not previously stored a version, so return 0.0.0
+			return semver.NewVersion("0.0.0")
+		}
 		return nil, err
 	}
 
