@@ -72,10 +72,6 @@ github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c h1:qQL3CljMN
 github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c/go.mod h1:20DIzHJntbLDOptGT7TOm8DkT5mL2jRyzPzVXAYVHJ8=
 github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655 h1:n3JkWqsxKsbX2SKy+ac3v2rgEmTWfA/s0SC5kHlJGBY=
 github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655/go.mod h1:xEDojciFHw8iteMACinYDeHDn07V9MiS0KO0uCLRRnk=
-github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e h1:x2vSKye5+66g7OSPSazNSA/QHJjw+MBhJcvTAUvPfO8=
-github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e/go.mod h1:eT+4LgXX1S+pyzpTtg0P5vCqvzQA4/kA1b/kmiMqQbE=
-github.com/usbarmory/imx-usbnet v0.0.0-20240119111829-8a5a776bd9e9 h1:r+gad4RGslkPJL0oNzNWecXgMOwrhs1+UgFqApEQwws=
-github.com/usbarmory/imx-usbnet v0.0.0-20240119111829-8a5a776bd9e9/go.mod h1:eT+4LgXX1S+pyzpTtg0P5vCqvzQA4/kA1b/kmiMqQbE=
 github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1 h1:Ba8KE+wt6bvbAqnN0lKjRwtdX6ud8J7Z2X2Ds+crEJQ=
 github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1/go.mod h1:gJsQWSa5rjprEZb8/NqDzoOPxk6LTuEPsPiqpbrEUjw=
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8 h1:VPruqXJEJxTweSRyx3NIkiIqQl9ppZHp4wZnL8+Y0aI=
