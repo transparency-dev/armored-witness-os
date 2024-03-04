@@ -87,7 +87,7 @@ substitutions:
   #
   # Build-related.
   _FIRMWARE_BUCKET: 'armored-witness-firmware-ci-1'
-  _TAMAGO_VERSION: '1.21.5'
+  _TAMAGO_VERSION: '1.22.0'
   # This must correspond with the trailing number on the _FIRMWARE_BUCKET, _ORIGIN values.
   _KEY_VERSION: '1'
   _ORIGIN: 'transparency.dev/armored-witness/firmware_transparency/ci/1'
