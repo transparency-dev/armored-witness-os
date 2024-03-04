@@ -21,7 +21,7 @@ require (
 	golang.org/x/crypto v0.20.0
 	golang.org/x/mod v0.15.0
 	google.golang.org/protobuf v1.32.0
-	gvisor.dev/gvisor v0.0.0-20240109032559-fc0349e3ac32
+	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
 	k8s.io/klog v1.0.0
 )
 
