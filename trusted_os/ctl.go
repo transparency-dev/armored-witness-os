@@ -77,8 +77,10 @@ func getStatus() (s *api.Status) {
 	}
 	if witnessStatus != nil {
 		s.Witness = &api.WitnessStatus{
-			Identity: witnessStatus.Identity,
-			IP:       witnessStatus.IP,
+			Identity:          witnessStatus.Identity,
+			IP:                witnessStatus.IP,
+			IDAttestPublicKey: witnessStatus.IDAttestPublicKey,
+			AttestedID:        witnessStatus.AttestedID,
 		}
 	}
 
