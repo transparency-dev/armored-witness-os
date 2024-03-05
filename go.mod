@@ -18,8 +18,8 @@ require (
 	github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
 	github.com/usbarmory/tamago v0.0.0-20240221155748-0ac9f6f8a2b7
-	golang.org/x/crypto v0.20.0
-	golang.org/x/mod v0.15.0
+	golang.org/x/crypto v0.21.0
+	golang.org/x/mod v0.16.0
 	google.golang.org/protobuf v1.32.0
 	gvisor.dev/gvisor v0.0.0-20240109032559-fc0349e3ac32
 	k8s.io/klog v1.0.0
@@ -40,7 +40,7 @@ require (
 	github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
