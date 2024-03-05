@@ -2,7 +2,7 @@
 
 ## Introduction
 
-TODO
+TODO.
 
 ## Supported hardware
 
