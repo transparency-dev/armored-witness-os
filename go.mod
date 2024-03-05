@@ -15,13 +15,13 @@ require (
 	github.com/usbarmory/GoTEE v0.0.0-20230914094934-f4f769daa5a9
 	github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c
 	github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655
-	github.com/usbarmory/imx-usbnet v0.0.0-20230626092818-ef791923688e
+	github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
 	github.com/usbarmory/tamago v0.0.0-20240221155748-0ac9f6f8a2b7
 	golang.org/x/crypto v0.21.0
 	golang.org/x/mod v0.16.0
 	google.golang.org/protobuf v1.32.0
-	gvisor.dev/gvisor v0.0.0-20240109032559-fc0349e3ac32
+	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
 	k8s.io/klog v1.0.0
 )
 
