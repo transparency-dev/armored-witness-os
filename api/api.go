@@ -104,8 +104,7 @@ func (p *Status) Print() string {
 	if p.Witness != nil {
 		status.WriteString(fmt.Sprintf("Witness/Identity ...........: %v\n", p.Witness.Identity))
 		status.WriteString(fmt.Sprintf("Witness/IP .................: %v\n", p.Witness.IP))
-		status.WriteString(fmt.Sprintf("Witness/AttestationKey .....: %v\n", p.Witness.IDAttestPublicKey))
-		status.WriteString(fmt.Sprintf("Witness/AttestedID .........:\n%v", p.Witness.AttestedID))
+		status.WriteString(fmt.Sprintf("Witness/AttestationKey .....: %v", p.Witness.IDAttestPublicKey))
 	} else {
 		status.WriteString(fmt.Sprint("Witness ....................: <no status>"))
 	}
