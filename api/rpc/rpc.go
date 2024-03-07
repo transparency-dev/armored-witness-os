@@ -49,6 +49,10 @@ type WitnessStatus struct {
 	Identity string
 	// IP is the currently-assigned IP address of the witness applet.
 	IP string
+	// IDAttestPublicKey is the stable-derived use by this device to attest to witness IDs.
+	IDAttestPublicKey string
+	// AttestedID is a note formatted attestation for the current witness ID.
+	AttestedID string
 }
 
 // FirmwareUpdate represents a firmware update.

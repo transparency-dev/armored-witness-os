@@ -149,6 +149,15 @@ message WitnessStatus {
   string Identity = 1;
   // IP is a string representation of the witness applet's current IP address.
   string IP = 2;
+  // IDAttestKey is the stable public key from this device, used to attest to all derived witness identities.
+  string IDAttestPublicKey = 3;
+  // AttestedID is a note-formatted signed attestation for the current witness identity.
+  // This attestation note contains:
+	//   "ArmoredWitness ID attestation v1"
+	//   <Device serial>
+	//   <Witness identity counter in decimal>
+	//   <Witness identity as a note verifier string>
+  string AttestedID = 4;
 }
 
 /*
