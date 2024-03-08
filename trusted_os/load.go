@@ -45,7 +45,7 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 	}
 
 	// BEE requires caching to be activated before image loading
-	imx6ul.ARM.ConfigureMMU(uint32(image.Region.Start()), uint32(image.Region.End()), 0, monitor.UserFlags)
+	imx6ul.ARM.ConfigureMMU(uint32(image.Region.Start()), uint32(image.Region.End()), 0, arm.MemoryRegion)
 
 	if err = image.Load(); err != nil {
 		return
