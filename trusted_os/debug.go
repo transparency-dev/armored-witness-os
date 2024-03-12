@@ -30,7 +30,7 @@ import (
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
-	"github.com/usbarmory/imx-usbserial"
+	usbserial "github.com/usbarmory/imx-usbserial"
 
 	"github.com/usbarmory/GoTEE/monitor"
 )
@@ -177,13 +177,14 @@ func segfault(buf []byte, ctx *monitor.ExecCtx) (err error) {
 }
 
 func inspect(buf []byte, ctx *monitor.ExecCtx) (err error) {
-	// print caller
-	log.Printf("\t%s", fileLine(buf, ctx.R15)) // PC
-	log.Printf("\t%s", fileLine(buf, ctx.R14)) // LR
+	if false {
+		log.Printf("PC\t%s", fileLine(buf, ctx.R15)) // PC
+		log.Printf("LR\t%s", fileLine(buf, ctx.R14)) // LR
 
-	switch ctx.ExceptionVector {
-	case arm.UNDEFINED, arm.PREFETCH_ABORT, arm.DATA_ABORT:
-		return segfault(buf, ctx)
+		switch ctx.ExceptionVector {
+		case arm.UNDEFINED, arm.PREFETCH_ABORT, arm.DATA_ABORT:
+			return segfault(buf, ctx)
+		}
 	}
 
 	return
