@@ -177,15 +177,15 @@ func segfault(buf []byte, ctx *monitor.ExecCtx) (err error) {
 }
 
 func inspect(buf []byte, ctx *monitor.ExecCtx) (err error) {
-	if false {
-		log.Printf("PC\t%s", fileLine(buf, ctx.R15)) // PC
-		log.Printf("LR\t%s", fileLine(buf, ctx.R14)) // LR
+	log.Printf("PC\t%s", fileLine(buf, ctx.R15)) // PC
+	log.Printf("LR\t%s", fileLine(buf, ctx.R14)) // LR
 
-		switch ctx.ExceptionVector {
-		case arm.UNDEFINED, arm.PREFETCH_ABORT, arm.DATA_ABORT:
-			return segfault(buf, ctx)
-		}
+	switch ctx.ExceptionVector {
+	case arm.UNDEFINED, arm.PREFETCH_ABORT, arm.DATA_ABORT:
+		return segfault(buf, ctx)
 	}
 
+	// XXX block forever
+	<-make(chan bool, 1)
 	return
 }
