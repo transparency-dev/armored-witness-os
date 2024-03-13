@@ -78,6 +78,15 @@ func (d Device) hab() error {
 	return nil
 }
 
+func (d Device) consoleLogs() (string, error) {
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CONSOLE_LOGS, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(buf), nil
+}
+
 func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
 	update := &api.AppletUpdate{
 		Total: uint32(total),

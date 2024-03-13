@@ -36,6 +36,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/smallnest/ringbuffer v0.0.0-20230728150354-35801fa39d0e // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect

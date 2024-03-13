@@ -51,6 +51,10 @@ func printk(c byte) {
 	// ensure that any serial output is supressed before UART2 disabling
 }
 
+func getConsoleLogs() []byte {
+	return nil
+}
+
 func inspect(buf []byte, _ any) error {
 	return nil
 }

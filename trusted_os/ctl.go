@@ -154,6 +154,11 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 	return api.EmptyResponse()
 }
 
+func (ctl *controlInterface) ConsoleLogs(_ []byte) (res []byte) {
+	logs := getConsoleLogs()
+	return []byte(logs)
+}
+
 func (ctl *controlInterface) Start() {
 	device := &usb.Device{}
 	serial := fmt.Sprintf("%X", imx6ul.UniqueID())
