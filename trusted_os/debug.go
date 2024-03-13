@@ -61,7 +61,7 @@ func printk(c byte) {
 	}
 }
 
-func getLogs() []byte {
+func getConsoleLogs() []byte {
 	return logBuffer.Bytes()
 }
 

@@ -55,9 +55,9 @@ type Config struct {
 
 	hidPath string
 
-	status bool
-	logs   bool
-	hab    bool
+	status      bool
+	consoleLogs bool
+	hab         bool
 
 	otaELF string
 	otaSig string
@@ -80,7 +80,7 @@ func init() {
 
 	flag.StringVar(&conf.hidPath, "d", "", "HID path of witness device to act upon (use -s to list devices)")
 	flag.BoolVar(&conf.status, "s", false, "get witness status")
-	flag.BoolVar(&conf.logs, "l", false, "get witness logs")
+	flag.BoolVar(&conf.consoleLogs, "l", false, "get witness console/debug logs")
 	flag.BoolVar(&conf.hab, "H", false, "set HAB fuses")
 	flag.StringVar(&conf.otaELF, "o", "", "trusted applet payload")
 	flag.StringVar(&conf.otaSig, "O", "", "trusted applet signature")
@@ -162,12 +162,12 @@ func main() {
 			}
 			log.Printf("%s\n\n", s.Print())
 		}
-	case conf.logs:
+	case conf.consoleLogs:
 		for _, d := range conf.devs {
 			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
-			s, err := d.logs()
+			s, err := d.consoleLogs()
 			if err != nil {
-				log.Printf("Failed to get status on %q: %c", d.usb.Path, err)
+				log.Printf("Failed to get console logs on %q: %c", d.usb.Path, err)
 			}
 			log.Printf("%s\n\n", s)
 		}

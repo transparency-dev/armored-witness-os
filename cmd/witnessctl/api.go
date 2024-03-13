@@ -78,8 +78,8 @@ func (d Device) hab() error {
 	return nil
 }
 
-func (d Device) logs() (string, error) {
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_LOGS, nil)
+func (d Device) consoleLogs() (string, error) {
+	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CONSOLE_LOGS, nil)
 	if err != nil {
 		return "", err
 	}
