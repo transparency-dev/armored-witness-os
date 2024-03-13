@@ -121,5 +121,9 @@ func configureHID(device *usb.Device, ctl *controlInterface) (err error) {
 		return
 	}
 
+	if err = hid.AddMapping(api.U2FHID_ARMORY_LOGS, ctl.Logs); err != nil {
+		return
+	}
+
 	return
 }

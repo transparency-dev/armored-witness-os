@@ -30,14 +30,16 @@ import (
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/usb"
 
+	"github.com/usbarmory/GoTEE/monitor"
 	usbserial "github.com/usbarmory/imx-usbserial"
 
-	"github.com/usbarmory/GoTEE/monitor"
+	"github.com/smallnest/ringbuffer"
 )
 
 const debug = true
 
 var serial *usbserial.UART
+var logBuffer *ringbuffer.RingBuffer
 
 func init() {
 	// TODO(al): Probably want to reinstate this check after wave0!
@@ -46,15 +48,21 @@ func init() {
 			panic("fatal error, debug firmware not allowed on secure booted units")
 		}
 	*/
+	logBuffer = ringbuffer.New(1 << 20)
 }
 
 //go:linkname printk runtime.printk
 func printk(c byte) {
 	usbarmory.UART2.Tx(c)
+	logBuffer.WriteByte(c)
 
 	if serial != nil {
 		serial.WriteByte(c)
 	}
+}
+
+func getLogs() []byte {
+	return logBuffer.Bytes()
 }
 
 func configureUART(device *usb.Device) (err error) {
