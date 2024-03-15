@@ -282,7 +282,12 @@ func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
 		return err
 	}
 	r.Ctx.Stop()
-	<-r.Ctx.Done()
+	// This must be done in a go-routine because the ExecCtx.Stop() above can only be
+	// actioned once the RPC has returned.
+	go func() {
+		<-r.Ctx.Done()
+		r.Reboot(nil, nil)
+	}()
 
 	return r.Reboot(nil, nil)
 }
@@ -292,8 +297,6 @@ var appletFirmwareBuffer []byte
 // Reboot resets the system.
 func (r *RPC) Reboot(_ *any, _ *bool) error {
 	log.Printf("SM rebooting")
-	// Reduce Watchdog timeout for a faster reboot:
-	imx6ul.WDOG2.Service(500)
 	usbarmory.Reset()
 
 	return nil
