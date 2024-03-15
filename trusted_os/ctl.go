@@ -162,9 +162,12 @@ func (ctl *controlInterface) ConsoleLogs(_ []byte) (res []byte) {
 func (ctl *controlInterface) CrashLogs(_ []byte) (res []byte) {
 	logs, err := retrieveLastCrashLog(ctl.RPC.Storage)
 	if err != nil {
+		log.Printf("Failed to read crash log: %v", err)
 		return api.ErrorResponse(err)
 	}
-	return []byte(logs)
+	log.Printf("got %d bytes of crash log", len(logs))
+	res, _ = proto.Marshal(&api.Response{Payload: logs})
+	return res
 }
 
 func (ctl *controlInterface) Start() {

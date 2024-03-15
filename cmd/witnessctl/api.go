@@ -92,8 +92,15 @@ func (d Device) crashLogs() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	res := &api.Response{}
+	if err := proto.Unmarshal(buf, res); err != nil {
+		return "", err
+	}
+	if res.Error != api.ErrorCode_NONE {
+		return "", fmt.Errorf("%v: %s", res.Error, res.Payload)
+	}
 
-	return string(buf), nil
+	return string(res.Payload), nil
 }
 
 func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
