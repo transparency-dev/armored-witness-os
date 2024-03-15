@@ -347,11 +347,15 @@ func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBund
 }
 
 func storeAppletCrashLog(storage Card, l []byte) error {
+	log.Printf("SM storing applet exit log")
+	defer log.Printf("SM applet exit log stored")
+
 	maxLogSize := crashLogNumBlocks * expectedBlockSize
 	if ll := len(l); ll > maxLogSize {
 		l = l[ll-maxLogSize:]
 	} else if ll < maxLogSize {
-		l = append(l, 0)
+		// Pad up so we overwrite all of any prior logging to avoid confusion.
+		l = append(l, make([]byte, maxLogSize-ll)...)
 	}
 	return storage.WriteBlocks(crashLogBlock, l)
 }

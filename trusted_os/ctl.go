@@ -159,6 +159,14 @@ func (ctl *controlInterface) ConsoleLogs(_ []byte) (res []byte) {
 	return []byte(logs)
 }
 
+func (ctl *controlInterface) CrashLogs(_ []byte) (res []byte) {
+	logs, err := retrieveLastCrashLog(ctl.RPC.Storage)
+	if err != nil {
+		return api.ErrorResponse(err)
+	}
+	return []byte(logs)
+}
+
 func (ctl *controlInterface) Start() {
 	device := &usb.Device{}
 	serial := fmt.Sprintf("%X", imx6ul.UniqueID())

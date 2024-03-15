@@ -47,6 +47,8 @@ const (
 	U2FHID_ARMORY_HAB
 	// Fetch latest debug/console logs
 	U2FHID_ARMORY_CONSOLE_LOGS
+	// Fetch stored crash logs from most recent applet crash
+	U2FHID_ARMORY_CRASH_LOGS
 )
 
 var emptyResponse []byte
