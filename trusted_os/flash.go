@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -32,6 +33,7 @@ import (
 	"github.com/transparency-dev/armored-witness-os/api"
 )
 
+// imx6_usdhc: 15 GB/14 GiB card detected {MMC:true SD:false HC:true HS:true DDR:false Rate:150 BlockSize:512 Blocks:30576640
 const (
 	expectedBlockSize = 512 // Expected size of MMC block in bytes
 	otaLimit          = 31457280
@@ -41,6 +43,8 @@ const (
 	osConfBlock       = 0x5000
 	osBlockA          = 0x5050
 	osBlockB          = 0x102828
+	crashLogBlock     = 0x1D20000 // For storing contents of log ringbuffer on applet crash for later investigation.
+	crashLogNumBlocks = 0x400     // 1MB
 	batchSize         = 2048
 )
 
@@ -340,6 +344,28 @@ func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBund
 
 	log.Printf("SM %s update complete", t)
 	return nil
+}
+
+func storeAppletCrashLog(storage Card, l []byte) error {
+	maxLogSize := crashLogNumBlocks * expectedBlockSize
+	if ll := len(l); ll > maxLogSize {
+		l = l[ll-maxLogSize:]
+	} else if ll < maxLogSize {
+		l = append(l, 0)
+	}
+	return storage.WriteBlocks(crashLogBlock, l)
+}
+
+func retrieveLastCrashLog(storage Card) ([]byte, error) {
+	maxLogSize := crashLogNumBlocks * expectedBlockSize
+	r, err := storage.Read(crashLogBlock*expectedBlockSize, int64(maxLogSize))
+	if err != nil {
+		return nil, err
+	}
+	if p := bytes.IndexByte(r, 0); p > 0 {
+		r = r[:p]
+	}
+	return r, nil
 }
 
 // Update is the handler for U2FHID_ARMORY_OTA requests, which consist of
