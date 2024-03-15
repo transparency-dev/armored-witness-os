@@ -15,6 +15,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -168,9 +170,19 @@ func (ctl *controlInterface) handleLogsRequest(r []byte, l func() []byte) (res [
 	if !req.Continue {
 		log.Printf("Grabbing log messages...")
 		logs := l()
-		log.Printf("Found %d bytes of log messages to send", len(logs))
-		ctl.logBuffer = make([]byte, len(logs))
-		copy(ctl.logBuffer, logs)
+		ll := len(logs)
+		b := &bytes.Buffer{}
+		gz := gzip.NewWriter(b)
+		if _, err := gz.Write(logs); err != nil {
+			log.Printf("Failed to gzip logs: %v", err)
+		}
+		if err := gz.Close(); err != nil {
+			log.Printf("Failed to close gzip writer: %v", err)
+
+		}
+		logs = nil
+		ctl.logBuffer = b.Bytes()
+		log.Printf("Compressed %d bytes of log messages to %d send", ll, len(ctl.logBuffer))
 	}
 	ret := &api.LogMessagesResponse{}
 	if l := len(ctl.logBuffer); l > maxChunkSize {
