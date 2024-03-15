@@ -71,9 +71,7 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 	// enable FIQs
 	bits.Clear(&ta.SPSR, CPSR_FIQ)
 
-	go run(ta)
-
-	return
+	return ta, run(ta)
 }
 
 func run(ctx *monitor.ExecCtx) (err error) {
