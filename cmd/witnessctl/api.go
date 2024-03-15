@@ -18,8 +18,10 @@
 package main
 
 import (
+	"compress/gzip"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -78,13 +80,61 @@ func (d Device) hab() error {
 	return nil
 }
 
-func (d Device) consoleLogs() (string, error) {
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CONSOLE_LOGS, nil)
+func (d Device) getLogMessages(cmd byte) (string, error) {
+	r, w := io.Pipe()
+	defer r.Close()
+
+	errC := make(chan error, 1)
+	// Kick off a goroutine to fetch chunks of log and pipe it into the
+	// decompressor.
+	go func() {
+		// Signal that there's no more compressed data.
+		defer w.Close()
+		defer close(errC)
+
+		req := &api.LogMessagesRequest{}
+		rsp := &api.LogMessagesResponse{More: true}
+		for rsp.More {
+			rb, _ := proto.Marshal(req)
+			buf, err := d.u2f.Command(cmd, rb)
+			if err != nil {
+				errC <- err
+				return
+			}
+			if err := proto.Unmarshal(buf, rsp); err != nil {
+				errC <- err
+				return
+			}
+			w.Write(rsp.GetPayload())
+			req.Continue = true
+
+			// Don't overload the HID endpoint
+			time.Sleep(10 * time.Millisecond)
+		}
+	}()
+
+	gz, err := gzip.NewReader(r)
+	if err != nil {
+		log.Printf("Failed to create gzip reader: %v", err)
+		return "", err
+	}
+	gz.Close()
+
+	// Grab the decompressed logs, and return
+	s, err := io.ReadAll(gz)
 	if err != nil {
 		return "", err
 	}
 
-	return string(buf), nil
+	return string(s), <-errC
+}
+
+func (d Device) consoleLogs() (string, error) {
+	return d.getLogMessages(api.U2FHID_ARMORY_CONSOLE_LOGS)
+}
+
+func (d Device) crashLogs() (string, error) {
+	return d.getLogMessages(api.U2FHID_ARMORY_CRASH_LOGS)
 }
 
 func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {

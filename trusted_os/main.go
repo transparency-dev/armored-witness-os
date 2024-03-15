@@ -228,12 +228,15 @@ func main() {
 
 				usbarmory.LED("white", true)
 
-				ta, err := loadApplet(ta.Firmware, ctl)
+				appletCtx, err := loadApplet(ta.Firmware, ctl)
 				if err != nil {
 					log.Printf("SM applet execution error, %v", err)
 				}
 
-				<-ta.Done()
+				<-appletCtx.Done()
+				if err := storeAppletCrashLog(Storage, getConsoleLogs()); err != nil {
+					log.Printf("Failed to store ringbuffer logs: %v", err)
+				}
 			}
 		}()
 	}

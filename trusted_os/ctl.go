@@ -15,6 +15,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -39,6 +41,9 @@ const (
 	MII_STATUS = 0x1
 	// Table 22–8, Status register bit definitions, 802.3-2008
 	STATUS_LINK = 2
+
+	// Max bytes to return via HID - we use 64 as a safe guess for protobuf wire overhead
+	maxChunkSize = api.MaxMessageSize - 64
 )
 
 // witnessStatus represents the latest view of the witness applet's status.
@@ -54,6 +59,8 @@ type controlInterface struct {
 	SRKHash string
 
 	ota *otaBuffer
+
+	logBuffer []byte
 }
 
 func getStatus() (s *api.Status) {
@@ -154,9 +161,54 @@ func (ctl *controlInterface) HAB(_ []byte) []byte {
 	return api.EmptyResponse()
 }
 
-func (ctl *controlInterface) ConsoleLogs(_ []byte) (res []byte) {
-	logs := getConsoleLogs()
-	return []byte(logs)
+func (ctl *controlInterface) handleLogsRequest(r []byte, l func() []byte) (res []byte) {
+	req := &api.LogMessagesRequest{}
+	if err := proto.Unmarshal(r, req); err != nil {
+		log.Printf("Failed to parse LogMessages request: %v", err)
+		return api.ErrorResponse(err)
+	}
+	if !req.Continue {
+		log.Printf("Grabbing log messages...")
+		logs := l()
+		ll := len(logs)
+		b := &bytes.Buffer{}
+		gz := gzip.NewWriter(b)
+		if _, err := gz.Write(logs); err != nil {
+			log.Printf("Failed to gzip logs: %v", err)
+		}
+		if err := gz.Close(); err != nil {
+			log.Printf("Failed to close gzip writer: %v", err)
+
+		}
+		logs = nil
+		ctl.logBuffer = b.Bytes()
+		log.Printf("Compressed %d bytes of log messages to %d send", ll, len(ctl.logBuffer))
+	}
+	ret := &api.LogMessagesResponse{}
+	if l := len(ctl.logBuffer); l > maxChunkSize {
+		ret.More = true
+		ret.Payload, ctl.logBuffer = ctl.logBuffer[:maxChunkSize], ctl.logBuffer[maxChunkSize:]
+	} else {
+		ret.More = false
+		ret.Payload = ctl.logBuffer
+		ctl.logBuffer = nil
+	}
+	b, _ := proto.Marshal(ret)
+	return b
+}
+
+func (ctl *controlInterface) ConsoleLogs(r []byte) (res []byte) {
+	return ctl.handleLogsRequest(r, func() []byte { return getConsoleLogs() })
+}
+
+func (ctl *controlInterface) CrashLogs(r []byte) (res []byte) {
+	return ctl.handleLogsRequest(r, func() []byte {
+		l, err := retrieveLastCrashLog(ctl.RPC.Storage)
+		if err != nil {
+			return []byte(fmt.Sprintf("Failed to retrieve crash logs: %v", err))
+		}
+		return l
+	})
 }
 
 func (ctl *controlInterface) Start() {
