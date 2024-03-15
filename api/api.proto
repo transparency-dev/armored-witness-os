@@ -181,6 +181,21 @@ message Configuration {
   string NTPServer = 6;
 }
 
+/*
+
+Log messages
+
+*/
+
+message LogMessagesRequest {
+  bool Continue = 1;
+}
+
+message LogMessagesResponse {
+  bytes Payload = 1;
+  bool More = 2;
+}
+
 message Response {
   ErrorCode Error = 1;
   bytes Payload = 2;

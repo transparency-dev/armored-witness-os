@@ -23,6 +23,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
@@ -78,29 +79,33 @@ func (d Device) hab() error {
 	return nil
 }
 
-func (d Device) consoleLogs() (string, error) {
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CONSOLE_LOGS, nil)
-	if err != nil {
-		return "", err
+func (d Device) getLogMessages(cmd byte) (string, error) {
+	b := strings.Builder{}
+	req := &api.LogMessagesRequest{}
+	rsp := &api.LogMessagesResponse{More: true}
+	for rsp.More {
+		rb, _ := proto.Marshal(req)
+		buf, err := d.u2f.Command(cmd, rb)
+		if err != nil {
+			return "", err
+		}
+		if err := proto.Unmarshal(buf, rsp); err != nil {
+			return "", err
+		}
+		b.Write(rsp.GetPayload())
+		req.Continue = true
+		time.Sleep(10 * time.Millisecond)
 	}
 
-	return string(buf), nil
+	return b.String(), nil
+}
+
+func (d Device) consoleLogs() (string, error) {
+	return d.getLogMessages(api.U2FHID_ARMORY_CONSOLE_LOGS)
 }
 
 func (d Device) crashLogs() (string, error) {
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_CRASH_LOGS, nil)
-	if err != nil {
-		return "", err
-	}
-	res := &api.Response{}
-	if err := proto.Unmarshal(buf, res); err != nil {
-		return "", err
-	}
-	if res.Error != api.ErrorCode_NONE {
-		return "", fmt.Errorf("%v: %s", res.Error, res.Payload)
-	}
-
-	return string(res.Payload), nil
+	return d.getLogMessages(api.U2FHID_ARMORY_CRASH_LOGS)
 }
 
 func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
