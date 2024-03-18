@@ -163,7 +163,7 @@ func main() {
 		SRKHash: SRKHash,
 	}
 
-	if imx6ul.SNVS.Available() {
+	if imx6ul.Native && imx6ul.SNVS.Available() {
 		log.Printf("SM version verification (%s)", Version)
 
 		if err = rpmb.init(); err != nil {
@@ -250,8 +250,10 @@ func main() {
 		}
 	}()
 
-	// start USB control interface
-	ctl.Start()
+	if imx6ul.Native {
+		// start USB control interface
+		ctl.Start()
+	}
 
 	// never returns
 	handleInterrupts()

@@ -73,8 +73,6 @@ func getStatus() (s *api.Status) {
 	}
 
 	s = &api.Status{
-		Serial:   fmt.Sprintf("%X", imx6ul.UniqueID()),
-		HAB:      imx6ul.SNVS.Available(),
 		SRKHash:  SRKHash,
 		Revision: Revision,
 		Build:    Build,
@@ -98,6 +96,11 @@ func getStatus() (s *api.Status) {
 	case USB != nil:
 		mode, err := usbarmory.FrontPortMode()
 		s.Link = err != nil && mode == usbarmory.STATE_ATTACHED_SRC
+	}
+
+	if imx6ul.Native {
+		s.HAB    = imx6ul.SNVS.Available()
+		s.Serial = fmt.Sprintf("%X", imx6ul.UniqueID())
 	}
 
 	return
