@@ -13,7 +13,7 @@ require (
 	github.com/transparency-dev/armored-witness-common v0.0.0-20240313170947-0b19d0fb8b95
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/transparency-dev/serverless-log v0.0.0-20231215122707-66f68a7705f5
-	github.com/usbarmory/GoTEE v0.0.0-20240215171108-77a6b38432d5
+	github.com/usbarmory/GoTEE v0.0.0-20240314122327-40179239ad36
 	github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c
 	github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655
 	github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1
