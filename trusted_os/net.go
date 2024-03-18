@@ -15,7 +15,7 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"net"
 
 	"github.com/usbarmory/tamago/soc/nxp/enet"
@@ -71,36 +71,39 @@ func asyncTx() (buf []byte) {
 }
 
 func rxFromApplet(ctx *monitor.ExecCtx) (err error) {
-	var n uint
-
 	select {
 	case buf := <-rxQueue:
-		off := ctx.A1() - ctx.Memory.Start()
-		n = uint(len(buf))
+		off, n, err := ctx.TransferRegion()
 
-		if !(off >= 0 && off < (ctx.Memory.Size()-n)) {
-			return errors.New("invalid offset")
+		if err != nil {
+			return err
 		}
 
-		ctx.Memory.Write(ctx.Memory.Start(), int(off), buf)
-	default:
-	}
+		r := len(buf)
 
-	ctx.Ret(n)
+		if r > n {
+			return fmt.Errorf("invalid transfer size (%d > %d)", r, n)
+		}
+
+		ctx.Memory.Write(ctx.Memory.Start(), off, buf)
+		ctx.Ret(r)
+	default:
+		ctx.Ret(0)
+	}
 
 	return
 }
 
 func txFromApplet(ctx *monitor.ExecCtx) (err error) {
-	off := ctx.A1() - ctx.Memory.Start()
-	n := ctx.A2()
-	buf := make([]byte, n)
+	off, n, err := ctx.TransferRegion()
 
-	if !(off >= 0 && off < (ctx.Memory.Size()-uint(n))) {
-		return errors.New("invalid offset")
+	if err != nil {
+		return
 	}
 
-	ctx.Memory.Read(ctx.Memory.Start(), int(off), buf)
+	buf := make([]byte, n)
+
+	ctx.Memory.Read(ctx.Memory.Start(), off, buf)
 
 	switch {
 	case LAN != nil:
