@@ -44,7 +44,7 @@ const (
 	osBlockA          = 0x5050
 	osBlockB          = 0x102828
 	crashLogBlock     = 0x1D20000 // For storing contents of log ringbuffer on applet crash for later investigation.
-	crashLogNumBlocks = 0x400     // 1MB
+	crashLogNumBlocks = 0x800     // 1MB
 	batchSize         = 2048
 )
 
