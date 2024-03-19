@@ -160,7 +160,7 @@ func main() {
 			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
 			s, err := d.status()
 			if err != nil {
-				log.Printf("Failed to get status on %q: %c", d.usb.Path, err)
+				log.Printf("Failed to get status on %q: %v", d.usb.Path, err)
 			}
 			log.Printf("%s\n\n", s.Print())
 		}
@@ -169,7 +169,7 @@ func main() {
 			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
 			s, err := d.consoleLogs()
 			if err != nil {
-				log.Printf("Failed to get console logs on %q: %c", d.usb.Path, err)
+				log.Printf("Failed to get console logs on %q: %v", d.usb.Path, err)
 			}
 			log.Printf("%s\n\n", s)
 		}
@@ -178,7 +178,7 @@ func main() {
 			log.Printf("👁️‍🗨️ @ %s", d.usb.Path)
 			s, err := d.crashLogs()
 			if err != nil {
-				log.Printf("Failed to get crash logs on %q: %c", d.usb.Path, err)
+				log.Printf("Failed to get crash logs on %q: %v", d.usb.Path, err)
 			}
 			log.Printf("%s\n\n", s)
 		}
