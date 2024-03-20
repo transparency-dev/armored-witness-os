@@ -176,12 +176,14 @@ func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 //
 // The diversifier is AES-CBC encrypted using the internal OTPMK key.
 func (r *RPC) DeriveKey(diversifier [aes.BlockSize]byte, key *[sha256.Size]byte) (err error) {
-	if debug {
-		if imx6ul.Native {
-			return errors.New("Weird - SNVS not available but we're not in debug?!")
-		} else {
-			return
-		}
+	switch {
+	case imx6ul.Native && !debug && !imx6ul.SNVS.Available():
+		return errors.New("Weird - SNVS not available but we're not in debug?!")
+	case !imx6ul.Native && debug:
+		// we support emulation only on debug builds, use input buffer as dummy key
+		return
+	case !imx6ul.Native && !debug:
+		return errors.New("Weird - under emulation but we're not in debug?!")
 	}
 
 	switch {
