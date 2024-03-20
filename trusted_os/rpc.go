@@ -176,7 +176,7 @@ func (r *RPC) ReadRPMB(buf []byte, n *uint32) error {
 //
 // The diversifier is AES-CBC encrypted using the internal OTPMK key.
 func (r *RPC) DeriveKey(diversifier [aes.BlockSize]byte, key *[sha256.Size]byte) (err error) {
-	if debug && !imx6ul.Native {
+	if debug
 		if imx6ul.Native {
 			return errors.New("Weird - SNVS not available but we're not in debug?!")
 		} else {
