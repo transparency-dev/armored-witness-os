@@ -193,7 +193,5 @@ func inspect(buf []byte, ctx *monitor.ExecCtx) (err error) {
 		return segfault(buf, ctx)
 	}
 
-	// XXX block forever
-	<-make(chan bool, 1)
 	return
 }
