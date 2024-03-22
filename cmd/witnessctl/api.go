@@ -24,10 +24,8 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
 	"time"
 
-	"github.com/cheggaaa/pb/v3"
 	flynn_hid "github.com/flynn/hid"
 	"github.com/flynn/u2f/u2fhid"
 	"google.golang.org/protobuf/proto"
@@ -109,7 +107,7 @@ func (d Device) getLogMessages(cmd byte) (string, error) {
 			req.Continue = true
 
 			// Don't overload the HID endpoint
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(20 * time.Millisecond)
 		}
 	}()
 
@@ -135,141 +133,6 @@ func (d Device) consoleLogs() (string, error) {
 
 func (d Device) crashLogs() (string, error) {
 	return d.getLogMessages(api.U2FHID_ARMORY_CRASH_LOGS)
-}
-
-func (d Device) sendUpdateHeader(signature []byte, total int) (err error) {
-	update := &api.AppletUpdate{
-		Total: uint32(total),
-		Seq:   uint32(0), // MUST be 0
-		Payload: &api.AppletUpdate_Header{
-			Header: &api.AppletUpdateHeader{
-				Signature: signature,
-				// TODO: fill this out
-			},
-		},
-	}
-
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
-
-	if err != nil {
-		return err
-	}
-
-	res := &api.Response{}
-
-	if err = proto.Unmarshal(buf, res); err != nil {
-		return err
-	}
-
-	if res.Error != api.ErrorCode_NONE {
-		return fmt.Errorf("%+v", res)
-	}
-
-	return
-}
-
-func (d Device) sendUpdateChunk(data []byte, seq int, total int) (err error) {
-	if seq <= 0 {
-		return fmt.Errorf("seq is %d, it must be >= 0 to send update chunks", seq)
-	}
-	update := &api.AppletUpdate{
-		Total: uint32(total),
-		Seq:   uint32(seq),
-		Payload: &api.AppletUpdate_Data{
-			Data: data,
-		},
-	}
-
-	buf, err := d.u2f.Command(api.U2FHID_ARMORY_OTA, []byte(update.Bytes()))
-
-	if err != nil {
-		return err
-	}
-
-	res := &api.Response{}
-
-	if err = proto.Unmarshal(buf, res); err != nil {
-		return err
-	}
-
-	if res.Error != api.ErrorCode_NONE {
-		return fmt.Errorf("%+v", res)
-	}
-
-	return
-}
-
-func (d Device) ota(taELFPath string, taSigPath string) (err error) {
-	if len(taELFPath) == 0 {
-		return errors.New("trusted applet payload path must be specified (-o)")
-	}
-
-	if len(taSigPath) == 0 {
-		return errors.New("trusted applet signature path must be specified (-O)")
-	}
-
-	taELF, err := os.ReadFile(taELFPath)
-
-	if err != nil {
-		return
-	}
-
-	taSig, err := os.ReadFile(taSigPath)
-
-	if err != nil {
-		return
-	}
-
-	chunkSize := maxChunkSize
-	totalSize := len(taELF)
-
-	total := totalSize / chunkSize
-	seq := 0
-
-	if total == 0 {
-		total = 1
-	} else if totalSize%chunkSize != 0 {
-		total += 1
-	}
-
-	if len(taSig) > maxChunkSize {
-		return errors.New("signature size exceeds maximum update chunk size")
-	}
-
-	log.Printf("sending trusted applet signature to armored witness")
-
-	if err = d.sendUpdateHeader(taSig, total); err != nil {
-		return
-	}
-
-	bar := pb.StartNew(totalSize)
-	bar.SetWriter(os.Stdout)
-	bar.Set(pb.Bytes, true)
-
-	start := time.Now()
-
-	defer func(start time.Time) {
-		log.Printf("sent %d bytes in %v", totalSize, time.Since(start))
-	}(start)
-	defer bar.Finish()
-
-	log.Printf("sending trusted applet payload to armored witness")
-
-	for i := 0; i < totalSize; i += chunkSize {
-		seq += 1
-
-		if i+chunkSize > totalSize {
-			chunkSize = totalSize - i
-		}
-
-		if err = d.sendUpdateChunk(taELF[i:i+chunkSize], seq, total); err != nil {
-			return
-		}
-
-		bar.Add(chunkSize)
-	}
-
-	return
 }
 
 func (d Device) cfg(dhcp bool, ip string, mask string, gw string, dns string, ntp string) error {

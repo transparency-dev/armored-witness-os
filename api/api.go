@@ -41,8 +41,8 @@ const (
 	U2FHID_ARMORY_INF = iota + u2fhid.VendorCommandFirst
 	// Trusted Applet configuration
 	U2FHID_ARMORY_CFG
-	// Trusted Applet update
-	U2FHID_ARMORY_OTA
+	// Obsolete
+	U2FHID_ARMORY_OTA_UNUSED
 	// Set HAB fuse to built-in SRK hash
 	U2FHID_ARMORY_HAB
 	// Fetch latest debug/console logs
@@ -82,12 +82,6 @@ func (p *Response) Bytes() (buf []byte) {
 
 // Bytes serializes an API message.
 func (p *Configuration) Bytes() (buf []byte) {
-	buf, _ = proto.Marshal(p)
-	return
-}
-
-// Bytes serializes an API message.
-func (p *AppletUpdate) Bytes() (buf []byte) {
 	buf, _ = proto.Marshal(p)
 	return
 }

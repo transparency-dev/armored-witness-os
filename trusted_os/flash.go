@@ -16,21 +16,16 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"runtime"
 	"time"
-
-	"google.golang.org/protobuf/proto"
 
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
 	"github.com/transparency-dev/armored-witness-boot/config"
 	"github.com/transparency-dev/armored-witness-common/release/firmware"
-
-	"github.com/transparency-dev/armored-witness-os/api"
 )
 
 // imx6_usdhc: 15 GB/14 GiB card detected {MMC:true SD:false HC:true HS:true DDR:false Rate:150 BlockSize:512 Blocks:30576640
@@ -370,103 +365,4 @@ func retrieveLastCrashLog(storage Card) ([]byte, error) {
 		r = r[:p]
 	}
 	return r, nil
-}
-
-// Update is the handler for U2FHID_ARMORY_OTA requests, which consist of
-// applet updates.
-func (ctl *controlInterface) Update(req []byte) (res []byte) {
-	var err error
-
-	defer func() {
-		if err != nil {
-			log.Printf("applet update error, %v", err)
-			res = api.ErrorResponse(err)
-		} else {
-			resMsg := &api.Response{}
-			res = resMsg.Bytes()
-		}
-	}()
-
-	update := &api.AppletUpdate{}
-
-	if err = proto.Unmarshal(req, update); err != nil {
-		return
-	}
-
-	ctl.Lock()
-	defer ctl.Unlock()
-
-	if update.Seq == 0 {
-		payload, ok := update.Payload.(*api.AppletUpdate_Header)
-		if !ok || payload == nil {
-			err = errors.New("invalid update, seq 0 did not have update header")
-			return
-		}
-		ctl.ota = &otaBuffer{
-			total: update.Total,
-			sig:   payload.Header.Signature,
-			bundle: &config.ProofBundle{
-				Checkpoint:     payload.Header.Checkpoint,
-				InclusionProof: payload.Header.InclusionProof,
-				LogIndex:       payload.Header.LogIndex,
-				Manifest:       payload.Header.Manifest,
-			},
-		}
-
-		log.Printf("starting applet update (%d chunks)", ctl.ota.total)
-		return
-	} else if ctl.ota == nil ||
-		update.Seq != ctl.ota.seq+1 ||
-		update.Total != ctl.ota.total {
-
-		err = errors.New("invalid firmware update sequence")
-		return
-	}
-
-	if len(ctl.ota.buf) > otaLimit {
-		err = errors.New("size limit exceeded")
-		return
-	}
-
-	payload, ok := update.Payload.(*api.AppletUpdate_Data)
-	if !ok || payload == nil {
-		err = fmt.Errorf("invalid update, seq > %d did not have update data chunk", update.Seq)
-		return
-	}
-
-	ctl.ota.seq = update.Seq
-	ctl.ota.buf = append(ctl.ota.buf, payload.Data...)
-
-	if ctl.ota.seq%100 == 0 {
-		log.Printf("received %d/%d applet update chunks", ctl.ota.seq, ctl.ota.total)
-	}
-
-	if ctl.ota.seq == ctl.ota.total {
-		log.Printf("received all %d firmware update chunks", ctl.ota.total)
-
-		go func(buf []byte, pb config.ProofBundle) {
-			// avoid USB control interface timeout
-			time.Sleep(500 * time.Millisecond)
-
-			if err = updateApplet(ctl.RPC.Storage, buf, pb); err != nil {
-				log.Printf("firmware update error, %v", err)
-			}
-
-			if ctl.RPC.Ctx != nil {
-				log.Printf("SM received applet update, restarting applet")
-				ctl.RPC.Ctx.Stop()
-			}
-
-			// FIXME: restarting the applet results in networking
-			// issues, investigate (or just reboot?).
-
-			if _, err = loadApplet(taELF, ctl); err != nil {
-				log.Printf("SM applet execution error, %v", err)
-			}
-		}(ctl.ota.buf, *ctl.ota.bundle)
-
-		ctl.ota = nil
-	}
-
-	return
 }
