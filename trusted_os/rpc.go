@@ -45,6 +45,11 @@ type RPC struct {
 
 // Version receives the Trusted Applet version for verification.
 func (r *RPC) Version(version string, _ *bool) error {
+	if !imx6ul.Native || !imx6ul.SNVS.Available() {
+		log.Print("SM skipping applet version verification")
+		return nil
+	}
+
 	log.Printf("SM applet version verification (%s)", version)
 
 	if err := r.RPMB.checkVersion(taVersionSector, version); err != nil {
