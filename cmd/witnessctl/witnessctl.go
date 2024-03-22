@@ -60,9 +60,6 @@ type Config struct {
 	crashLogs   bool
 	hab         bool
 
-	otaELF string
-	otaSig string
-
 	dhcp bool
 	ip   string
 	gw   string
@@ -84,8 +81,6 @@ func init() {
 	flag.BoolVar(&conf.consoleLogs, "l", false, "get witness console/debug logs")
 	flag.BoolVar(&conf.crashLogs, "L", false, "get crash logs from most recent witness failure")
 	flag.BoolVar(&conf.hab, "H", false, "set HAB fuses")
-	flag.StringVar(&conf.otaELF, "o", "", "trusted applet payload")
-	flag.StringVar(&conf.otaSig, "O", "", "trusted applet signature")
 	flag.BoolVar(&conf.dhcp, "A", true, "enable DHCP")
 	flag.StringVar(&conf.ip, "a", "10.0.0.1", "set IP address")
 	flag.StringVar(&conf.mask, "m", "255.255.255.0", "set Netmask")
@@ -181,13 +176,6 @@ func main() {
 				log.Printf("Failed to get crash logs on %q: %v", d.usb.Path, err)
 			}
 			log.Printf("%s\n\n", s)
-		}
-	case len(conf.otaELF) > 0 || len(conf.otaSig) > 0:
-		if len(conf.devs) != 1 {
-			log.Fatal("Please specify which device to OTA using -d")
-		}
-		if err := conf.devs[0].ota(conf.otaELF, conf.otaSig); err != nil {
-			log.Fatalf("%v", err)
 		}
 	case conf.dhcp || len(conf.ip) > 0 || len(conf.gw) > 0 || len(conf.dns) > 0 || len(conf.ntp) > 0:
 		if len(conf.devs) != 1 {

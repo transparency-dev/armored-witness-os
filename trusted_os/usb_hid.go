@@ -113,10 +113,6 @@ func configureHID(device *usb.Device, ctl *controlInterface) (err error) {
 		return
 	}
 
-	if err = hid.AddMapping(api.U2FHID_ARMORY_OTA, ctl.Update); err != nil {
-		return
-	}
-
 	if err = hid.AddMapping(api.U2FHID_ARMORY_HAB, ctl.HAB); err != nil {
 		return
 	}
