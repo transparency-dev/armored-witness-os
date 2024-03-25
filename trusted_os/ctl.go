@@ -99,7 +99,7 @@ func getStatus() (s *api.Status) {
 	}
 
 	if imx6ul.Native {
-		s.HAB    = imx6ul.SNVS.Available()
+		s.HAB = imx6ul.SNVS.Available()
 		s.Serial = fmt.Sprintf("%X", imx6ul.UniqueID())
 	}
 
@@ -188,9 +188,10 @@ func (ctl *controlInterface) handleLogsRequest(r []byte, l func() []byte) (res [
 		log.Printf("Compressed %d bytes of log messages to %d send", ll, len(ctl.logBuffer))
 	}
 	ret := &api.LogMessagesResponse{}
-	if l := len(ctl.logBuffer); l > maxChunkSize {
+	logChunk := 1024
+	if l := len(ctl.logBuffer); l > logChunk {
 		ret.More = true
-		ret.Payload, ctl.logBuffer = ctl.logBuffer[:maxChunkSize], ctl.logBuffer[maxChunkSize:]
+		ret.Payload, ctl.logBuffer = ctl.logBuffer[:logChunk], ctl.logBuffer[logChunk:]
 	} else {
 		ret.More = false
 		ret.Payload = ctl.logBuffer
