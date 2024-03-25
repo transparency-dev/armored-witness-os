@@ -24,7 +24,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"time"
 
 	flynn_hid "github.com/flynn/hid"
 	"github.com/flynn/u2f/u2fhid"
@@ -105,9 +104,6 @@ func (d Device) getLogMessages(cmd byte) (string, error) {
 			}
 			w.Write(rsp.GetPayload())
 			req.Continue = true
-
-			// Don't overload the HID endpoint
-			time.Sleep(20 * time.Millisecond)
 		}
 	}()
 
