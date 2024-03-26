@@ -308,3 +308,28 @@ func (r *RPC) Reboot(_ *any, _ *bool) error {
 
 	return nil
 }
+
+// ConsoleLog returns the console log for the current running OS & applet.
+func (r *RPC) ConsoleLog(_ *any, ret *[]byte) error {
+	if ret == nil {
+		return errors.New("nil buffer passed")
+	}
+
+	*ret = getConsoleLogs()
+	return nil
+}
+
+// CrashLog returns the console log stored by the OS after the last
+// applet exit, if any.
+func (r *RPC) CrashLog(_ *any, ret *[]byte) error {
+	if ret == nil {
+		return errors.New("nil buffer passed")
+	}
+
+	l, err := retrieveLastCrashLog(r.Storage)
+	if err != nil {
+		return err
+	}
+	*ret = l
+	return nil
+}
