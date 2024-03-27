@@ -194,8 +194,8 @@ func main() {
 		log.Fatalf("SM failed to create OS bundle verifier: %v", err)
 	}
 
-	if v, err := semver.NewVersion(Version); err != nil {
-		log.Printf("Failed to parse OS version %q: %v", Version, err)
+	if v, err := semver.NewVersion(strings.TrimPrefix(Version, "v")); err != nil {
+		log.Printf("Failed to parse OS version %q: %v", v, err)
 	} else {
 		osVersion = *v
 	}
