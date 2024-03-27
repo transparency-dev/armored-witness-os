@@ -3,13 +3,12 @@ module github.com/transparency-dev/armored-witness-os
 go 1.22.0
 
 require (
-	github.com/cheggaaa/pb/v3 v3.1.5
 	github.com/coreos/go-semver v0.3.1
 	github.com/flynn/hid v0.0.0-20190502022136-f1b9b6cc019a
 	github.com/flynn/u2f v0.0.0-20180613185708-15554eb68e5d
 	github.com/gsora/fidati v0.0.0-20230806170658-ab651720d7c3
 	github.com/smallnest/ringbuffer v0.0.0-20230728150354-35801fa39d0e
-	github.com/transparency-dev/armored-witness-boot v0.0.0-20230904140406-e2e16c7665b7
+	github.com/transparency-dev/armored-witness-boot v0.1.0
 	github.com/transparency-dev/armored-witness-common v0.0.0-20240313170947-0b19d0fb8b95
 	github.com/transparency-dev/merkle v0.0.2
 	github.com/transparency-dev/serverless-log v0.0.0-20231215122707-66f68a7705f5
@@ -27,16 +26,10 @@ require (
 )
 
 require (
-	github.com/VividCortex/ewma v1.2.0 // indirect
-	github.com/fatih/color v1.15.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
