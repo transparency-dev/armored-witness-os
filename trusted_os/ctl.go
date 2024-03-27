@@ -64,19 +64,11 @@ type controlInterface struct {
 }
 
 func getStatus() (s *api.Status) {
-	version, err := parseVersion(Version)
-	versionString := "unknown"
-	if err != nil {
-		log.Printf("failed to get version: %v", err)
-	} else {
-		versionString = version.String()
-	}
-
 	s = &api.Status{
 		SRKHash:  SRKHash,
 		Revision: Revision,
 		Build:    Build,
-		Version:  versionString,
+		Version:  osVersion.String(),
 		Runtime:  fmt.Sprintf("%s %s/%s", runtime.Version(), runtime.GOOS, runtime.GOARCH),
 		// TODO(jayhou): set IdentityCounter here.
 	}
