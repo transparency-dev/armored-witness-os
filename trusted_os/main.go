@@ -23,6 +23,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-semver/semver"
