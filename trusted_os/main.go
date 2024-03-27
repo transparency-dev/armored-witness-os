@@ -196,7 +196,7 @@ func main() {
 	}
 
 	if v, err := semver.NewVersion(strings.TrimPrefix(Version, "v")); err != nil {
-		log.Printf("Failed to parse OS version %q: %v", v, err)
+		log.Printf("Failed to parse OS version %q: %v", Version, err)
 	} else {
 		osVersion = *v
 	}
