@@ -85,6 +85,7 @@ func getStatus() (s *api.Status) {
 	case LAN != nil:
 		miiStatus := LAN.ReadPHYRegister(usbarmory.PHY_ADDR, MII_STATUS)
 		s.Link = miiStatus&(1<<STATUS_LINK) > 0
+		s.MAC = LAN.MAC.String()
 	case USB != nil:
 		mode, err := usbarmory.FrontPortMode()
 		s.Link = err != nil && mode == usbarmory.STATE_ATTACHED_SRC

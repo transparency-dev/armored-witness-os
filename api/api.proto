@@ -41,6 +41,7 @@ message Status {
   // needs a new witness identity.
   uint32 IdentityCounter = 9;
   string SRKHash = 10;
+  string MAC = 11;
 }
 
 /*

@@ -98,6 +98,7 @@ func (p *Status) Print() string {
 	status.WriteString(fmt.Sprintf("Version ....................: %s\n", p.Version))
 	status.WriteString(fmt.Sprintf("Runtime ....................: %s\n", p.Runtime))
 	status.WriteString(fmt.Sprintf("Link .......................: %v\n", p.Link))
+	status.WriteString(fmt.Sprintf("MAC ........................: %v\n", p.MAC))
 	status.WriteString(fmt.Sprintf("IdentityCounter ............: %d\n", p.IdentityCounter))
 	if p.Witness != nil {
 		status.WriteString(fmt.Sprintf("Witness/Identity ...........: %v\n", p.Witness.Identity))
