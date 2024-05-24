@@ -103,10 +103,13 @@ func (p *Status) Print() string {
 	if p.Witness != nil {
 		status.WriteString(fmt.Sprintf("Witness/Identity ...........: %v\n", p.Witness.Identity))
 		status.WriteString(fmt.Sprintf("Witness/IP .................: %v\n", p.Witness.IP))
-		status.WriteString(fmt.Sprintf("Witness/AttestationKey .....: %v", p.Witness.IDAttestPublicKey))
+		status.WriteString(fmt.Sprintf("Witness/AttestationKey .....: %v\n", p.Witness.IDAttestPublicKey))
+		status.WriteString(fmt.Sprintf("Witness/AttestedIdentity ...: [below]\n\n%v\n", p.Witness.AttestedID))
+		status.WriteString(fmt.Sprintf("Witness/AttestedBastionID ..: [below]\n\n%v\n", p.Witness.AttestedBastionID))
 	} else {
-		status.WriteString(fmt.Sprint("Witness ....................: <no status>"))
+		status.WriteString(fmt.Sprint("Witness ....................: <no status>\n"))
 	}
+	status.WriteString("----------------------------------------------------------- Trusted OS ----")
 
 	return status.String()
 }
