@@ -53,6 +53,8 @@ type WitnessStatus struct {
 	IDAttestPublicKey string
 	// AttestedID is a note formatted attestation for the current witness ID.
 	AttestedID string
+	// AttestedBastionID is a note formatted attestation for the current Bastion ID.
+	AttestedBastionID string
 }
 
 // FirmwareUpdate represents a firmware update.

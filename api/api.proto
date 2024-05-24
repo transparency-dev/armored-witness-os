@@ -67,6 +67,13 @@ message WitnessStatus {
 	//   <Witness identity counter in decimal>
 	//   <Witness identity as a note verifier string>
   string AttestedID = 4;
+  // AttestedBastionID is a note-formatted signed attestation for the witness' BastionID.
+  // This attestation note contains:
+	//   "ArmoredWitness BastionID attestation v1"
+	//   <Device serial>
+	//   <Bastion identity counter in decimal>
+	//   <Bastion ID as ASCII hex>
+  string AttestedBastionID = 5;
 }
 
 /*

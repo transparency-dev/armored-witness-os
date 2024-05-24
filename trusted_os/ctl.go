@@ -78,6 +78,7 @@ func getStatus() (s *api.Status) {
 			IP:                witnessStatus.IP,
 			IDAttestPublicKey: witnessStatus.IDAttestPublicKey,
 			AttestedID:        witnessStatus.AttestedID,
+			AttestedBastionID: witnessStatus.AttestedBastionID,
 		}
 	}
 
