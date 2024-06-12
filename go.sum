@@ -53,8 +53,8 @@ github.com/transparency-dev/serverless-log v0.0.0-20231215122707-66f68a7705f5 h1
 github.com/transparency-dev/serverless-log v0.0.0-20231215122707-66f68a7705f5/go.mod h1:rx4EB9NW4aZFJT5kxf6BWRWbZSThl36jv7O5o5r/qv8=
 github.com/u-root/u-root v0.11.0 h1:6gCZLOeRyevw7gbTwMj3fKxnr9+yHFlgF3N7udUVNO8=
 github.com/u-root/u-root v0.11.0/go.mod h1:DBkDtiZyONk9hzVEdB/PWI9B4TxDkElWlVTHseglrZY=
-github.com/usbarmory/GoTEE v0.0.0-20240314122327-40179239ad36 h1:rZfhjJpgKuwos6KBdHKouDJmYmpV/FJv4q34eIjtPjw=
-github.com/usbarmory/GoTEE v0.0.0-20240314122327-40179239ad36/go.mod h1:YlZVucqxy/z5QWKerml3Vm5T14UOzZEs2kXfS1nilx8=
+github.com/usbarmory/GoTEE v0.0.0-20240606154617-69fca0e00ced h1:UqSCDwsRCVpWcJH7SIo8ngepUB57kmMJT9Xl8AkxcBU=
+github.com/usbarmory/GoTEE v0.0.0-20240606154617-69fca0e00ced/go.mod h1:bi9wFN+UIvD5EXh6T2+4IZdWn6NA8x0IGzJpjzSawGY=
 github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c h1:qQL3CljMNrk9TyG8EUvCAPU7/bTVitJMhqlKSNhskis=
 github.com/usbarmory/armory-boot v0.0.0-20230922092524-e66d926bc36c/go.mod h1:20DIzHJntbLDOptGT7TOm8DkT5mL2jRyzPzVXAYVHJ8=
 github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655 h1:n3JkWqsxKsbX2SKy+ac3v2rgEmTWfA/s0SC5kHlJGBY=
@@ -64,8 +64,8 @@ github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1/go.mod h1:gJs
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8 h1:VPruqXJEJxTweSRyx3NIkiIqQl9ppZHp4wZnL8+Y0aI=
 github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8/go.mod h1:XfTrYj8Ik3ljit1cSHTcsXs7lyJ/QMsplPDX8+g5s7c=
 github.com/usbarmory/tamago v0.0.0-20220823080407-04f05cf2a5a3/go.mod h1:Lok79mjbJnhoBGqhX5cCUsZtSemsQF5FNZW+2R1dRr8=
-github.com/usbarmory/tamago v0.0.0-20240321170635-3bf2d607eccb h1:1G0RMAC/WkYlXfmf8D94bHxhN0WpavtdZ2yJhuSNJ4U=
-github.com/usbarmory/tamago v0.0.0-20240321170635-3bf2d607eccb/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
+github.com/usbarmory/tamago v0.0.0-20240606154508-da58827195bf h1:DUqatEnKdkk8Q/KZkRveufAq0o1xHQPWWtoXdKd4ORM=
+github.com/usbarmory/tamago v0.0.0-20240606154508-da58827195bf/go.mod h1:ZhT809fzFpHBXD0cW3RxTTuwEh9HJX7/ZUhmZNsIjM0=
 golang.org/x/crypto v0.24.0 h1:mnl8DM0o513X8fdIkmyFE/5hTYxbwYOjDS/+rK6qpRI=
 golang.org/x/crypto v0.24.0/go.mod h1:Z1PMYSOR5nyMcyAVAIQSKCDwalqy85Aqn1x3Ws4L5DM=
 golang.org/x/mod v0.18.0 h1:5+9lSbEzPSdWkH32vYPBwEpX8KwDbM52Ud9xBUvNlb0=
