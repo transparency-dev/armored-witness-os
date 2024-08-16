@@ -87,9 +87,13 @@ func (r *RPC) Address(mac net.HardwareAddr, _ *bool) error {
 	return nil
 }
 
+func isAppletMemory(addr uint32) bool {
+	return addr >= appletStart && addr < appletStart + appletSize
+}
+
 // Register registers the Trusted Applet event handler.
 func (r *RPC) Register(handler rpc.Handler, _ *bool) error {
-	if handler.G == 0 || handler.P == 0 {
+	if !isAppletMemory(handler.G) || !isAppletMemory(handler.P) {
 		return errors.New("invalid argument")
 	}
 
