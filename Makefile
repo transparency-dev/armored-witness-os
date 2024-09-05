@@ -21,7 +21,7 @@ SRK_HASH ?=
 PROTOC ?= /usr/bin/protoc
 
 TAMAGO_SEMVER = $(shell [ -n "${TAMAGO}" -a -x "${TAMAGO}" ] && ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
-MINIMUM_TAMAGO_VERSION=1.22.4
+MINIMUM_TAMAGO_VERSION=1.22.6
 
 SHELL = /bin/bash
 
