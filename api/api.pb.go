@@ -83,13 +83,10 @@ func (ErrorCode) EnumDescriptor() ([]byte, []int) {
 	return file_api_proto_rawDescGZIP(), []int{0}
 }
 
+// Status information
 //
-//
-//Status information
-//
-//The status information format is returned on any message sent with the
-//`U2FHID_ARMORY_INF` vendor specific command.
-//
+// The status information format is returned on any message sent with the
+// `U2FHID_ARMORY_INF` vendor specific command.
 type Status struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -219,13 +216,10 @@ func (x *Status) GetMAC() string {
 	return ""
 }
 
+// WitnessStatus contains witness-applet specific status information.
 //
-//
-//WitnessStatus contains witness-applet specific status information.
-//
-//This is embedded in the general Status message if the applet has provided
-//this information to the OS.
-//
+// This is embedded in the general Status message if the applet has provided
+// this information to the OS.
 type WitnessStatus struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -240,17 +234,19 @@ type WitnessStatus struct {
 	IDAttestPublicKey string `protobuf:"bytes,3,opt,name=IDAttestPublicKey,proto3" json:"IDAttestPublicKey,omitempty"`
 	// AttestedID is a note-formatted signed attestation for the current witness identity.
 	// This attestation note contains:
-	//   "ArmoredWitness ID attestation v1"
-	//   <Device serial>
-	//   <Witness identity counter in decimal>
-	//   <Witness identity as a note verifier string>
+	//
+	//	"ArmoredWitness ID attestation v1"
+	//	<Device serial>
+	//	<Witness identity counter in decimal>
+	//	<Witness identity as a note verifier string>
 	AttestedID string `protobuf:"bytes,4,opt,name=AttestedID,proto3" json:"AttestedID,omitempty"`
 	// AttestedBastionID is a note-formatted signed attestation for the witness' BastionID.
 	// This attestation note contains:
-	//   "ArmoredWitness BastionID attestation v1"
-	//   <Device serial>
-	//   <Bastion identity counter in decimal>
-	//   <Bastion ID as ASCII hex>
+	//
+	//	"ArmoredWitness BastionID attestation v1"
+	//	<Device serial>
+	//	<Bastion identity counter in decimal>
+	//	<Bastion ID as ASCII hex>
 	AttestedBastionID string `protobuf:"bytes,5,opt,name=AttestedBastionID,proto3" json:"AttestedBastionID,omitempty"`
 }
 
