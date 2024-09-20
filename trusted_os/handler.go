@@ -15,7 +15,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/usbarmory/tamago/arm"
@@ -38,7 +37,7 @@ var irqHandler = make(map[int]func())
 // defined in handler.s
 func wakeHandler(g uint32, p uint32)
 
-func isr() (err error) {
+func isr() {
 	irq, end := imx6ul.GIC.GetInterrupt(true)
 
 	if end != nil {
@@ -47,22 +46,9 @@ func isr() (err error) {
 
 	if handle, ok := irqHandler[irq]; ok {
 		handle()
-		return nil
+		return
 	}
-
-	return fmt.Errorf("unexpected IRQ %d", irq)
-}
-
-func handleInterrupts() {
-	arm.RegisterInterruptHandler()
-
-	for {
-		arm.WaitInterrupt()
-
-		if err := isr(); err != nil {
-			log.Printf("SM IRQ handling error: %v", err)
-		}
-	}
+	log.Printf("unexpected IRQ %d", irq)
 }
 
 func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
@@ -79,9 +65,7 @@ func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
 		return
 	}
 
-	if err := isr(); err != nil {
-		log.Printf("SM FIQ handling error: %v", err)
-	}
+	isr()
 
 	// mask FIQs, applet handler will request unmasking when done
 	bits.Set(&ctx.SPSR, CPSR_FIQ)
