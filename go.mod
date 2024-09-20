@@ -1,6 +1,8 @@
 module github.com/transparency-dev/armored-witness-os
 
-go 1.22.4
+go 1.23.0
+
+toolchain go1.23.1
 
 require (
 	github.com/coreos/go-semver v0.3.1
@@ -17,7 +19,7 @@ require (
 	github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655
 	github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20240321170635-3bf2d607eccb
+	github.com/usbarmory/tamago v0.0.0-20240909213541-c4704957c2e1
 	golang.org/x/crypto v0.27.0
 	golang.org/x/mod v0.21.0
 	google.golang.org/protobuf v1.34.2
