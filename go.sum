@@ -68,6 +68,8 @@ github.com/usbarmory/tamago v0.0.0-20240321170635-3bf2d607eccb h1:1G0RMAC/WkYlXf
 github.com/usbarmory/tamago v0.0.0-20240321170635-3bf2d607eccb/go.mod h1:uCPXcPo8SZulhZPz8irfVqzwVlPZ45w7CTJxkfxueGA=
 golang.org/x/crypto v0.28.0 h1:GBDwsMXVQi34v5CCYUm2jkJvu4cbtru2U4TN2PSyQnw=
 golang.org/x/crypto v0.28.0/go.mod h1:rmgy+3RHxRZMyY0jjAJShp2zgEdOqj2AO7U0pYmeQ7U=
+github.com/usbarmory/tamago v0.0.0-20240909213541-c4704957c2e1 h1:7CX/AZFrsPyfmqLhRW0UDvupcqz/mnyeFrPEshav/sg=
+github.com/usbarmory/tamago v0.0.0-20240909213541-c4704957c2e1/go.mod h1:NL88q9ZsIPYFzXaosAeKgu1Kr5i1k4Rau3wnbNBL5bY=
 golang.org/x/mod v0.21.0 h1:vvrHzRwRfVKSiLrG+d4FMl/Qi4ukBCE6kZlTUkDYRT0=
 golang.org/x/mod v0.21.0/go.mod h1:6SkKJ3Xj0I0BrPOZoBy3bdMptDDU9oJrpohJ3eWZ1fY=
 golang.org/x/sync v0.6.0 h1:5BMeUDZ7vkXGfEr1x9B4bRcTH4lpkTkpdh0T/J+qjbQ=
