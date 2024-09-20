@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-semver/semver"
+	"github.com/usbarmory/tamago/arm"
 	usbarmory "github.com/usbarmory/tamago/board/usbarmory/mk2"
 	"github.com/usbarmory/tamago/soc/nxp/enet"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -259,7 +260,7 @@ func main() {
 	}
 
 	// never returns
-	handleInterrupts()
+	arm.ServiceInterrupts(isr)
 }
 
 func createBundleVerifier(logOrigin string, logVerifier note.Verifier, manifestVerifiers []string) (firmware.BundleVerifier, error) {
