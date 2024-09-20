@@ -2,6 +2,8 @@ module github.com/transparency-dev/armored-witness-os
 
 go 1.23.1
 
+toolchain go1.23.1
+
 require (
 	github.com/coreos/go-semver v0.3.1
 	github.com/flynn/hid v0.0.0-20190502022136-f1b9b6cc019a
