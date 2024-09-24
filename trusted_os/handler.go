@@ -38,11 +38,7 @@ var irqHandler = make(map[int]func())
 func wakeHandler(g uint32, p uint32)
 
 func isr() {
-	irq, end := imx6ul.GIC.GetInterrupt(true)
-
-	if end != nil {
-		close(end)
-	}
+	irq := imx6ul.GIC.GetInterrupt(true)
 
 	if handle, ok := irqHandler[irq]; ok {
 		handle()
