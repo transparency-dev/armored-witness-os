@@ -17,8 +17,8 @@ require (
 	github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655
 	github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	golang.org/x/crypto v0.28.0
 	github.com/usbarmory/tamago v0.0.0-20240909213541-c4704957c2e1
+	golang.org/x/crypto v0.28.0
 	golang.org/x/mod v0.21.0
 	google.golang.org/protobuf v1.35.1
 	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
@@ -33,8 +33,8 @@ require (
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/transparency-dev/formats v0.0.0-20230920083814-0f75b1d4e813 // indirect
 	github.com/u-root/u-root v0.11.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
