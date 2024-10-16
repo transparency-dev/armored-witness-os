@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BUILD_EPOCH := $(shell /bin/date -u "+%s")
+BUILD_EPOCH := $(shell date -u "+%s")
 BUILD_TAGS = linkramsize,linkramstart,disable_fr_auth,linkprintk
 REV = $(shell git rev-parse --short HEAD 2> /dev/null)
 GIT_SEMVER_TAG ?= $(shell (git describe --tags --exact-match --match 'v*.*.*' 2>/dev/null || git describe --match 'v*.*.*' --tags 2>/dev/null || git describe --tags 2>/dev/null || echo -n v0.0.${BUILD_EPOCH}+`git rev-parse HEAD`) | tail -c +2 )
 SRK_HASH ?= 
 
-PROTOC ?= /usr/bin/protoc
+PROTOC ?= $(shell which protoc)
 
 TAMAGO_SEMVER = $(shell [ -n "${TAMAGO}" -a -x "${TAMAGO}" ] && ${TAMAGO} version | sed 's/.*go\([0-9]\.[0-9]*\.[0-9]*\).*/\1/')
-MINIMUM_TAMAGO_VERSION=1.22.4
+MINIMUM_TAMAGO_VERSION=1.23.1
 
-SHELL = /bin/bash
+SHELL = /usr/bin/env bash
 
 ifeq ("${DEBUG}","1")
 	BUILD_TAGS := ${BUILD_TAGS},debug
@@ -144,7 +144,7 @@ manifest: $(APP)_manifest
 proto:
 	@echo "generating protobuf classes"
 	-rm -f $(CURDIR)/api/*.pb.go
-	PATH=$(shell go env GOPATH | awk -F":" '{print $$1"/bin"}') ${PROTOC} --proto_path=$(CURDIR)/api --go_out=$(CURDIR)/api api.proto
+	PATH=$(shell go env GOPATH | awk -F":" '{print $$1"/bin"}'):${PATH} ${PROTOC} --proto_path=$(CURDIR)/api --go_out=$(CURDIR)/api api.proto
 
 $(APP).bin: CROSS_COMPILE=arm-none-eabi-
 $(APP).bin: $(APP).elf
