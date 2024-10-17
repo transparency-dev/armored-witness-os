@@ -15,12 +15,16 @@
 #include "go_asm.h"
 #include "textflag.h"
 
+// These defines are only used to aid applet runtime backward compatiblity,
+// within wakeHandlerPreGo123, and represent timer structs offsets fo Go <
+// 1.23.
 #define g_timer				208
 #define timer_nextwhen			36
 #define timer_status			44
 #define const_timerModifiedEarlier	7
 #define p_timerModifiedEarliest		2384
 
+// Supports tamago >= 1.23 applet runtime.
 TEXT ·wakeHandler(SB),$0-8
 	MOVW	handlerG+0(FP), R0
 	MOVW	handlerP+4(FP), R1
@@ -35,8 +39,7 @@ TEXT ·wakeHandler(SB),$0-8
 done:
 	RET
 
-// In order to support applets built with tamago < 1.23 the previous version of
-// WakeG is made available here.
+// Supports tamago < 1.23 applet runtime.
 TEXT ·wakeHandlerPreGo123(SB),$0-8
 	MOVW	handlerG+0(FP), R0
 	MOVW	handlerP+4(FP), R1
