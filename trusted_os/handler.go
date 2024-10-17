@@ -36,6 +36,7 @@ var irqHandler = make(map[int]func())
 
 // defined in handler.s
 func wakeHandler(g uint32, p uint32)
+func wakeHandlerPreGo122(g uint32, p uint32)
 
 func isr() {
 	irq := imx6ul.GIC.GetInterrupt(true)
