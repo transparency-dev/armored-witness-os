@@ -39,10 +39,14 @@ var irqHandler = make(map[int]func())
 func wakeHandler(g uint32, p uint32)
 func wakeHandlerPreGo123(g uint32, p uint32)
 
+// handlerCutover is the semver representation of the cut over between wakeHandler implementations above.
+// Anything less that this should use the legacy PreGo123 version.
+const handlerCutover = "1.23.0"
+
 var (
 	// wHandler is the wakeHandler implementation to be used, 1.23+ by default.
 	wHandler        = wakeHandler
-	wHandlerCutover = *semver.New("1.23.0")
+	wHandlerCutover = *semver.New(handlerCutover)
 )
 
 func configureWakeHandler(rtVersion semver.Version) {
