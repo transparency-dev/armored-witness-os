@@ -19,6 +19,9 @@ package main
 
 import (
 	_ "unsafe"
+
+        "github.com/usbarmory/tamago/arm"
+        "github.com/usbarmory/tamago/soc/nxp/imx6ul"
 )
 
 // The following memory regions are within an alias of external DDR, required
@@ -56,3 +59,12 @@ var ramSize uint32 = secureSize
 
 //go:linkname vecTableStart github.com/usbarmory/tamago/arm.vecTableStart
 var vecTableStart uint32 = physicalStart
+
+func init() {
+       imx6ul.ARM.SetAttribute(
+               vecTableStart,
+               vecTableStart + (1 << 20),
+               arm.TTE_EXECUTE_NEVER,
+               0,
+       )
+}
