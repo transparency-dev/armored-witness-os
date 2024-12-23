@@ -20,7 +20,7 @@ require (
 	github.com/usbarmory/tamago v0.0.0-20240924114619-273d67cd811d
 	golang.org/x/crypto v0.31.0
 	golang.org/x/mod v0.22.0
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.0
 	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
 	k8s.io/klog v1.0.0
 )
