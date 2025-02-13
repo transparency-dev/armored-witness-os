@@ -13,7 +13,7 @@ Trusted OS / applet
 * [x] Trusted applet RPC interface for key derivation or signing primitive
   unique to SoC/applet deployment.
 
-* [ ] Trusted OS enforcement of rollback protection for OS and applet firmware,
+* [x] Trusted OS enforcement of rollback protection for OS and applet firmware,
   through internal eMMC RPMB.
 
 * [x] Trusted OS USB API (HID based) for device information and applet
