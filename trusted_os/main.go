@@ -228,7 +228,10 @@ func main() {
 					log.Printf("SM applet verification error, %v", err)
 				}
 				loadedAppletVersion = manifest.Git.TagName
-				log.Printf("SM Loaded applet version %s", loadedAppletVersion.String())
+				loadedAppletRuntime := manifest.Build.TamagoVersion
+				log.Printf("SM Loaded applet version %s (with TamaGo runtime %s)", loadedAppletVersion.String(), loadedAppletRuntime.String())
+
+				configureWakeHandler(loadedAppletRuntime)
 
 				usbarmory.LED("white", true)
 
