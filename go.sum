@@ -68,6 +68,8 @@ github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8/go.mod h1:
 github.com/usbarmory/tamago v0.0.0-20220823080407-04f05cf2a5a3/go.mod h1:Lok79mjbJnhoBGqhX5cCUsZtSemsQF5FNZW+2R1dRr8=
 github.com/usbarmory/tamago v0.0.0-20240924114619-273d67cd811d h1:rPQ3OVO/SRWviAFLpXO4OUOtTlUH2IIAzZvcWfW9elk=
 github.com/usbarmory/tamago v0.0.0-20240924114619-273d67cd811d/go.mod h1:NL88q9ZsIPYFzXaosAeKgu1Kr5i1k4Rau3wnbNBL5bY=
+github.com/usbarmory/tamago v0.0.0-20250327164348-77f2a17385b6 h1:bUPSnUv06M5Ds+iq3MRD+pgQOjozfX3wzEzkzxpeUgo=
+github.com/usbarmory/tamago v0.0.0-20250327164348-77f2a17385b6/go.mod h1:NL88q9ZsIPYFzXaosAeKgu1Kr5i1k4Rau3wnbNBL5bY=
 golang.org/x/crypto v0.36.0 h1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=
 golang.org/x/crypto v0.36.0/go.mod h1:Y4J0ReaxCR1IMaabaSMugxJES1EpwhBHhv2bDHklZvc=
 golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 h1:LfspQV/FYTatPTr/3HzIcmiUFH7PGP+OQ6mgDYo3yuQ=

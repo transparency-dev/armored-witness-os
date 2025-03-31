@@ -1,4 +1,4 @@
-FROM golang:1.23-bookworm
+FROM golang:1.24-bookworm
 
 ARG TAMAGO_VERSION
 ARG LOG_ORIGIN
