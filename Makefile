@@ -197,14 +197,6 @@ copy_applet: build_applet
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
 	cp ${APPLET_PATH}/trusted_applet_manifest ${CURDIR}/trusted_os/assets/
-	go run ./cmd/proofbundle \
-		--log_origin=${LOG_ORIGIN} \
-		--log_url=${LOG_URL} \
-		--log_pubkey_file=${LOG_PUBLIC_KEY} \
-		--manifest_pubkey_file=${APPLET_PUBLIC_KEY} \
-		--manifest_file=${CURDIR}/trusted_os/assets/trusted_applet_manifest \
-		--applet_file=${CURDIR}/trusted_os/assets/trusted_applet.elf \
-		--output_file=${CURDIR}/trusted_os/assets/trusted_applet.proofbundle
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \

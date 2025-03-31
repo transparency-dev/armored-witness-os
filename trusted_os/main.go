@@ -187,7 +187,7 @@ func main() {
 	log.Printf("SM log verification pub: %s", LogVerifier)
 	logVerifier, err := note.NewVerifier(LogVerifier)
 	if err != nil {
-		log.Fatalf("SM invalid AppletLogVerifier: %v", err)
+		log.Fatalf("SM invalid LogVerifier: %v", err)
 	}
 	log.Printf("SM applet verification pub: %s", AppletManifestVerifier)
 	OSBundleVerifier, err = createBundleVerifier(LogOrigin, logVerifier, []string{OSManifestVerifier1, OSManifestVerifier2})
