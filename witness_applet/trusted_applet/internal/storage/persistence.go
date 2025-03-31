@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/transparency-dev/armored-witness-applet/trusted_applet/internal/storage/slots"
 	"github.com/transparency-dev/witness/omniwitness"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/storage/slots"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gopkg.in/yaml.v3"

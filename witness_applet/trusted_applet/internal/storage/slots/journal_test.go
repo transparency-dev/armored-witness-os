@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/transparency-dev/armored-witness-applet/trusted_applet/internal/storage/testonly"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/storage/testonly"
 )
 
 func magic0Hdr() [4]byte {

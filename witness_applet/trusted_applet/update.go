@@ -25,11 +25,11 @@ import (
 	"time"
 
 	"github.com/machinebox/progress"
-	"github.com/transparency-dev/armored-witness-applet/trusted_applet/internal/update/rpc"
 	"github.com/transparency-dev/armored-witness-common/release/firmware"
 	"github.com/transparency-dev/armored-witness-common/release/firmware/ftlog"
 	"github.com/transparency-dev/armored-witness-common/release/firmware/update"
 	"github.com/transparency-dev/serverless-log/client"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/update/rpc"
 	"golang.org/x/mod/sumdb/note"
 	"k8s.io/klog/v2"
 )

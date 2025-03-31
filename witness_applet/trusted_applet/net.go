@@ -37,8 +37,8 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/beevik/ntp"
-	"github.com/transparency-dev/armored-witness-applet/third_party/dhcp"
 	"github.com/transparency-dev/armored-witness-os/api"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/third_party/dhcp"
 	"go.mercari.io/go-dnscache"
 
 	"github.com/usbarmory/GoTEE/applet"

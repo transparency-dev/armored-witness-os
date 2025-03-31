@@ -39,11 +39,11 @@ import (
 	"google.golang.org/protobuf/proto"
 	"gvisor.dev/gvisor/pkg/tcpip/network/ipv4"
 
-	"github.com/transparency-dev/armored-witness-applet/trusted_applet/internal/storage"
-	"github.com/transparency-dev/armored-witness-applet/trusted_applet/internal/storage/slots"
 	"github.com/transparency-dev/armored-witness-common/release/firmware/update"
 	"github.com/transparency-dev/armored-witness-os/api"
 	"github.com/transparency-dev/armored-witness-os/api/rpc"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/storage"
+	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/storage/slots"
 
 	"github.com/transparency-dev/witness/monitoring"
 	"github.com/transparency-dev/witness/monitoring/prometheus"
