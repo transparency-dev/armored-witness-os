@@ -88,7 +88,7 @@ func (r *RPC) Address(mac net.HardwareAddr, _ *bool) error {
 }
 
 func isAppletMemory(addr uint32) bool {
-	return addr >= appletStart && addr < appletStart + appletSize
+	return addr >= appletStart && addr < appletStart+appletSize
 }
 
 // Register registers the Trusted Applet event handler.
@@ -218,7 +218,6 @@ func (r *RPC) HAB(srk []byte, _ *bool) error {
 // currently running.
 func (r *RPC) GetInstalledVersions(_ *any, v *rpc.InstalledVersions) error {
 	if v != nil {
-		v.Applet = loadedAppletVersion
 		v.OS = osVersion
 	}
 	return nil
@@ -262,48 +261,6 @@ func (r *RPC) InstallOS(b *rpc.FirmwareUpdate, _ *bool) error {
 }
 
 var osFirmwareBuffer []byte
-
-// InstallApplet updates the Applet to the version contained in the firmware bundle.
-// This RPC supports sending the (potentially large) firmware image either:
-// - In one RPC call, or
-// - Spread over multiple RPC calls, breaking the firmware image it into multiple "chunks" of arbitrary size
-//
-// For a given install attempt:
-//   - An RPC call with the Sequence field set to zero indicates a fresh attempt to install firmware.
-//   - If firmware is being sent in chunks via multiple RPC calls, each subsequent RPC call should:
-//     1. increment the Sequence field by 1 each time.
-//     2. Pass a chunk of firmware image which is contiguous with the previous chunk.
-//   - An RPC call with the Proof set to a non-zero value indicates that all firmware chunks have been sent.
-//     This will cause the firmware update to be finalised, and if successful, this RPC will not
-//     return and the device will reboot.
-func (r *RPC) InstallApplet(b *rpc.FirmwareUpdate, _ *bool) error {
-	if b.Sequence == 0 {
-		// Dump previous partial attempts
-		appletFirmwareBuffer = make([]byte, 0, len(b.Image))
-	}
-	// Extend our firmware buffer
-	appletFirmwareBuffer = append(appletFirmwareBuffer, b.Image...)
-	b.Image = nil
-
-	// Return early if we're don't yet have the full image.
-	if len(b.Proof.Checkpoint) == 0 {
-		return nil
-	}
-	if err := updateApplet(r.Storage, appletFirmwareBuffer, b.Proof); err != nil {
-		return err
-	}
-	r.Ctx.Stop()
-	// This must be done in a go-routine because the ExecCtx.Stop() above can only be
-	// actioned once the RPC has returned.
-	go func() {
-		<-r.Ctx.Done()
-		r.Reboot(nil, nil)
-	}()
-
-	return r.Reboot(nil, nil)
-}
-
-var appletFirmwareBuffer []byte
 
 // Reboot resets the system.
 func (r *RPC) Reboot(_ *any, _ *bool) error {

@@ -28,8 +28,8 @@ import (
 	"github.com/transparency-dev/armored-witness-common/release/firmware"
 	"github.com/transparency-dev/armored-witness-common/release/firmware/ftlog"
 	"github.com/transparency-dev/armored-witness-common/release/firmware/update"
-	"github.com/transparency-dev/serverless-log/client"
 	"github.com/transparency-dev/armored-witness-os/witness_applet/trusted_applet/internal/update/rpc"
+	"github.com/transparency-dev/serverless-log/client"
 	"golang.org/x/mod/sumdb/note"
 	"k8s.io/klog/v2"
 )
@@ -40,7 +40,6 @@ var (
 	updateLogURL                         string
 	updateLogOrigin                      string
 	updateLogVerifier                    string
-	updateAppletVerifier                 string
 	updateOSVerifier1, updateOSVerifier2 string
 )
 
@@ -58,10 +57,6 @@ func updater(ctx context.Context) (*update.Fetcher, *update.Updater, error) {
 	logVerifier, err := note.NewVerifier(updateLogVerifier)
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid firmware log verifier: %v", err)
-	}
-	appletVerifier, err := note.NewVerifier(updateAppletVerifier)
-	if err != nil {
-		return nil, nil, fmt.Errorf("invalid applet verifier: %v", err)
 	}
 	osVerifier1, err := note.NewVerifier(updateOSVerifier1)
 	if err != nil {
@@ -93,12 +88,11 @@ func updater(ctx context.Context) (*update.Fetcher, *update.Updater, error) {
 
 	updateFetcher, err := update.NewFetcher(ctx,
 		update.FetcherOpts{
-			LogFetcher:     newFetcher(logBaseURL, 30*time.Second, false),
-			LogOrigin:      updateLogOrigin,
-			LogVerifier:    logVerifier,
-			BinaryFetcher:  binFetcher,
-			AppletVerifier: appletVerifier,
-			OSVerifiers:    [2]note.Verifier{osVerifier1, osVerifier2},
+			LogFetcher:    newFetcher(logBaseURL, 30*time.Second, false),
+			LogOrigin:     updateLogOrigin,
+			LogVerifier:   logVerifier,
+			BinaryFetcher: binFetcher,
+			OSVerifiers:   [2]note.Verifier{osVerifier1, osVerifier2},
 			// Note that we leave BootVerifier and RecoveryVerifier unset as we
 			// cannot update those components.
 		})
@@ -106,7 +100,7 @@ func updater(ctx context.Context) (*update.Fetcher, *update.Updater, error) {
 		return nil, nil, fmt.Errorf("NewFetcher: %v", err)
 	}
 
-	fwVerifier := newFWVerifier(updateLogOrigin, logVerifier, appletVerifier, []note.Verifier{osVerifier1, osVerifier2})
+	fwVerifier := newFWVerifier(updateLogOrigin, logVerifier, []note.Verifier{osVerifier1, osVerifier2})
 	updater, err := update.NewUpdater(&rpc.Client{}, updateFetcher, fwVerifier)
 	if err != nil {
 		return nil, nil, fmt.Errorf("NewUdater: %v", err)
@@ -115,21 +109,15 @@ func updater(ctx context.Context) (*update.Fetcher, *update.Updater, error) {
 }
 
 type fwVerifier struct {
-	logOrigin            string
-	logVerifier          note.Verifier
-	appletBundleVerifier firmware.BundleVerifier
-	osBundleVerifier     firmware.BundleVerifier
+	logOrigin        string
+	logVerifier      note.Verifier
+	osBundleVerifier firmware.BundleVerifier
 }
 
-func newFWVerifier(logOrigin string, logVerifier note.Verifier, appletVerifier note.Verifier, osVerifiers []note.Verifier) fwVerifier {
+func newFWVerifier(logOrigin string, logVerifier note.Verifier, osVerifiers []note.Verifier) fwVerifier {
 	return fwVerifier{
 		logOrigin:   logOrigin,
 		logVerifier: logVerifier,
-		appletBundleVerifier: firmware.BundleVerifier{
-			LogOrigin:         logOrigin,
-			LogVerifer:        logVerifier,
-			ManifestVerifiers: []note.Verifier{appletVerifier},
-		},
 		osBundleVerifier: firmware.BundleVerifier{
 			LogOrigin:         logOrigin,
 			LogVerifer:        logVerifier,
@@ -139,7 +127,7 @@ func newFWVerifier(logOrigin string, logVerifier note.Verifier, appletVerifier n
 }
 
 func (fw fwVerifier) Verify(b firmware.Bundle) error {
-	allVerifiers := append(append([]note.Verifier{}, fw.appletBundleVerifier.ManifestVerifiers...), fw.osBundleVerifier.ManifestVerifiers...)
+	allVerifiers := append([]note.Verifier{}, fw.osBundleVerifier.ManifestVerifiers...)
 	m, err := note.Open(b.Manifest, note.VerifierList(allVerifiers...))
 	if err != nil {
 		return fmt.Errorf("failed to open manifest: %v", err)
@@ -149,9 +137,6 @@ func (fw fwVerifier) Verify(b firmware.Bundle) error {
 		return fmt.Errorf("failed to unmarshal manifest: %v", err)
 	}
 	switch r.Component {
-	case ftlog.ComponentApplet:
-		_, err := fw.appletBundleVerifier.Verify(b)
-		return err
 	case ftlog.ComponentOS:
 		_, err := fw.osBundleVerifier.Verify(b)
 		return err

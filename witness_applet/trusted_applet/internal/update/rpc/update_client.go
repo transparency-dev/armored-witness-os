@@ -26,18 +26,28 @@ import (
 
 const fwUpdateChunkSize = 1 << 20
 
+// fakeAppletVersion is what we return when the updater asks
+// what version of the applet is installed.
+//
+// This is a placeholder until the updater is fixed to not try to update
+// applets.
+//
+// The latest (and final) release from the armored-witness-applet
+// repo is v0.3.5, so this version must be higher.
+var fakeAppletVersion = *semver.New("0.3.999")
+
 // Client is an implementation of the Local interface which uses RPCs to the TrustedOS
 // to perform the updates.
 type Client struct {
 }
 
-// GetInstalledVersions returns the semantic versions of the OS and Applet
+// GetInstalledVersions returns the semantic versions of the OS
 // installed on this device. These will be the same versions that are
 // currently running.
 func (r Client) GetInstalledVersions() (os, applet semver.Version, err error) {
 	iv := &rpc.InstalledVersions{}
 	err = syscall.Call("RPC.GetInstalledVersions", nil, iv)
-	return iv.OS, iv.Applet, err
+	return iv.OS, fakeAppletVersion, err
 
 }
 
@@ -48,9 +58,9 @@ func (r Client) InstallOS(fb firmware.Bundle) error {
 }
 
 // InstallApplet updates the Applet to the version contained in the firmware bundle.
-// If the update is successful, the RPC will not return.
 func (r Client) InstallApplet(fb firmware.Bundle) error {
-	return sendChunkedUpdate("applet", "RPC.InstallApplet", fb)
+	klog.Infof("Ignoring request to update Applet, since the applet is now embedded in the OS.")
+	return nil
 }
 
 // sendChunkedUpdate sends a chunked OS or Applet firmware update request via one or

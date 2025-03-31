@@ -17,6 +17,7 @@ package main
 import (
 	"crypto/sha256"
 	_ "embed"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -43,13 +44,18 @@ const (
 
 // initialized at compile time (see Makefile)
 var (
-	Revision            string
-	Version             string
-	SRKHash             string
-	LogVerifier         string
-	LogOrigin           string
-	OSManifestVerifier1 string
-	OSManifestVerifier2 string
+	Revision    string
+	Version     string
+	SRKHash     string
+	LogVerifier string
+	LogOrigin   string
+	// AppletManifestVerifier is no longer used to verify the
+	// applet since it's now part of the same repo, however it
+	// _is_ used as a diversifier for key derivation, so must
+	// still be present and contain the original public key.
+	AppletManifestVerifier string
+	OSManifestVerifier1    string
+	OSManifestVerifier2    string
 )
 
 var (
@@ -68,8 +74,7 @@ var (
 	// applet.
 	loadedAppletVersion semver.Version
 
-	AppletBundleVerifier firmware.BundleVerifier
-	OSBundleVerifier     firmware.BundleVerifier
+	OSBundleVerifier firmware.BundleVerifier
 )
 
 // A Trusted Applet can be embedded for testing purposes with QEMU.
@@ -77,8 +82,8 @@ var (
 	//go:embed assets/trusted_applet.elf
 	taELF []byte
 
-	//go:embed assets/trusted_applet.proofbundle
-	taProofBundle []byte
+	//go:embed assets/trusted_applet_manifest
+	taManifest []byte
 )
 
 func init() {
@@ -185,10 +190,6 @@ func main() {
 		log.Fatalf("SM invalid AppletLogVerifier: %v", err)
 	}
 	log.Printf("SM applet verification pub: %s", AppletManifestVerifier)
-	AppletBundleVerifier, err = createBundleVerifier(LogOrigin, logVerifier, []string{AppletManifestVerifier})
-	if err != nil {
-		log.Fatalf("SM failed to create applet bundle verifier: %v", err)
-	}
 	OSBundleVerifier, err = createBundleVerifier(LogOrigin, logVerifier, []string{OSManifestVerifier1, OSManifestVerifier2})
 	if err != nil {
 		log.Fatalf("SM failed to create OS bundle verifier: %v", err)
@@ -207,8 +208,6 @@ func main() {
 	go func() {
 		for {
 			log.Print("SM Launching applet")
-
-			configureWakeHandler(loadedAppletRuntime)
 
 			usbarmory.LED("white", true)
 
@@ -240,4 +239,21 @@ func main() {
 
 	// never returns
 	arm.ServiceInterrupts(isr)
+}
+
+func createBundleVerifier(logOrigin string, logVerifier note.Verifier, manifestVerifiers []string) (firmware.BundleVerifier, error) {
+	vs := []note.Verifier{}
+	for _, v := range manifestVerifiers {
+		nv, err := note.NewVerifier(v)
+		if err != nil {
+			return firmware.BundleVerifier{}, fmt.Errorf("invalid manifest verifier %q: %v", v, err)
+		}
+		vs = append(vs, nv)
+	}
+	bv := firmware.BundleVerifier{
+		LogOrigin:         logOrigin,
+		LogVerifer:        logVerifier,
+		ManifestVerifiers: vs,
+	}
+	return bv, nil
 }
