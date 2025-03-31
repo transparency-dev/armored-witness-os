@@ -15,11 +15,8 @@
 package main
 
 import (
-	"bytes"
 	"crypto/sha256"
 	_ "embed"
-	"encoding/gob"
-	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -46,14 +43,13 @@ const (
 
 // initialized at compile time (see Makefile)
 var (
-	Revision               string
-	Version                string
-	SRKHash                string
-	LogVerifier            string
-	LogOrigin              string
-	AppletManifestVerifier string
-	OSManifestVerifier1    string
-	OSManifestVerifier2    string
+	Revision            string
+	Version             string
+	SRKHash             string
+	LogVerifier         string
+	LogOrigin           string
+	OSManifestVerifier1 string
+	OSManifestVerifier2 string
 )
 
 var (
@@ -204,49 +200,29 @@ func main() {
 		osVersion = *v
 	}
 
-	var ta *firmware.Bundle
-	if len(taELF) > 0 && len(taProofBundle) > 0 {
-		// Handle embedded applet & proof.
-		dec := gob.NewDecoder(bytes.NewBuffer(taProofBundle))
-		ta = &firmware.Bundle{}
-		if err := dec.Decode(ta); err != nil {
-			log.Printf("SM invalid embedded proof bundle: %v", err)
-		}
-		ta.Firmware = taELF
-	} else {
-		if ta, err = read(Storage); err != nil {
-			log.Printf("SM could not load applet, %v", err)
-		}
+	if len(taELF) == 0 {
+		log.Fatal("SM has no embedded applet to launch")
 	}
 
-	if ta != nil {
-		go func() {
-			for {
-				log.Print("SM Verifying applet bundle")
-				manifest, err := AppletBundleVerifier.Verify(*ta)
-				if err != nil {
-					log.Printf("SM applet verification error, %v", err)
-				}
-				loadedAppletVersion = manifest.Git.TagName
-				loadedAppletRuntime := manifest.Build.TamagoVersion
-				log.Printf("SM Loaded applet version %s (with TamaGo runtime %s)", loadedAppletVersion.String(), loadedAppletRuntime.String())
+	go func() {
+		for {
+			log.Print("SM Launching applet")
 
-				configureWakeHandler(loadedAppletRuntime)
+			configureWakeHandler(loadedAppletRuntime)
 
-				usbarmory.LED("white", true)
+			usbarmory.LED("white", true)
 
-				appletCtx, err := loadApplet(ta.Firmware, ctl)
-				if err != nil {
-					log.Printf("SM applet execution error, %v", err)
-				}
-
-				<-appletCtx.Done()
-				if err := storeAppletCrashLog(Storage, getConsoleLogs()); err != nil {
-					log.Printf("Failed to store ringbuffer logs: %v", err)
-				}
+			appletCtx, err := loadApplet(taELF, ctl)
+			if err != nil {
+				log.Printf("SM applet execution error, %v", err)
 			}
-		}()
-	}
+
+			<-appletCtx.Done()
+			if err := storeAppletCrashLog(Storage, getConsoleLogs()); err != nil {
+				log.Printf("Failed to store ringbuffer logs: %v", err)
+			}
+		}
+	}()
 
 	go func() {
 		l := true
@@ -264,21 +240,4 @@ func main() {
 
 	// never returns
 	arm.ServiceInterrupts(isr)
-}
-
-func createBundleVerifier(logOrigin string, logVerifier note.Verifier, manifestVerifiers []string) (firmware.BundleVerifier, error) {
-	vs := []note.Verifier{}
-	for _, v := range manifestVerifiers {
-		nv, err := note.NewVerifier(v)
-		if err != nil {
-			return firmware.BundleVerifier{}, fmt.Errorf("invalid manifest verifier %q: %v", v, err)
-		}
-		vs = append(vs, nv)
-	}
-	bv := firmware.BundleVerifier{
-		LogOrigin:         logOrigin,
-		LogVerifer:        logVerifier,
-		ManifestVerifiers: vs,
-	}
-	return bv, nil
 }
