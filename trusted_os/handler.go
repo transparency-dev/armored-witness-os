@@ -36,25 +36,33 @@ var (
 var irqHandler = make(map[int]func())
 
 // defined in handler.s
-func wakeHandler(g uint32, p uint32)
 func wakeHandlerPreGo123(g uint32, p uint32)
+func wakeHandlerGo123(g uint32, p uint32)
+func wakeHandlerGo124(g uint32, p uint32)
 
-// handlerCutover is the semver representation of the cut over between wakeHandler implementations above.
+// handler123Cutover is the semver representation of the cut over between wakeHandler implementations above.
 // Anything less that this should use the legacy PreGo123 version.
-const handlerCutover = "1.23.0"
+const handler123Cutover = "1.23.0"
+const handler124Cutover = "1.24.0"
 
 var (
-	// wHandler is the wakeHandler implementation to be used, 1.23+ by default.
-	wHandler        = wakeHandler
-	wHandlerCutover = *semver.New(handlerCutover)
+	// wHandler is the wakeHandler implementation to be used, 1.24+ by default.
+	wHandler           func(g uint32, p uint32)
+	wHandler123Cutover = *semver.New(handler123Cutover)
+	wHandler124Cutover = *semver.New(handler124Cutover)
 )
 
 func configureWakeHandler(rtVersion semver.Version) {
-	if rtVersion.LessThan(wHandlerCutover) {
+	switch {
+	case rtVersion.LessThan(wHandler123Cutover):
+		log.Printf("SM Using legacy pre-%s wakeHandler", wHandler123Cutover.String())
 		wHandler = wakeHandlerPreGo123
-		log.Printf("SM Using legacy pre-%s wakeHandler", wHandlerCutover.String())
-	} else {
-		wHandler = wakeHandler
+	case rtVersion.LessThan(wHandler124Cutover):
+		log.Printf("SM Using legacy %s wakeHandler", wHandler123Cutover.String())
+		wHandler = wakeHandlerGo123
+	default:
+		log.Printf("SM Using OS runtime %s wakeHandler", wHandler124Cutover.String())
+		wHandler = wakeHandlerGo124
 	}
 }
 
