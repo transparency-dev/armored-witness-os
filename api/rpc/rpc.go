@@ -72,6 +72,5 @@ type FirmwareUpdate struct {
 // InstalledVersions represents the installed/running versions
 // of the TrustedOS and applet.
 type InstalledVersions struct {
-	OS     semver.Version
-	Applet semver.Version
+	OS semver.Version
 }

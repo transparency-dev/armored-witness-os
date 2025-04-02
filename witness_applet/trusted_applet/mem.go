@@ -1,4 +1,4 @@
-// Copyright 2022 The Armored Witness OS authors. All Rights Reserved.
+// Copyright 2022 The Armored Witness Applet authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "go_asm.h"
-#include "textflag.h"
+//go:build !bee
+// +build !bee
 
-// Supports tamago >= 1.23 applet runtime.
-TEXT ·wakeHandler(SB),$0-8
-	MOVW	handlerG+0(FP), R0
-	MOVW	handlerP+4(FP), R1
+package main
 
-	CMP	$0, R0
-	B.EQ	done
+import (
+	_ "unsafe"
+)
 
-	CMP	$0, R1
-	B.EQ	done
+const (
+	appletStart = 0x90000000
+	appletSize  = 0x10000000 // 256MB
+)
 
-	B	runtime·WakeG(SB)
-done:
-	RET
+//go:linkname ramStart runtime.ramStart
+var ramStart uint32 = appletStart
 
+//go:linkname ramSize runtime.ramSize
+var ramSize uint32 = appletSize
+
+//go:linkname ramStackOffset runtime.ramStackOffset
+var ramStackOffset uint32 = 0x100

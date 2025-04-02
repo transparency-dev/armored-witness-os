@@ -17,7 +17,6 @@ package main
 import (
 	"log"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/usbarmory/tamago/arm"
 	"github.com/usbarmory/tamago/bits"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
@@ -37,26 +36,6 @@ var irqHandler = make(map[int]func())
 
 // defined in handler.s
 func wakeHandler(g uint32, p uint32)
-func wakeHandlerPreGo123(g uint32, p uint32)
-
-// handlerCutover is the semver representation of the cut over between wakeHandler implementations above.
-// Anything less that this should use the legacy PreGo123 version.
-const handlerCutover = "1.23.0"
-
-var (
-	// wHandler is the wakeHandler implementation to be used, 1.23+ by default.
-	wHandler        = wakeHandler
-	wHandlerCutover = *semver.New(handlerCutover)
-)
-
-func configureWakeHandler(rtVersion semver.Version) {
-	if rtVersion.LessThan(wHandlerCutover) {
-		wHandler = wakeHandlerPreGo123
-		log.Printf("SM Using legacy pre-%s wakeHandler", wHandlerCutover.String())
-	} else {
-		wHandler = wakeHandler
-	}
-}
 
 func isr() {
 	irq := imx6ul.GIC.GetInterrupt(true)
@@ -87,7 +66,7 @@ func fiqHandler(ctx *monitor.ExecCtx) (_ error) {
 	// mask FIQs, applet handler will request unmasking when done
 	bits.Set(&ctx.SPSR, CPSR_FIQ)
 
-	wHandler(appletHandlerG, appletHandlerP)
+	wakeHandler(appletHandlerG, appletHandlerP)
 
 	return
 }

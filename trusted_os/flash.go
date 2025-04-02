@@ -32,9 +32,15 @@ import (
 const (
 	expectedBlockSize = 512 // Expected size of MMC block in bytes
 	otaLimit          = 31457280
-	taConfBlock       = 0x200000
-	taBlockA          = 0x200050
-	taBlockB          = 0x2FD050
+
+	/*
+		 * Trusted Applet is now embedded in the OS, so these constants are not used.
+		 * Eventually we can reclaim these blocks.
+		taConfBlock       = 0x200000
+		taBlockA          = 0x200050
+		taBlockB          = 0x2FD050
+	*/
+
 	osConfBlock       = 0x5000
 	osBlockA          = 0x5050
 	osBlockB          = 0x102828
@@ -44,15 +50,10 @@ const (
 )
 
 const (
-	Firmware_Applet FirmwareType = iota
-	Firmware_OS
+	Firmware_OS FirmwareType = iota
 )
 
 var (
-	// appletLoadedFromBlock is set to the first block of MMC where the applet firmware was loaded from.
-	// This will be set by the read func below.
-	appletLoadedFromBlock int64
-
 	// osLoadedFromBlock is set to the first block of MMC the running OS firmware was loaded from.
 	// This will be set by the determineLoadedOS func below.
 	osLoadedFromBlock int64
@@ -63,8 +64,6 @@ type FirmwareType int
 
 func (ft FirmwareType) String() string {
 	switch ft {
-	case Firmware_Applet:
-		return "applet"
 	case Firmware_OS:
 		return "OS"
 	}
@@ -132,47 +131,6 @@ func determineLoadedOSBlock(card Card) error {
 	return nil
 }
 
-// read reads the trusted applet bundle from internal storage, the
-// applet and FT proofs are *not* verified by this function.
-//
-// This function will update appletLoadedFromBlock with the MMC block index
-// the applet firmware image was loaded from.
-func read(card Card) (fw *firmware.Bundle, err error) {
-	blockSize := card.Info().BlockSize
-	if blockSize != expectedBlockSize {
-		return nil, fmt.Errorf("h/w invariant error - expected MMC blocksize %d, found %d", expectedBlockSize, blockSize)
-	}
-
-	conf, err := readConfig(card, taConfBlock)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read applet config: %v", err)
-	}
-
-	fw = &firmware.Bundle{
-		Checkpoint:     conf.Bundle.Checkpoint,
-		Index:          conf.Bundle.LogIndex,
-		InclusionProof: conf.Bundle.InclusionProof,
-		Manifest:       conf.Bundle.Manifest,
-	}
-
-	fw.Firmware, err = card.Read(conf.Offset, conf.Size)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read firmware: %v", err)
-	}
-
-	appletLoadedFromBlock = conf.Offset / expectedBlockSize
-	switch appletLoadedFromBlock {
-	case taBlockA:
-		log.Print("Loaded applet from slot A")
-	case taBlockB:
-		log.Print("Loaded applet from slot B")
-	default:
-		log.Printf("Loaded applet from unexpected block %d", appletLoadedFromBlock)
-	}
-
-	return
-}
-
 // flash writes a buffer to internal storage.
 //
 // Since this function is writing blocks to MMC, it will pad the passed in
@@ -237,25 +195,6 @@ func blinkenLights() (func(), func()) {
 	return blink, cancel
 }
 
-// updateApplet verifies an applet update and flashes it to internal storage
-func updateApplet(storage Card, taELF []byte, pb config.ProofBundle) (err error) {
-	// First, verify everything is correct and that, as far as we can tell,
-	// we would succeed in loadering and launching this applet upon next boot.
-	bundle := firmware.Bundle{
-		Checkpoint:     pb.Checkpoint,
-		Index:          pb.LogIndex,
-		InclusionProof: pb.InclusionProof,
-		Manifest:       pb.Manifest,
-		Firmware:       taELF,
-	}
-	if _, err := AppletBundleVerifier.Verify(bundle); err != nil {
-		return err
-	}
-	log.Printf("SM verified applet bundle for update")
-
-	return flashFirmware(storage, Firmware_Applet, taELF, pb)
-}
-
 // updateOS verifies an OS update and flashes it to internal storage
 func updateOS(storage Card, osELF []byte, pb config.ProofBundle) (err error) {
 	// First, verify everything is correct and that, as far as we can tell,
@@ -270,7 +209,7 @@ func updateOS(storage Card, osELF []byte, pb config.ProofBundle) (err error) {
 	if _, err := OSBundleVerifier.Verify(bundle); err != nil {
 		return err
 	}
-	log.Printf("SM verified applet bundle for update")
+	log.Printf("SM verified OS bundle for update")
 
 	return flashFirmware(storage, Firmware_OS, osELF, pb)
 }
@@ -288,16 +227,6 @@ func flashFirmware(storage Card, t FirmwareType, elf []byte, pb config.ProofBund
 	confBlock := 0
 	elfBlock := 0
 	switch t {
-	case Firmware_Applet:
-		confBlock = taConfBlock
-		if appletLoadedFromBlock == taBlockA {
-			elfBlock = taBlockB
-			log.Print("SM will flash applet to slot B")
-		} else {
-			// If the running applet was loaded from applet slot B, or there was no valid config, store in slot A
-			elfBlock = taBlockA
-			log.Print("SM will flash applet to slot A")
-		}
 	case Firmware_OS:
 		confBlock = osConfBlock
 		if osLoadedFromBlock == osBlockA {

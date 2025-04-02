@@ -67,18 +67,14 @@ GOFLAGS = -tags ${BUILD_TAGS} -trimpath -buildvcs=false -buildmode=exe \
 
 #### primary targets ####
 
-all: trusted_os_embedded_applet witnessctl
+all: trusted_os witnessctl
 
 # This target is only used for dev builds, since the proto definitions may
 # change in development and require re-compilation of protos.
 trusted_os: APP=trusted_os
 trusted_os: DIR=$(CURDIR)/trusted_os
-trusted_os: check_embed_env create_dummy_applet proto elf manifest
-
-trusted_os_embedded_applet: APP=trusted_os
-trusted_os_embedded_applet: DIR=$(CURDIR)/trusted_os
-trusted_os_embedded_applet: check_embed_env copy_applet proto elf manifest imx
-trusted_os_embedded_applet:
+trusted_os: check_embed_env copy_applet proto elf manifest imx
+trusted_os:
 
 witnessctl: check_tamago
 	@echo "building armored-witness control tool"
@@ -192,28 +188,15 @@ check_embed_env:
 		exit 1; \
 	fi
 
+build_applet:
+	cd witness_applet && make clean trusted_applet
+
 copy_applet: LOG_URL=file://$(DEV_LOG_DIR)/log/
-copy_applet:
-	@if [ "${APPLET_PATH}" == "" ]; then \
-		echo 'You need to set the APPLET_PATH variable to a valid path for the directory holding applet elf and proof bundle files (e.g. path to armored-witness-applet/bin)'; \
-		exit 1; \
-	fi
+copy_applet: APPLET_PATH=witness_applet/bin
+copy_applet: build_applet
 	mkdir -p ${CURDIR}/trusted_os/assets
 	cp ${APPLET_PATH}/trusted_applet.elf ${CURDIR}/trusted_os/assets/
 	cp ${APPLET_PATH}/trusted_applet_manifest ${CURDIR}/trusted_os/assets/
-	go run ./cmd/proofbundle \
-		--log_origin=${LOG_ORIGIN} \
-		--log_url=${LOG_URL} \
-		--log_pubkey_file=${LOG_PUBLIC_KEY} \
-		--manifest_pubkey_file=${APPLET_PUBLIC_KEY} \
-		--manifest_file=${CURDIR}/trusted_os/assets/trusted_applet_manifest \
-		--applet_file=${CURDIR}/trusted_os/assets/trusted_applet.elf \
-		--output_file=${CURDIR}/trusted_os/assets/trusted_applet.proofbundle
-
-create_dummy_applet:
-	mkdir -p $(DIR)/assets
-	rm -f $(DIR)/assets/trusted_applet.elf && touch $(DIR)/assets/trusted_applet.elf
-	rm -f $(DIR)/assets/trusted_applet.proofbundle && touch $(DIR)/assets/trusted_applet.proofbundle
 
 check_tamago:
 	@if [ "${TAMAGO}" == "" ] || [ ! -f "${TAMAGO}" ]; then \
