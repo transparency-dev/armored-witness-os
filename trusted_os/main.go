@@ -37,7 +37,6 @@ import (
 	// for now just test compilation of these
 	"github.com/transparency-dev/armored-witness-common/release/firmware"
 	_ "github.com/transparency-dev/armored-witness-os/internal/hab"
-	_ "github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 const (
