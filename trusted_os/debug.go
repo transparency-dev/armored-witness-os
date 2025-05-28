@@ -179,7 +179,7 @@ func segfault(buf []byte, ctx *monitor.ExecCtx) (err error) {
 
 	err = ctx.Run()
 
-	log.Printf("SM applet stopped sp:%#.8x lr:%#.8x pc:%#.8x err:%v", ctx.R13, ctx.R14, ctx.R15, err)
+	log.Printf("SM applet stopped sp:%#.8x lr:%#.8x pc:%#.8x err:%v %s", ctx.R13, ctx.R14, ctx.R15, err, ctx)
 
 	return
 }

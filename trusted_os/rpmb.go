@@ -29,13 +29,12 @@ import (
 
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/usbarmory/rpmb"
 	"github.com/usbarmory/tamago/soc/nxp/imx6ul"
 	"github.com/usbarmory/tamago/soc/nxp/usdhc"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/usbarmory/crucible/otp"
-
-	"github.com/transparency-dev/armored-witness-os/rpmb"
 )
 
 const (

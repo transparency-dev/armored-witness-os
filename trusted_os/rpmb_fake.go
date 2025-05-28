@@ -21,7 +21,7 @@ import (
 	"errors"
 
 	"github.com/coreos/go-semver/semver"
-	"github.com/transparency-dev/armored-witness-os/rpmb"
+	"github.com/usbarmory/rpmb"
 )
 
 const (
