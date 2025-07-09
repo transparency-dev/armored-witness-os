@@ -8,7 +8,7 @@ permissions:
 jobs:
   build:
     env:
-      TAMAGO_VERSION: 1.24.1
+      TAMAGO_VERSION: 1.24.3
       TAMAGO: /usr/local/tamago-go/bin/go
       APPLET_PRIVATE_KEY: /tmp/applet.sec
       APPLET_PUBLIC_KEY: /tmp/applet.pub
