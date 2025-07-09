@@ -66,7 +66,6 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 
 	// override default handler
 	ta.Handler = handler
-	ta.Debug = true
 
 	// enable FIQs
 	bits.Clear(&ta.SPSR, CPSR_FIQ)
@@ -101,7 +100,7 @@ func run(ctx *monitor.ExecCtx) (err error) {
 	// when switching back to System Mode.
 	imx6ul.ARM.EnableInterrupts(false)
 
-	log.Printf("SM applet stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v err:%v", mode, ctx.R13, ctx.R14, ctx.R15, ns, err)
+	log.Printf("SM applet stopped mode:%s sp:%#.8x lr:%#.8x pc:%#.8x ns:%v err:%v %s", mode, ctx.R13, ctx.R14, ctx.R15, ns, err, ctx)
 
 	if err != nil && debug {
 		err = inspect(taELF, ctx)
