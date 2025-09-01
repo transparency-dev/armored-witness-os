@@ -1,6 +1,6 @@
 module github.com/transparency-dev/armored-witness-os
 
-go 1.24.1
+go 1.24.3
 
 require (
 	github.com/coreos/go-semver v0.3.1
