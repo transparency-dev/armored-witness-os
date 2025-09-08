@@ -66,7 +66,6 @@ func loadApplet(elf []byte, ctl *controlInterface) (ta *monitor.ExecCtx, err err
 
 	// override default handler
 	ta.Handler = handler
-	ta.Debug = true
 
 	// enable FIQs
 	bits.Clear(&ta.SPSR, CPSR_FIQ)
