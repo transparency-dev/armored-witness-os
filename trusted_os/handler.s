@@ -15,8 +15,8 @@
 #include "go_asm.h"
 #include "textflag.h"
 
-// Supports tamago >= 1.24 applet runtime.
-TEXT ·wakeHandlerGo124(SB),$0-8
+// Supports tamago >= 1.25 applet runtime.
+TEXT ·wakeHandlerGo125(SB),$0-8
 	MOVW	handlerG+0(FP), R0
 	MOVW	handlerP+4(FP), R1
 
@@ -28,6 +28,99 @@ TEXT ·wakeHandlerGo124(SB),$0-8
 
 	// Call the current runtime's version of WakeG
 	B	runtime·WakeG(SB)
+done:
+	RET
+
+
+#define go124_g_timer 216
+#define go124_g_sleepWhen 220
+#define go124_timer_ts 44
+#define go124_timers_heap 4
+#define go124_timerWhen__size 12
+#define go124_timerWhen_timer 0
+#define go124_timerWhen_when 4
+#define go124_timer_when 12
+#define go124_timer_astate 4
+#define go124_const_timerModified 2
+#define go124_timers_minWhenModified 40
+
+
+// Supports tamago >= 1.24 && < 1.25.0 applet runtime.
+TEXT ·wakeHandlerGo124(SB),$0-8
+	MOVW	handlerG+0(FP), R0
+	MOVW	handlerP+4(FP), R1
+
+	CMP	$0, R0
+	B.EQ	done
+
+	CMP	$0, R1
+	B.EQ	done
+
+	// Code below from src/runtime/sys_tamago_arm.s @ tamago1.24.6
+	MOVW	(go124_g_timer)(R0), R3
+	CMP	$0, R3
+	B.EQ	fail
+
+	MOVW	(go124_timer_ts)(R3), R0
+	CMP	$0, R0
+	B.EQ	fail
+
+	// len(g->timer.ts.heap)
+	MOVW	(go124_timers_heap+4)(R0), R2
+	CMP	$0, R2
+	B.EQ	fail
+
+	// offset to last element
+	SUB	$1, R2, R2
+	MOVW	$(go124_timerWhen__size), R1
+	MUL	R1, R2, R2
+
+	MOVW	(go124_timers_heap)(R0), R0
+	CMP	$0, R0
+	B.EQ	fail
+
+	// g->timer.ts.heap[len-1]
+	ADD	R2, R0, R0
+	B	check
+prev:
+	SUB	$(go124_timerWhen__size), R0
+	CMP	$0, R0
+	B.EQ	fail
+check:
+	// find heap entry matching g.timer
+	MOVW	(go124_timerWhen_timer)(R0), R1
+	CMP	R3, R1
+	B.NE	prev
+
+	// g->timer.ts.heap[off] = 1
+	MOVW	$1, R1
+	MOVW	R1, (go124_timerWhen_when+0)(R0)
+	MOVW	$0, R1
+	MOVW	R1, (go124_timerWhen_when+4)(R0)
+
+	// g->timer.when = 1
+	MOVW	$1, R1
+	MOVW	R1, (go124_timer_when+0)(R3)
+	MOVW	$0, R1
+	MOVW	R1, (go124_timer_when+4)(R3)
+
+	// g->timer.astate &= timerModified
+	// g->timer.state  &= timerModified
+	MOVW	(go124_timer_astate)(R3), R2
+	ORR	$go124_const_timerModified<<8|go124_const_timerModified, R2, R2
+	MOVW	R2, (go124_timer_astate)(R3)
+
+	// g->timer.ts.minWhenModified = 1
+	MOVW	(go124_timer_ts)(R3), R0
+	MOVW	$1, R1
+	MOVW	R1, (go124_timers_minWhenModified+0)(R0)
+	MOVW	$0, R1
+	MOVW	R1, (go124_timers_minWhenModified+4)(R0)
+
+	MOVW	$0, R0
+	RET
+fail:
+	MOVW	$1, R0
 done:
 	RET
 
