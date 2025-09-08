@@ -19,7 +19,7 @@ require (
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
 	github.com/usbarmory/tamago v0.0.0-20250817112432-96c980fc2b68
 	golang.org/x/crypto v0.41.0
-	golang.org/x/mod v0.27.0
+	golang.org/x/mod v0.28.0
 	google.golang.org/protobuf v1.36.8
 	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
 	k8s.io/klog v1.0.0
