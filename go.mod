@@ -17,10 +17,10 @@ require (
 	github.com/usbarmory/crucible v0.0.0-20240221192724-1595f2219655
 	github.com/usbarmory/imx-usbnet v0.0.0-20240304152630-ca189bf3b3c1
 	github.com/usbarmory/imx-usbserial v0.0.0-20230503192150-40b6298b31f8
-	github.com/usbarmory/tamago v0.0.0-20250828093603-d8ac0d8fb083
+	github.com/usbarmory/tamago v1.25.1
 	golang.org/x/crypto v0.42.0
 	golang.org/x/mod v0.28.0
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf v1.36.10
 	gvisor.dev/gvisor v0.0.0-20240303010120-901d232cd101
 	k8s.io/klog v1.0.0
 )
