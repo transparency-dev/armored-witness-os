@@ -40,6 +40,8 @@ import (
 const debug = false
 
 func init() {
+	// disable ARM debug operations
+	imx6ul.Debug(false)
 	// disable console
 	imx6ul.UART2.Disable()
 	// silence logging
